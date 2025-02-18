@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/restaurant_oracle_front.iml" filepath="$PROJECT_DIR$/.idea/restaurant_oracle_front.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/restaurant_project.iml" filepath="$PROJECT_DIR$/.idea/restaurant_project.iml" />
     </modules>
   </component>
 </project>
