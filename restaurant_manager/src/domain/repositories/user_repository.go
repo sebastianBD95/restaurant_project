@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"restaurant_manager/domain/models"
+	"restaurant_manager/src/domain/models"
 )
 
 type UserRepository interface {

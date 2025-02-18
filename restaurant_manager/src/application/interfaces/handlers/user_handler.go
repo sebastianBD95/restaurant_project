@@ -3,8 +3,8 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"restaurant_manager/application/services"
-	"restaurant_manager/domain/models"
+	"restaurant_manager/src/application/services"
+	"restaurant_manager/src/domain/models"
 )
 
 type UserHandler struct {

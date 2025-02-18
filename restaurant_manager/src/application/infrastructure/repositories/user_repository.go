@@ -3,8 +3,8 @@ package repositories
 import (
 	"database/sql"
 	"errors"
-	"restaurant_manager/domain/models"
-	"restaurant_manager/domain/repositories"
+	"restaurant_manager/src/domain/models"
+	"restaurant_manager/src/domain/repositories"
 
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/crypto/bcrypt"

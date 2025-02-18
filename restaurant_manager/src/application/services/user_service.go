@@ -2,8 +2,8 @@ package services
 
 import (
 	"errors"
-	"restaurant_manager/domain/models"
-	"restaurant_manager/domain/repositories"
+	"restaurant_manager/src/domain/models"
+	"restaurant_manager/src/domain/repositories"
 
 	"golang.org/x/crypto/bcrypt"
 )

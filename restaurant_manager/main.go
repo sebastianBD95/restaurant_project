@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"restaurant_manager/application/infrastructure/repositories"
-	"restaurant_manager/application/interfaces/handlers"
-	"restaurant_manager/application/interfaces/routes"
-	"restaurant_manager/application/services"
-	"restaurant_manager/config"
+	"restaurant_manager/src/application/infrastructure/repositories"
+	"restaurant_manager/src/application/interfaces/handlers"
+	"restaurant_manager/src/application/interfaces/routes"
+	"restaurant_manager/src/application/services"
+	"restaurant_manager/src/config"
 )
 
 func main() {

@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"restaurant_manager/application/interfaces/handlers"
+	"restaurant_manager/src/application/interfaces/handlers"
 
 	"github.com/gorilla/mux"
 )
