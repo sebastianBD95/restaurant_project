@@ -16,10 +16,18 @@ func main() {
 	defer config.DB.Close()
 
 	userRepo := repositories.NewUserRepository(config.DB)
-	userService := services.NewUserService(userRepo)
-	userHandler := handlers.NewUserHandler(userService)
+	restaurantRepo := repositories.NewRestaurantRepository(config.DB)
+	menuRepo := repositories.NewMenuRepository(config.DB)
 
-	r := routes.SetupRoutes(userHandler)
+	userService := services.NewUserService(userRepo)
+	restaurantService := services.NewRestaurantService(restaurantRepo)
+	menuService := services.NewMenuService(menuRepo)
+
+	userHandler := handlers.NewUserHandler(userService)
+	restaurantHandler := handlers.NewRestaurantHandler(restaurantService)
+	menuHandler := handlers.NewMenuHandler(menuService)
+
+	r := routes.SetupRoutes(userHandler, restaurantHandler, menuHandler)
 
 	fmt.Println("🚀 Server running on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", r))

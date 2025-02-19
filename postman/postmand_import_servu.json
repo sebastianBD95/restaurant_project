@@ -1,0 +1,45 @@
+{
+  "info": {
+    "_postman_id": "d4e5f6a7-b890-1234-5678-9abcdef3",
+    "name": "User Authentication API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Register User",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"John Doe\", \"email\": \"john@example.com\", \"password\": \"securepass\"}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/register",
+          "host": ["http://localhost:8080"],
+          "path": ["register"]
+        }
+      }
+    },
+    {
+      "name": "Login User",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"john@example.com\", \"password\": \"securepass\"}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/login",
+          "host": ["http://localhost:8080"],
+          "path": ["login"]
+        }
+      }
+    }
+  ]
+}
