@@ -81,3 +81,15 @@ func FlyWayContainer(ip string) (testcontainers.Container, error) {
 	}
 	return container, nil
 }
+
+func SetUp() (testcontainers.Container, testcontainers.Container) {
+	postgresContainer, postgresIp, _ := PostgresContainer()
+	flyContainer, _ := FlyWayContainer(postgresIp)
+
+	return postgresContainer, flyContainer
+}
+func CleanUp(container testcontainers.Container) {
+	ctx := context.Background()
+	container.Terminate(ctx)
+
+}

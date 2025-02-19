@@ -39,9 +39,16 @@ CREATE TABLE servu.restaurant_tables (
                                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE servu.menus (
+                             menu_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                             restaurant_id UUID REFERENCES servu.restaurants(restaurant_id) ON DELETE CASCADE,
+                             name VARCHAR(255) NOT NULL,
+                             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE servu.menu_items (
                                   menu_item_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                                  restaurant_id UUID REFERENCES servu.restaurants(restaurant_id) ON DELETE CASCADE,
+                                  menu_id UUID REFERENCES servu.menus(menu_id) ON DELETE CASCADE,
                                   name VARCHAR(255) NOT NULL,
                                   description TEXT,
                                   price DECIMAL(10,2) NOT NULL,

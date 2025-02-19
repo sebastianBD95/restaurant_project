@@ -2,58 +2,24 @@ package integration
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
-	"github.com/testcontainers/testcontainers-go"
 	"net/http"
-	"net/http/httptest"
-	"restaurant_manager/src/application/infrastructure/repositories"
-	"restaurant_manager/src/application/interfaces/handlers"
-	"restaurant_manager/src/application/interfaces/routes"
-	"restaurant_manager/src/application/services"
 	"restaurant_manager/tests/integration/utils"
 	"testing"
 )
 
-var testDB *sqlx.DB
-
-func SetUp() (testcontainers.Container, testcontainers.Container) {
-	postgresContainer, postgresIp, _ := utils.PostgresContainer()
-	flyContainer, _ := utils.FlyWayContainer(postgresIp)
-
-	return postgresContainer, flyContainer
-}
-func CleanUp(container testcontainers.Container) {
-	ctx := context.Background()
-	container.Terminate(ctx)
-
-}
-
-func executeRequest(req *http.Request, router http.Handler) *httptest.ResponseRecorder {
-	rr := httptest.NewRecorder()
-	router.ServeHTTP(rr, req)
-	return rr
-}
-
-func TestMain(m *testing.M) {
-	m.Run()
-}
-
 func TestRegistryUser(t *testing.T) {
-	postgresContainer, _ := SetUp()
+	postgresContainer, _ := utils.SetUp()
 	testDB, err := sqlx.Connect("postgres", "postgres://postgres:postgres@localhost:5434/servu?sslmode=disable")
+	mock := utils.NewMock(testDB)
 	if err != nil {
 		log.Err(err)
 	}
-	userRepo := repositories.NewUserRepository(testDB)
-	userService := services.NewUserService(userRepo)
-	userHandler := handlers.NewUserHandler(userService)
-
-	router := routes.SetupRoutes(userHandler)
+	router := mock.SetRoutes()
 
 	// Mock user data
 	userData := map[string]string{
@@ -66,7 +32,7 @@ func TestRegistryUser(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(userJSON))
 	req.Header.Set("Content-Type", "application/json")
 	// Execute request
-	response := executeRequest(req, router)
+	response := mock.ExecuteRequest(req, router)
 
 	// Validate response
 	assert.Equal(t, http.StatusCreated, response.Code)
@@ -77,20 +43,17 @@ func TestRegistryUser(t *testing.T) {
 
 	// Check if user_id is returned
 	assert.NotEmpty(t, responseBody["user_id"])
-	CleanUp(postgresContainer)
+	utils.CleanUp(postgresContainer)
 }
 
 func TestLoginUser(t *testing.T) {
-	postgres, _ := SetUp()
+	postgres, _ := utils.SetUp()
 	testDB, err := sqlx.Connect("postgres", "postgres://postgres:postgres@localhost:5434/servu?sslmode=disable")
+	mock := utils.NewMock(testDB)
 	if err != nil {
 		log.Err(err)
 	}
-	userRepo := repositories.NewUserRepository(testDB)
-	userService := services.NewUserService(userRepo)
-	userHandler := handlers.NewUserHandler(userService)
-
-	router := routes.SetupRoutes(userHandler)
+	router := mock.SetRoutes()
 
 	_, err = testDB.Exec(`INSERT INTO servu.users (name, email, password_hash, role)
 		VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin')`)
@@ -109,7 +72,7 @@ func TestLoginUser(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 
 	// Execute request
-	response := executeRequest(req, router)
+	response := mock.ExecuteRequest(req, router)
 
 	// Validate response
 	assert.Equal(t, http.StatusOK, response.Code)
@@ -120,5 +83,5 @@ func TestLoginUser(t *testing.T) {
 
 	// Check if login message is correct
 	assert.Equal(t, "Login successful", responseBody["message"])
-	CleanUp(postgres)
+	utils.CleanUp(postgres)
 }
