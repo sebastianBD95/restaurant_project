@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:17.0
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=servu
+    ports:
+        - "5433:5432"
+    volumes:
+      - pgdataservu:/var/lib/postgresql/data
+  flyway:
+    image: flyway/flyway:latest
+    environment:
+      - FLYWAY_USER=postgres
+      - FLYWAY_PASSWORD=postgres
+      - FLYWAY_URL=jdbc:postgresql://postgres:5432/servu
+      - FLYWAY_SCHEMAS=flyway
+      - FLYWAY_GROUP=true
+    volumes:
+      - ./db_versioning:/flyway/sql
+    depends_on:
+      - postgres
+    command: -locations=filesystem:/flyway/sql -connectRetries=60 migrate
+volumes:
+  pgdataservu:
