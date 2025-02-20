@@ -1,12 +1,12 @@
 {
   "info": {
-    "_postman_id": "d4e5f6a7-b890-1234-5678-9abcdef3",
-    "name": "User Authentication API",
+    "_postman_id": "a7b89012-3456-789a-bcde-f56789abcdef",
+    "name": "Orders Management API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Register User",
+      "name": "Create Order",
       "request": {
         "method": "POST",
         "header": [
@@ -14,30 +14,52 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\"name\": \"John Doe\", \"email\": \"john@example.com\", \"password\": \"securepass\"}"
+          "raw": "{\"table_id\": \"TABLE_UUID\", \"customer_id\": \"CUSTOMER_UUID\", \"items\": [{\"menu_item_id\": \"ITEM_UUID\", \"quantity\": 2}]}"
         },
         "url": {
-          "raw": "http://localhost:8080/register",
+          "raw": "http://localhost:8080/orders",
           "host": ["http://localhost:8080"],
-          "path": ["register"]
+          "path": ["orders"]
         }
       }
     },
     {
-      "name": "Login User",
+      "name": "Get Order",
       "request": {
-        "method": "POST",
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8080/orders/ORDER_UUID",
+          "host": ["http://localhost:8080"],
+          "path": ["orders", "ORDER_UUID"]
+        }
+      }
+    },
+    {
+      "name": "Update Order",
+      "request": {
+        "method": "PUT",
         "header": [
           { "key": "Content-Type", "value": "application/json" }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\"email\": \"john@example.com\", \"password\": \"securepass\"}"
+          "raw": "{\"order_id\": \"ORDER_UUID\", \"items\": [{\"menu_item_id\": \"ITEM_UUID\", \"quantity\": 3}]}"
         },
         "url": {
-          "raw": "http://localhost:8080/login",
+          "raw": "http://localhost:8080/orders/ORDER_UUID",
           "host": ["http://localhost:8080"],
-          "path": ["login"]
+          "path": ["orders", "ORDER_UUID"]
+        }
+      }
+    },
+    {
+      "name": "Delete Order",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "http://localhost:8080/orders/ORDER_UUID",
+          "host": ["http://localhost:8080"],
+          "path": ["orders", "ORDER_UUID"]
         }
       }
     }

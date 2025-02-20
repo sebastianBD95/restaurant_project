@@ -6,7 +6,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func SetupRoutes(userHandler *handlers.UserHandler, restaurantHandler *handlers.RestaurantHandler, menuHandler *handlers.MenuHandler) *mux.Router {
+func SetupRoutes(userHandler *handlers.UserHandler, restaurantHandler *handlers.RestaurantHandler, menuHandler *handlers.MenuHandler, orderHandler *handlers.OrderHandler, tableHandler *handlers.TableHandler) *mux.Router {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/register", userHandler.RegisterUser).Methods("POST")
@@ -20,5 +20,13 @@ func SetupRoutes(userHandler *handlers.UserHandler, restaurantHandler *handlers.
 	r.HandleFunc("/menus/{menu_id}/items", menuHandler.AddMenuItem).Methods("POST")
 	r.HandleFunc("/menu-items/{menu_item_id}", menuHandler.UpdateMenuItem).Methods("PUT")
 	r.HandleFunc("/menu-items/{menu_item_id}", menuHandler.DeleteMenuItem).Methods("DELETE")
+	r.HandleFunc("/orders", orderHandler.CreateOrder).Methods("POST")
+	r.HandleFunc("/orders/{orders_id}", orderHandler.UpdateOrder).Methods("PUT")
+	r.HandleFunc("/orders/{orders_id}", orderHandler.GetOrder).Methods("GET")
+	r.HandleFunc("/orders/{orders_id}", orderHandler.DeleteOrder).Methods("DELETE")
+	r.HandleFunc("/tables", tableHandler.CreateTable).Methods("POST")
+	r.HandleFunc("/tables/{table_id}", tableHandler.GetTable).Methods("GET")
+	r.HandleFunc("/tables/{table_id}", tableHandler.UpdateTable).Methods("PUT")
+	r.HandleFunc("/tables/{table_id}", tableHandler.DeleteTable).Methods("DELETE")
 	return r
 }
