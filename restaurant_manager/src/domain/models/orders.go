@@ -18,3 +18,12 @@ const (
 	Payed     OrderStatus = "payed"
 	cancelled OrderStatus = "cancelled"
 )
+
+type OrderItem struct {
+	OrderItemID string    `db:"order_item_id" json:"order_item_id"`
+	OrderID     string    `db:"order_id" json:"order_id"`
+	MenuItemID  string    `db:"menu_item_id" json:"menu_item_id"`
+	Quantity    int       `db:"quantity" json:"quantity"`
+	Price       float64   `db:"price" json:"price"`
+	CreatedAt   time.Time `db:"created_at" json:"created_at"`
+}

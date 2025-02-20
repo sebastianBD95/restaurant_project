@@ -27,3 +27,19 @@ func (service *OrderService) UpdateOrder(order *models.Order) error {
 func (service *OrderService) GetOrder(orderID string) (*models.Order, error) {
 	return service.repo.GetOrder(orderID)
 }
+
+func (s *OrderService) AddOrderItem(orderItem *models.OrderItem) (string, error) {
+	return s.repo.AddOrderItem(orderItem)
+}
+
+func (s *OrderService) UpdateOrderItem(orderItem *models.OrderItem) error {
+	return s.repo.UpdateOrderItem(orderItem)
+}
+
+func (s *OrderService) DeleteOrderItem(orderItemID string) error {
+	return s.repo.DeleteOrderItem(orderItemID)
+}
+
+func (s *OrderService) GetOrderItems(orderID string) ([]models.OrderItem, error) {
+	return s.repo.GetOrderItems(orderID)
+}

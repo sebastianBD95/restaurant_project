@@ -24,16 +24,22 @@ func (m mockImpl) SetRoutes() *mux.Router {
 	userRepo := repositories.NewUserRepository(m.db)
 	restaurantRepo := repositories.NewRestaurantRepository(m.db)
 	menuRepo := repositories.NewMenuRepository(m.db)
+	orderRepo := repositories.NewOrderRepository(m.db)
+	tableRepo := repositories.NewTableRepository(m.db)
 
 	userService := services.NewUserService(userRepo)
 	restaurantService := services.NewRestaurantService(restaurantRepo)
 	menuService := services.NewMenuService(menuRepo)
+	orderService := services.NewOrderService(orderRepo)
+	tableService := services.NewTableService(tableRepo)
 
 	userHandler := handlers.NewUserHandler(userService)
 	restaurantHandler := handlers.NewRestaurantHandler(restaurantService)
 	menuHandler := handlers.NewMenuHandler(menuService)
+	orderHandler := handlers.NewOrderHandler(orderService)
+	tableHandler := handlers.NewTableHandler(tableService)
 
-	router := routes.SetupRoutes(userHandler, restaurantHandler, menuHandler)
+	router := routes.SetupRoutes(userHandler, restaurantHandler, menuHandler, orderHandler, tableHandler)
 	return router
 }
 
