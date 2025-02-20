@@ -60,8 +60,7 @@ CREATE TABLE servu.menu_items (
 CREATE TABLE servu.orders (
                               order_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
                               table_id UUID REFERENCES servu.restaurant_tables(table_id) ON DELETE CASCADE,
-                              customer_id UUID REFERENCES servu.users(user_id) ON DELETE SET NULL,
-                              status VARCHAR(20) CHECK (status IN ('pending', 'in_progress', 'completed', 'cancelled')) DEFAULT 'pending',
+                              status VARCHAR(20) CHECK (status IN ('ordered', 'delivered', 'payed', 'cancelled')) DEFAULT 'ordered',
                               total_price DECIMAL(10,2) DEFAULT 0.0,
                               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
