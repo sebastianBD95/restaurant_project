@@ -42,8 +42,10 @@ func (h *RestaurantHandler) GetRestaurant(w http.ResponseWriter, r *http.Request
 
 // Update restaurant
 func (h *RestaurantHandler) UpdateRestaurant(w http.ResponseWriter, r *http.Request) {
+	restaurantID := mux.Vars(r)["restaurant_id"]
 	var restaurant models.Restaurant
 	json.NewDecoder(r.Body).Decode(&restaurant)
+	restaurant.RestaurantID = restaurantID
 	err := h.service.UpdateRestaurant(&restaurant)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
