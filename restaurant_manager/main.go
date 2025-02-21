@@ -12,7 +12,8 @@ import (
 )
 
 func main() {
-	config.ConnectDB()
+	cfg := config.LoadConfig()
+	config.ConnectDB(cfg)
 	defer config.DB.Close()
 
 	userRepo := repositories.NewUserRepository(config.DB)

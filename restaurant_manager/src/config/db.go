@@ -10,11 +10,9 @@ import (
 
 var DB *sqlx.DB
 
-func ConnectDB() {
+func ConnectDB(cfg *Properties) {
 	var err error
-	dsn := "postgres://postgres:postgres@localhost:5433/servu?sslmode=disable"
-
-	DB, err = sqlx.Connect("postgres", dsn)
+	DB, err = sqlx.Connect("postgres", cfg.RestaurantManager.Database)
 	if err != nil {
 		log.Fatalf("Error connecting to database: %v", err)
 	}
