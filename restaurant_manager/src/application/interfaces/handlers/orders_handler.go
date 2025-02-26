@@ -30,7 +30,7 @@ func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 func (h *OrderHandler) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 	var orderID string
 	vars := mux.Vars(r)
-	orderID = vars["order_id"]
+	orderID = vars["orders_id"]
 	err := h.service.DeleteOrder(orderID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -42,7 +42,7 @@ func (h *OrderHandler) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 func (h *OrderHandler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
 	var orderID string
 	vars := mux.Vars(r)
-	orderID = vars["order_id"]
+	orderID = vars["orders_id"]
 	var order *models.Order
 	json.NewDecoder(r.Body).Decode(&order)
 	order.OrderID = orderID
@@ -58,7 +58,7 @@ func (h *OrderHandler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
 func (h *OrderHandler) GetOrder(w http.ResponseWriter, r *http.Request) {
 	var orderID string
 	vars := mux.Vars(r)
-	orderID = vars["order_id"]
+	orderID = vars["orders_id"]
 	order, err := h.service.GetOrder(orderID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -103,7 +103,7 @@ func (h *OrderHandler) DeleteOrderItem(w http.ResponseWriter, r *http.Request) {
 
 // Get all items for an order
 func (h *OrderHandler) GetOrderItems(w http.ResponseWriter, r *http.Request) {
-	orderID := mux.Vars(r)["order_id"]
+	orderID := mux.Vars(r)["orders_id"]
 	items, err := h.service.GetOrderItems(orderID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
