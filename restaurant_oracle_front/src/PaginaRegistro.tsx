@@ -1,6 +1,6 @@
 import { useState, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Input, Button, VStack, Text, Link } from "@chakra-ui/react";
+import { Box, Input, Button, VStack, Text } from "@chakra-ui/react";
 
 const Register: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -134,7 +134,7 @@ const Register: React.FC = () => {
             </Button>
 
             {/* Corrección del Botón para regresar a Login */}
-            <Button as="a" onClick={() => navigate("/login")} colorScheme="blue">
+            <Button as="a" onClick={() => navigate("/")} colorScheme="blue">
               ¿Ya tienes una cuenta? Inicia sesión
             </Button>
           </VStack>

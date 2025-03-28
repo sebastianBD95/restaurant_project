@@ -1,7 +1,7 @@
 import { useState, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Input, Button, VStack, Text } from "@chakra-ui/react";
-import PaginaRegistro from './PaginaRegistro';
+
 
 // Componente reutilizable para el formulario de inicio de sesión
 const LoginForm: React.FC<{ onLogin: (username: string, password: string) => void }> = ({ onLogin }) => {

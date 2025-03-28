@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import { Box,Button, VStack,HStack, Stack, ChakraProvider , defaultSystem ,EmptyState } from "@chakra-ui/react"
+import { Box,Button, VStack, Stack ,EmptyState } from "@chakra-ui/react"
 import { LuShoppingCart } from "react-icons/lu"
 import { useNavigate } from "react-router-dom"; // 1️ Importamos useNavigate de react-router-dom
 
@@ -10,7 +10,21 @@ const MiComponente: React.FC = () => {
     const handleClick = (): void => { // 3️ Definimos la función con su tipo de retorno
         navigate("/nueva-pagina"); // 4️ Redirigimos a otra página
     };
-
+    const handleClick2 = (): void => { // 3️ Definimos la función con su tipo de retorno
+        navigate("/Ordenes"); // 4️ Redirigimos a otra página
+    };
+    const handleClick3 = (): void => { // 3️ Definimos la función con su tipo de retorno
+        navigate("/Historial"); // 4️ Redirigimos a otra página
+    };
+    const handleClick4 = (): void => { // 3️ Definimos la función con su tipo de retorno
+        navigate("/Dashboard"); // 4️ Redirigimos a otra página
+    };
+    const handleClick5 = (): void => { // 3️ Definimos la función con su tipo de retorno
+        navigate("/Inventario"); // 4️ Redirigimos a otra página
+    };
+    const handleClick6 = (): void => { // 3️ Definimos la función con su tipo de retorno
+        navigate("/pagos"); // 4️ Redirigimos a otra página
+    };
     return (
         <Box
             bgImage="url('background.jpg')"
@@ -47,9 +61,20 @@ const MiComponente: React.FC = () => {
                     <Button color="orange" variant="subtle" size="md" flex={1} h="45px" onClick={handleClick}>
                         Menu
                     </Button>
-                    <Button color="orange" variant="subtle" rounded="md" flex={1} h="45px">
-                        Pay
+                    <Button color="orange" variant="subtle" rounded="md" flex={1} h="45px" onClick={handleClick2}>
+                        Ordenes
                     </Button>
+                    
+                    <Button color="orange" variant="subtle" rounded="md" flex={1} h="45px" onClick={handleClick4}>
+                        Graficas
+                    </Button>
+                    <Button color="orange" variant="subtle" rounded="md" flex={1} h="45px" onClick={handleClick5}>
+                        Inventario
+                    </Button>
+                    <Button color="orange" variant="subtle" rounded="md" flex={1} h="45px" onClick={handleClick6}>
+                        Pagos
+                    </Button>
+                    
                 </Stack>
             </Stack>
         </Box>
