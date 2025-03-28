@@ -23,5 +23,13 @@ services:
     depends_on:
       - postgres
     command: -locations=filesystem:/flyway/sql -connectRetries=60 migrate
+  restaurant_manager:
+    build: .
+    environment:
+      - APP_ENV=prod
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
 volumes:
   pgdataservu:

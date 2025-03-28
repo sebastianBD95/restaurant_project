@@ -1,0 +1,2 @@
+restaurant_manager:
+  database: "postgres://postgres:postgres@localhost:5433/servu?sslmode=disable"
