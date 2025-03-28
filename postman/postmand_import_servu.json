@@ -1,0 +1,67 @@
+{
+  "info": {
+    "_postman_id": "a7b89012-3456-789a-bcde-f56789abcdef",
+    "name": "Orders Management API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Order",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"table_id\": \"TABLE_UUID\", \"customer_id\": \"CUSTOMER_UUID\", \"items\": [{\"menu_item_id\": \"ITEM_UUID\", \"quantity\": 2}]}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/orders",
+          "host": ["http://localhost:8080"],
+          "path": ["orders"]
+        }
+      }
+    },
+    {
+      "name": "Get Order",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8080/orders/ORDER_UUID",
+          "host": ["http://localhost:8080"],
+          "path": ["orders", "ORDER_UUID"]
+        }
+      }
+    },
+    {
+      "name": "Update Order",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"order_id\": \"ORDER_UUID\", \"items\": [{\"menu_item_id\": \"ITEM_UUID\", \"quantity\": 3}]}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/orders/ORDER_UUID",
+          "host": ["http://localhost:8080"],
+          "path": ["orders", "ORDER_UUID"]
+        }
+      }
+    },
+    {
+      "name": "Delete Order",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "http://localhost:8080/orders/ORDER_UUID",
+          "host": ["http://localhost:8080"],
+          "path": ["orders", "ORDER_UUID"]
+        }
+      }
+    }
+  ]
+}

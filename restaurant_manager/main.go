@@ -1,22 +1,41 @@
 package main
 
 import (
-	"github.com/gorilla/mux"
+	"fmt"
+	"log"
 	"net/http"
+	"restaurant_manager/src/application/infrastructure/repositories"
+	"restaurant_manager/src/application/interfaces/handlers"
+	"restaurant_manager/src/application/interfaces/routes"
+	"restaurant_manager/src/application/services"
+	"restaurant_manager/src/config"
 )
 
 func main() {
+	cfg := config.LoadConfig()
+	config.ConnectDB(cfg)
+	defer config.DB.Close()
 
-	r := mux.NewRouter()
-	r.HandleFunc("/menu", MenuHandler)
-	r.HandleFunc("/bill", BillHandler)
-	http.Handle("/", r)
-}
+	userRepo := repositories.NewUserRepository(config.DB)
+	restaurantRepo := repositories.NewRestaurantRepository(config.DB)
+	menuRepo := repositories.NewMenuRepository(config.DB)
+	orderRepo := repositories.NewOrderRepository(config.DB)
+	tableRepo := repositories.NewTableRepository(config.DB)
 
-func MenuHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-}
+	userService := services.NewUserService(userRepo)
+	restaurantService := services.NewRestaurantService(restaurantRepo)
+	menuService := services.NewMenuService(menuRepo)
+	orderService := services.NewOrderService(orderRepo)
+	tableService := services.NewTableService(tableRepo)
 
-func BillHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
+	userHandler := handlers.NewUserHandler(userService)
+	restaurantHandler := handlers.NewRestaurantHandler(restaurantService)
+	menuHandler := handlers.NewMenuHandler(menuService)
+	orderHandler := handlers.NewOrderHandler(orderService)
+	tableHandler := handlers.NewTableHandler(tableService)
+
+	r := routes.SetupRoutes(userHandler, restaurantHandler, menuHandler, orderHandler, tableHandler)
+
+	fmt.Println("🚀 Server running on port 8080")
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
