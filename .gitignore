@@ -1,1 +1,36 @@
-.idea
+# Ignore Go binary files
+*.exe
+*.test
+*.out
+*.dll
+*.so
+*.dylib
+
+# Ignore vendor directory if using Go modules
+/vendor/
+
+# Ignore Go modules files if using modules (Go 1.11+)
+go.sum
+go.mod
+
+# Ignore Go workspace files (if using Go workspace)
+.go_workspace
+
+# Ignore editor-specific files (example for Cursor or VS Code)
+.vscode/
+.idea/
+
+# Ignore build and output directories
+/build/
+bin/
+
+# Ignore temporary or log files
+*.log
+*.tmp
+*.bak
+
+# Ignore coverage reports (if you run tests with coverage)
+*.coverage
+
+# Ignore any other local files
+*.swp
