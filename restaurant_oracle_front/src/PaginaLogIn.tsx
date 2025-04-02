@@ -1,10 +1,10 @@
 import { useState, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Input, Button, VStack, Text } from "@chakra-ui/react";
+import { loginUser } from './services/autheticationService';
 
 
-// Componente reutilizable para el formulario de inicio de sesión
-const LoginForm: React.FC<{ onLogin: (username: string, password: string) => void }> = ({ onLogin }) => {
+const LoginForm: React.FC =() => {
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -13,15 +13,33 @@ const LoginForm: React.FC<{ onLogin: (username: string, password: string) => voi
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  function getCookie(name: string): string | null {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+    return null;
+  }
+
   // Manejo del envío del formulario
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async(e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!formData.username || !formData.password) {
       setError("Por favor, completa ambos campos.");
       return;
     }
     setError(null);
-    onLogin(formData.username, formData.password);
+    try {
+      const data = await loginUser(formData.username,formData.password); 
+      document.cookie = `token=${data.token}; Secure; SameSite=Strict; Path=/`;
+      document.cookie = `role=${data.role}; Secure; SameSite=Strict; Path=/`;
+      
+      console.log(getCookie("role"))
+      console.log(getCookie("token"))
+      navigate("/pagina1");
+    } catch (error: any) {
+      setError(error.message); 
+      navigate("/");
+    }
   };
 
   return (
@@ -98,27 +116,12 @@ const LoginForm: React.FC<{ onLogin: (username: string, password: string) => voi
 
 // Componente principal de Login
 const LogIn: React.FC = () => {
-  const validCredentials = {
-    username: "Laura",
-    password: "hola"
-  };
 
   const [authorized, setAuthorized] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  const handleLogin = (enteredUsername: string, enteredPassword: string) => {
-    if (
-      enteredUsername === validCredentials.username &&
-      enteredPassword === validCredentials.password
-    ) {
-      setAuthorized(true);
-      navigate("/pagina1", { replace: true }); // Redirigir al usuario a la página de inicio
-    } else {
-      alert("Usuario o contraseña incorrectos"); // Puedes mejorar esto con un estado de error
-    }
-  };
 
-  return <>{!authorized ? <LoginForm onLogin={handleLogin} /> : null}</>;
+  return <>{!authorized ? <LoginForm /> : null}</>;
 };
 
 export default LogIn;

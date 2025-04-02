@@ -1,35 +1,42 @@
 import { useState, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Input, Button, VStack, Text } from "@chakra-ui/react";
+import { registerUser } from './services/autheticationService';
+import { UserData } from './interfaces/autho';
 
 const Register: React.FC = () => {
-  const [formData, setFormData] = useState({
-    fullName: "",
+  const [formData, setFormData] = useState<UserData>({
+    name: "",
     email: "",
     idNumber: "",
     phone: "",
     companyName: "",
     nitNumber: "",
+    password: "",
   });
 
   const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (!Object.values(formData).every((field) => field.trim() !== "")) {
       setMessage("Todos los campos son obligatorios.");
       return;
     }
-
-    setMessage("Usuario registrado exitosamente.");
-    
-    setTimeout(() => navigate("/login"), 2000);
+    try {
+      const data = await registerUser(formData); 
+      alert('User registered successfully');
+      navigate("/pagina1");
+    } catch (error: any) {
+      setError(error.message); 
+      navigate("/");
+    }
   };
 
   return (
@@ -61,9 +68,9 @@ const Register: React.FC = () => {
               <Text fontWeight="bold">Nombre Completo</Text>
               <Input 
                 type="text" 
-                name="fullName" 
+                name="name" 
                 placeholder="Ingrese su nombre completo" 
-                value={formData.fullName} 
+                value={formData.name} 
                 onChange={handleChange} 
                 required 
               />
@@ -124,6 +131,18 @@ const Register: React.FC = () => {
                 name="nitNumber" 
                 placeholder="Ingrese el número del NIT" 
                 value={formData.nitNumber} 
+                onChange={handleChange} 
+                required 
+              />
+            </Box>
+
+            <Box width="100%">
+              <Text fontWeight="bold">Contraseña</Text>
+              <Input 
+                type="password" 
+                name="password" 
+                placeholder="Ingrese su contraseña" 
+                value={formData.password} 
                 onChange={handleChange} 
                 required 
               />

@@ -3,13 +3,14 @@ package integration
 import (
 	"bytes"
 	"encoding/json"
+	"net/http"
+	"restaurant_manager/tests/integration/utils"
+	"testing"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
-	"net/http"
-	"restaurant_manager/tests/integration/utils"
-	"testing"
 )
 
 func TestRegistryUser(t *testing.T) {
@@ -23,10 +24,14 @@ func TestRegistryUser(t *testing.T) {
 
 	// Mock user data
 	userData := map[string]string{
-		"name":     "John Doe",
-		"email":    "john@example.com",
-		"password": "securepass",
-		"role":     "admin",
+		"name":         "John Doe",
+		"email":        "john@example.com",
+		"password":     "securepass",
+		"role":         "admin",
+		"id_number":    "1234567890",
+		"phone":        "1234567890",
+		"company_name": "Company Name",
+		"nit_number":   "1234567890",
 	}
 	userJSON, _ := json.Marshal(userData)
 	req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(userJSON))

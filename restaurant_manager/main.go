@@ -8,12 +8,14 @@ import (
 	"restaurant_manager/src/application/interfaces/handlers"
 	"restaurant_manager/src/application/interfaces/routes"
 	"restaurant_manager/src/application/services"
+	"restaurant_manager/src/application/utils"
 	"restaurant_manager/src/config"
 )
 
 func main() {
 	cfg := config.LoadConfig()
 	config.ConnectDB(cfg)
+	utils.SetJWT(cfg)
 	defer config.DB.Close()
 
 	userRepo := repositories.NewUserRepository(config.DB)

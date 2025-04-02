@@ -25,11 +25,11 @@ func (repo *UserRepositoryImpl) CreateUser(user *models.User) (string, error) {
 		return "", err
 	}
 
-	query := `INSERT INTO servu.users (name, email, password_hash, role, created_at) 
-	          VALUES ($1, $2, $3, $4, NOW()) RETURNING user_id`
+	query := `INSERT INTO servu.users (name, email, password_hash, id_number, phone, nit_number, role, created_at) 
+	          VALUES ($1, $2, $3, $4, $5, $6, $7, NOW()) RETURNING user_id`
 
 	var userID string
-	err = repo.db.QueryRow(query, user.Name, user.Email, string(hashedPassword), user.Role).Scan(&userID)
+	err = repo.db.QueryRow(query, user.Name, user.Email, string(hashedPassword), user.IdNumber, user.Phone, user.NitNumber, user.Role).Scan(&userID)
 	if err != nil {
 		return "", err
 	}

@@ -1,16 +1,54 @@
 package routes
 
 import (
+	"log"
+	"net/http"
 	"restaurant_manager/src/application/interfaces/handlers"
+	"time"
 
 	"github.com/gorilla/mux"
 )
 
+// Custom logging middleware to log request method, URL, and headers
+func logRequests(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Log method, URL, and headers of the incoming request
+		log.Printf("[%s] %s %s", time.Now().Format(time.RFC3339), r.Method, r.URL.Path)
+
+		// Log headers
+		for name, values := range r.Header {
+			for _, value := range values {
+				log.Printf("%s: %s", name, value)
+			}
+		}
+
+		// Continue to the next handler
+		next.ServeHTTP(w, r)
+	})
+}
+
+func accessControlMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET,POST,OPTIONS,PUT,DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
+
+		if r.Method == "OPTIONS" {
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func SetupRoutes(userHandler *handlers.UserHandler, restaurantHandler *handlers.RestaurantHandler, menuHandler *handlers.MenuHandler, orderHandler *handlers.OrderHandler, tableHandler *handlers.TableHandler) *mux.Router {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/register", userHandler.RegisterUser).Methods("POST")
-	r.HandleFunc("/login", userHandler.LoginUser).Methods("POST")
+	//r.Use(logRequests)
+	r.Use(accessControlMiddleware)
+
+	r.HandleFunc("/register", userHandler.RegisterUser).Methods("POST", "OPTIONS")
+	r.HandleFunc("/login", userHandler.LoginUser).Methods("POST", "OPTIONS")
 	r.HandleFunc("/restaurants", restaurantHandler.CreateRestaurant).Methods("POST")
 	r.HandleFunc("/restaurants/{restaurant_id}", restaurantHandler.GetRestaurant).Methods("GET")
 	r.HandleFunc("/restaurants/{restaurant_id}", restaurantHandler.UpdateRestaurant).Methods("PUT")
@@ -32,5 +70,6 @@ func SetupRoutes(userHandler *handlers.UserHandler, restaurantHandler *handlers.
 	r.HandleFunc("/tables/{table_id}", tableHandler.GetTable).Methods("GET")
 	r.HandleFunc("/tables/{table_id}", tableHandler.UpdateTable).Methods("PUT")
 	r.HandleFunc("/tables/{table_id}", tableHandler.DeleteTable).Methods("DELETE")
+
 	return r
 }
