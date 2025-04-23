@@ -10,8 +10,14 @@ import (
 
 type Properties struct {
 	RestaurantManager struct {
-		Database string `yaml:"database"`
+		Database string   `yaml:"database"`
+		Aws      awsCreds `yaml:"aws"`
 	} `yaml:"restaurant_manager"`
+}
+
+type awsCreds struct {
+	Profile string `yaml:"profile"`
+	Region  string `yaml:"region"`
 }
 
 func LoadConfig() *Properties {

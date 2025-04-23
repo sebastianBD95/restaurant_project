@@ -4,9 +4,12 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"restaurant_manager/src/config"
+	"strings"
 	"time"
 
 	"github.com/lestrrat-go/jwx/v3/jwa"
@@ -63,7 +66,7 @@ func SetJWT(cfg *config.Properties) {
 
 func GenerateJWT(userID string) (string, error) {
 	token, err := jwt.NewBuilder().
-		Expiration(time.Now().Add(24 * time.Hour)).
+		Expiration(time.Now().Add(36 * time.Hour)).
 		IssuedAt(time.Now()).
 		Subject(userID).
 		Build()
@@ -81,10 +84,29 @@ func GenerateJWT(userID string) (string, error) {
 	return string(signedToken), nil
 }
 
-func VerifyJWT(signedToken string) (jwt.Token, error) {
+func VerifyJWT(signedToken string) (string, error) {
 	tok, err := jwt.Parse([]byte(signedToken), jwt.WithKey(jwa.RS256(), publicKey))
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return tok, nil
+	userID, ok := tok.Subject()
+	if !ok {
+		return "", fmt.Errorf("user ID (sub) not found in token")
+	}
+
+	return userID, nil
+}
+
+func GetBearerToken(r *http.Request) (string, error) {
+
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		return "", fmt.Errorf("Authorization header missing")
+	}
+
+	parts := strings.Fields(authHeader)
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		return "", fmt.Errorf("Invalid Authorization header format")
+	}
+	return parts[1], nil
 }

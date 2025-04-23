@@ -1,0 +1,25 @@
+.add-plate-button {
+    color: white; /* White text */
+    border: none;
+    padding: 8px 16px;
+    font-size: 16px;
+    border-radius: 8px;
+    width: 150px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .add-plate-button:hover {
+    background-color: #2C7A7B; /* Darker teal on hover */
+    transform: scale(1.05); /* Slight scaling on hover */
+  }
+  
+  .add-plate-button:active {
+    background-color: #276C6C; /* Darker teal when clicked */
+    transform: scale(1); /* Prevent scaling on click */
+  }
+  
+  .add-plate-button:focus {
+    outline: none; /* Remove outline on focus */
+  }

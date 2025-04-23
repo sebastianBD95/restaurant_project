@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"restaurant_manager/src/application/services"
+	"restaurant_manager/src/application/utils"
 	"restaurant_manager/src/domain/models"
 
 	"github.com/gorilla/mux"
@@ -19,13 +20,55 @@ func NewRestaurantHandler(service *services.RestaurantService) *RestaurantHandle
 
 // Create a new restaurant
 func (h *RestaurantHandler) CreateRestaurant(w http.ResponseWriter, r *http.Request) {
-	var restaurant models.Restaurant
-	json.NewDecoder(r.Body).Decode(&restaurant)
+
+	tokenString, err := utils.GetBearerToken(r)
+	if err != nil {
+		http.Error(w, "Authorization header is missing or invalid", http.StatusUnauthorized)
+		return
+	}
+	owner, err := utils.VerifyJWT(tokenString)
+	if err != nil {
+		http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
+		return
+	}
+	err = r.ParseMultipartForm(10 << 20)
+	if err != nil {
+		http.Error(w, "Unable to parse form", http.StatusBadRequest)
+		return
+	}
+
+	name := r.FormValue("name")
+	description := r.FormValue("description")
+
+	file, _, err := r.FormFile("image")
+	if err != nil {
+		http.Error(w, "Unable to read image", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	imageURL, err := h.service.UploadFile(owner, name, file)
+	if err != nil {
+		http.Error(w, "Failed to upload image to S3", http.StatusInternalServerError)
+		return
+	}
+
+	// Create a new restaurant object
+	restaurant := models.Restaurant{
+		Name:        name,
+		Description: description,
+		ImageURL:    imageURL,
+		OwnerID:     owner,
+	}
+
+	// Call the service to save the restaurant in the database
 	restaurantID, err := h.service.CreateRestaurant(&restaurant)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// Respond with the restaurant ID
 	json.NewEncoder(w).Encode(map[string]string{"restaurant_id": restaurantID})
 }
 
@@ -38,6 +81,25 @@ func (h *RestaurantHandler) GetRestaurant(w http.ResponseWriter, r *http.Request
 		return
 	}
 	json.NewEncoder(w).Encode(restaurant)
+}
+
+func (h *RestaurantHandler) GetAllRestaurant(w http.ResponseWriter, r *http.Request) {
+	tokenString, err := utils.GetBearerToken(r)
+	if err != nil {
+		http.Error(w, "Authorization header is missing or invalid", http.StatusUnauthorized)
+		return
+	}
+	ownerID, err := utils.VerifyJWT(tokenString)
+	if err != nil {
+		http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
+		return
+	}
+	restaurants, err := h.service.GetAllRestaurant(ownerID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	json.NewEncoder(w).Encode(restaurants)
 }
 
 // Update restaurant

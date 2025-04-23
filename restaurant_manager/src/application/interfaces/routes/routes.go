@@ -31,7 +31,7 @@ func accessControlMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET,POST,OPTIONS,PUT,DELETE")
-		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
+		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
 
 		if r.Method == "OPTIONS" {
 			return
@@ -49,13 +49,13 @@ func SetupRoutes(userHandler *handlers.UserHandler, restaurantHandler *handlers.
 
 	r.HandleFunc("/register", userHandler.RegisterUser).Methods("POST", "OPTIONS")
 	r.HandleFunc("/login", userHandler.LoginUser).Methods("POST", "OPTIONS")
-	r.HandleFunc("/restaurants", restaurantHandler.CreateRestaurant).Methods("POST")
-	r.HandleFunc("/restaurants/{restaurant_id}", restaurantHandler.GetRestaurant).Methods("GET")
+	r.HandleFunc("/restaurants", restaurantHandler.CreateRestaurant).Methods("POST", "OPTIONS")
+	r.HandleFunc("/restaurants", restaurantHandler.GetAllRestaurant).Methods("GET", "OPTIONS")
 	r.HandleFunc("/restaurants/{restaurant_id}", restaurantHandler.UpdateRestaurant).Methods("PUT")
 	r.HandleFunc("/restaurants/{restaurant_id}", restaurantHandler.DeleteRestaurant).Methods("DELETE")
-	r.HandleFunc("/menus", menuHandler.CreateMenu).Methods("POST")
+	r.HandleFunc("/menus", menuHandler.CreateMenu).Methods("POST", "OPTIONS")
 	r.HandleFunc("/menus/{menu_id}", menuHandler.DeleteMenu).Methods("DELETE")
-	r.HandleFunc("/menus/{menu_id}/items", menuHandler.AddMenuItem).Methods("POST")
+	r.HandleFunc("/menus/{menu_id}/items", menuHandler.AddMenuItem).Methods("POST", "OPTIONS")
 	r.HandleFunc("/menu-items/{menu_item_id}", menuHandler.UpdateMenuItem).Methods("PUT")
 	r.HandleFunc("/menu-items/{menu_item_id}", menuHandler.DeleteMenuItem).Methods("DELETE")
 	r.HandleFunc("/orders", orderHandler.CreateOrder).Methods("POST")

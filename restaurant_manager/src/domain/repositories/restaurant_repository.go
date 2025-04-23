@@ -9,4 +9,5 @@ type RestaurantRepository interface {
 	GetRestaurant(restaurantID string) (*models.Restaurant, error)
 	UpdateRestaurant(restaurant *models.Restaurant) error
 	DeleteRestaurant(restaurantID string) error
+	GetAllRestaurant(ownerId string) ([]*models.Restaurant, error)
 }

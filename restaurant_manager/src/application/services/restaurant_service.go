@@ -1,16 +1,20 @@
 package services
 
 import (
+	"fmt"
+	"mime/multipart"
 	"restaurant_manager/src/domain/models"
+	"restaurant_manager/src/domain/ports"
 	"restaurant_manager/src/domain/repositories"
 )
 
 type RestaurantService struct {
-	repo repositories.RestaurantRepository
+	repo         repositories.RestaurantRepository
+	imageManager ports.StorageImageManager
 }
 
-func NewRestaurantService(repo repositories.RestaurantRepository) *RestaurantService {
-	return &RestaurantService{repo: repo}
+func NewRestaurantService(repo repositories.RestaurantRepository, awsS3 ports.StorageImageManager) *RestaurantService {
+	return &RestaurantService{repo: repo, imageManager: awsS3}
 }
 
 func (s *RestaurantService) CreateRestaurant(restaurant *models.Restaurant) (string, error) {
@@ -27,4 +31,13 @@ func (s *RestaurantService) UpdateRestaurant(restaurant *models.Restaurant) erro
 
 func (s *RestaurantService) DeleteRestaurant(restaurantID string) error {
 	return s.repo.DeleteRestaurant(restaurantID)
+}
+
+func (s *RestaurantService) UploadFile(owner string, restaurant string, file multipart.File) (string, error) {
+	folder := fmt.Sprintf("%s-%s", owner, restaurant)
+	return s.imageManager.UploadImage(folder, "servu-web", file)
+}
+
+func (s *RestaurantService) GetAllRestaurant(OwnerID string) ([]*models.Restaurant, error) {
+	return s.repo.GetAllRestaurant(OwnerID)
 }

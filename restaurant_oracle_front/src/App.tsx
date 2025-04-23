@@ -1,27 +1,45 @@
-import React,  { useState }  from 'react';
-import MiComponente from './PaginaInicio';
-import PaginaMenu from './paginaMenu';
-import LogIn from './PaginaLogIn';
-import PaginaRegistro from './PaginaRegistro';
-import Ordenes from './PaginaOrdenes';
-import Historial from './PaginaHistorial';
-import DashboardDO from './Dashboards/DailyOrders';
-import DashboardDR from './Dashboards/DailyRevenue';
-import TrendingMenu from './Dashboards/TrendingMenu';
-import Dashboard from './Dashboard';
+import React, { useState } from 'react';
+import RestaurantPage from './pages/RestaurantPage';
+import MenuPage from './pages/MenuPage';
+import LogIn from './pages/PaginaLogIn';
+import PaginaRegistro from './pages/PaginaRegistro';
+import Ordenes from './pages/PaginaOrdenes';
+import Historial from './pages/PaginaHistorial';
+import DashboardDO from './pages/dashboards/DailyOrders';
+import DashboardDR from './pages/dashboards/DailyRevenue';
+import TrendingMenu from './pages/dashboards/TrendingMenu';
+import Dashboard from './pages/Dashboard';
 import RestaurantLayout from './RestaurantLayout';
 import Inventario from './Inventario';
 import PaginaReceta from './Receta';
-import PaginaPagos from './pagos';
+import PaginaPagos from './pages/pagos';
 import './App.css';
 
-import { ChakraProvider,defaultSystem, Box, Flex, Text, Link, VStack, Icon, Button } from "@chakra-ui/react";
-import { BrowserRouter as Router, Routes, Route, Link as RouterLink } from "react-router-dom";
-import { FiHome, FiMenu, FiShoppingCart, FiBarChart2, FiList, FiChevronLeft, FiChevronRight, FiToggleLeft } from "react-icons/fi";
-import { MdOutlineInventory2 } from "react-icons/md";
-import { MdRestaurantMenu } from "react-icons/md";
-import { MdPayment } from "react-icons/md";
-
+import {
+  ChakraProvider,
+  defaultSystem,
+  Box,
+  Flex,
+  Text,
+  Link,
+  VStack,
+  Icon,
+  Button,
+} from '@chakra-ui/react';
+import { BrowserRouter as Router, Routes, Route, Link as RouterLink } from 'react-router-dom';
+import {
+  FiHome,
+  FiMenu,
+  FiShoppingCart,
+  FiBarChart2,
+  FiList,
+  FiChevronLeft,
+  FiChevronRight,
+  FiToggleLeft,
+} from 'react-icons/fi';
+import { MdOutlineInventory2 } from 'react-icons/md';
+import { MdRestaurantMenu } from 'react-icons/md';
+import { MdPayment } from 'react-icons/md';
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -35,37 +53,51 @@ function App() {
       <Router>
         <Flex height="100vh" direction="row">
           {/* Barra lateral de navegación plegable */}
-          <Box bg="white" color="white" p={4} width={isSidebarOpen ? "250px" : "60px"} transition="width 0.3s">
+          <Box
+            bg="white"
+            color="white"
+            p={4}
+            width={isSidebarOpen ? '250px' : '60px'}
+            transition="width 0.3s"
+          >
             <Button onClick={toggleSidebar} mb={4} colorScheme="teal">
               {isSidebarOpen ? <FiChevronLeft /> : <FiChevronRight />}
             </Button>
             {isSidebarOpen && (
               <>
-                <Text fontSize="2xl" fontWeight="bold" mb={6} color="black" textAlign="center">Restaurante</Text>
-                <VStack align="stretch" >
-                  <Link as={RouterLink} to="/pagina1" display="flex" alignItems="center" gap={2}>
+                <Text fontSize="2xl" fontWeight="bold" mb={6} color="black" textAlign="center">
+                  Restaurante
+                </Text>
+                <VStack align="stretch">
+                  <Link
+                    as={RouterLink}
+                    to="/restaurantes"
+                    display="flex"
+                    alignItems="center"
+                    gap={2}
+                  >
                     <Icon as={FiHome} />
                     Inicio
                   </Link>
-                  <Link as={RouterLink} to="/nueva-pagina" display="flex" alignItems="center" gap={2}>
+                  <Link as={RouterLink} to="/menu" display="flex" alignItems="center" gap={2}>
                     <Icon as={FiMenu} />
                     Menú
                   </Link>
-                  <Link as={RouterLink} to="/Ordenes" display="flex" alignItems="center" gap={2}>
+                  <Link as={RouterLink} to="/ordenes" display="flex" alignItems="center" gap={2}>
                     <Icon as={FiShoppingCart} />
                     Pedidos
                   </Link>
-                  <Link as={RouterLink} to="/Dashboard" display="flex" alignItems="center" gap={2}>
+                  <Link as={RouterLink} to="/dashboard" display="flex" alignItems="center" gap={2}>
                     <Icon as={FiBarChart2} />
                     Gráficas
                   </Link>
-                  <Link as={RouterLink} to="/Inventario" display="flex" alignItems="center" gap={2}>
+                  <Link as={RouterLink} to="/inventario" display="flex" alignItems="center" gap={2}>
                     <Icon as={MdOutlineInventory2} />
                     Inventario
                   </Link>
-                  <Link as={RouterLink} to="/Receta" display="flex" alignItems="center" gap={2}>
+                  <Link as={RouterLink} to="/receta" display="flex" alignItems="center" gap={2}>
                     <Icon as={MdRestaurantMenu} />
-                    Recetas 
+                    Recetas
                   </Link>
                   <Link as={RouterLink} to="/pagos" display="flex" alignItems="center" gap={2}>
                     <Icon as={MdPayment} />
@@ -76,7 +108,6 @@ function App() {
                     <Icon as={FiToggleLeft} />
                     Cerrar sesión
                   </Link>
-                  
                 </VStack>
               </>
             )}
@@ -86,20 +117,19 @@ function App() {
           <Box flex={1} p={6} overflowY="auto">
             <Routes>
               <Route path="/" element={<LogIn />} />
-              <Route path="/pagina1" element={<MiComponente />} />
-              <Route path="/nueva-pagina" element={<PaginaMenu />} />
-              <Route path="/Registro" element={<PaginaRegistro />} />
-              <Route path="/Ordenes" element={<Ordenes />} />
-              <Route path="/Historial" element={<Historial />} />
-              <Route path="/DailyOrders" element={<DashboardDO />} />
-              <Route path="/DailyRevenue" element={<DashboardDR />} />
-              <Route path="/TrendingMenu" element={<TrendingMenu />} />
-              <Route path="/Dashboard" element={<Dashboard />} />
-              <Route path="/RestaurantLayout" element={<RestaurantLayout />} />
-              <Route path="/Inventario" element={<Inventario />} />
-              <Route path="/Receta" element={<PaginaReceta />} />
+              <Route path="/restaurantes" element={<RestaurantPage />} />
+              <Route path="/menu" element={<MenuPage />} />
+              <Route path="/registro" element={<PaginaRegistro />} />
+              <Route path="/ordenes" element={<Ordenes />} />
+              <Route path="/historial" element={<Historial />} />
+              <Route path="/daily_orders" element={<DashboardDO />} />
+              <Route path="/daily_revenue" element={<DashboardDR />} />
+              <Route path="/trending_menu" element={<TrendingMenu />} />
+              <Route path="/dashboard/:restaurantId" element={<Dashboard />} />
+              <Route path="/restaurante_layaout" element={<RestaurantLayout />} />
+              <Route path="/inventario" element={<Inventario />} />
+              <Route path="/recetas" element={<PaginaReceta />} />
               <Route path="/pagos" element={<PaginaPagos />} />
-
             </Routes>
           </Box>
         </Flex>

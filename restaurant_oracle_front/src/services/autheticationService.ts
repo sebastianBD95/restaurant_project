@@ -27,7 +27,10 @@ export const registerUser = async (formData: UserData): Promise<AuthResponse> =>
 
 export const loginUser = async (username: string, password: string): Promise<AuthResponse> => {
   try {
-    const response = await axios.post<AuthResponse>(`${API_URL}/login`, { "Email": username, "Password": password });
+    const response = await axios.post<AuthResponse>(`${API_URL}/login`, {
+      Email: username,
+      Password: password,
+    });
     return response.data;
   } catch (error) {
     if (error instanceof Error) {

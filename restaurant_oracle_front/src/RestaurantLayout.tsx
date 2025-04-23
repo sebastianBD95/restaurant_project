@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { Box, Heading, Button } from "@chakra-ui/react";
-import { Stage, Layer, Rect, Circle, Text, Group } from "react-konva";
+import React, { useEffect, useState } from 'react';
+import { Box, Heading, Button } from '@chakra-ui/react';
+import { Stage, Layer, Rect, Circle, Text, Group } from 'react-konva';
 
 interface Mesa {
   id: string;
   x: number;
   y: number;
-  shape: "rect" | "circle";
+  shape: 'rect' | 'circle';
   isOccupied: boolean;
   isProcessingPayment: boolean;
 }
@@ -18,7 +18,7 @@ const generateMesas = (): Mesa[] => {
     id: String(i + 1),
     x: 100 + (i % 5) * 100,
     y: 100 + Math.floor(i / 5) * 100,
-    shape: "rect",
+    shape: 'rect',
     isOccupied: false,
     isProcessingPayment: false,
   }));
@@ -29,7 +29,7 @@ const RestaurantLayout: React.FC = () => {
   const [isLocked, setIsLocked] = useState<boolean>(false);
 
   useEffect(() => {
-    const savedLayout = localStorage.getItem("mesasLayout");
+    const savedLayout = localStorage.getItem('mesasLayout');
     if (savedLayout) {
       setMesas(JSON.parse(savedLayout));
     } else {
@@ -39,20 +39,18 @@ const RestaurantLayout: React.FC = () => {
 
   useEffect(() => {
     if (mesas.length > 0) {
-      localStorage.setItem("mesasLayout", JSON.stringify(mesas));
+      localStorage.setItem('mesasLayout', JSON.stringify(mesas));
     }
   }, [mesas]);
 
   useEffect(() => {
     const updateTables = () => {
-      const storedOrders = JSON.parse(localStorage.getItem("orders") || "[]");
+      const storedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
 
-      const occupiedTables = storedOrders.map((order: any) =>
-        order.table.toString()
-      );
+      const occupiedTables = storedOrders.map((order: any) => order.table.toString());
 
       const processingTables = storedOrders
-        .filter((order: any) => order.status === "Entregado a la mesa")
+        .filter((order: any) => order.status === 'Entregado a la mesa')
         .map((order: any) => order.table.toString());
 
       setMesas((prevMesas) =>
@@ -65,16 +63,16 @@ const RestaurantLayout: React.FC = () => {
     };
 
     updateTables();
-    window.addEventListener("storage", updateTables);
-    return () => window.removeEventListener("storage", updateTables);
+    window.addEventListener('storage', updateTables);
+    return () => window.removeEventListener('storage', updateTables);
   }, []);
 
   useEffect(() => {
     const handleStatusChange = () => {
-      window.dispatchEvent(new Event("storage"));
+      window.dispatchEvent(new Event('storage'));
     };
-    window.addEventListener("orderUpdated", handleStatusChange);
-    return () => window.removeEventListener("orderUpdated", handleStatusChange);
+    window.addEventListener('orderUpdated', handleStatusChange);
+    return () => window.removeEventListener('orderUpdated', handleStatusChange);
   }, []);
 
   const handleDragEnd = (e: any, id: string) => {
@@ -82,9 +80,7 @@ const RestaurantLayout: React.FC = () => {
     const newX = e.target.x();
     const newY = e.target.y();
     setMesas((prevMesas) =>
-      prevMesas.map((mesa) =>
-        mesa.id === id ? { ...mesa, x: newX, y: newY } : mesa
-      )
+      prevMesas.map((mesa) => (mesa.id === id ? { ...mesa, x: newX, y: newY } : mesa))
     );
   };
 
@@ -95,17 +91,15 @@ const RestaurantLayout: React.FC = () => {
   const toggleShape = (id: string) => {
     setMesas(
       mesas.map((mesa) =>
-        mesa.id === id
-          ? { ...mesa, shape: mesa.shape === "rect" ? "circle" : "rect" }
-          : mesa
+        mesa.id === id ? { ...mesa, shape: mesa.shape === 'rect' ? 'circle' : 'rect' } : mesa
       )
     );
   };
 
   const getMesaColor = (mesa: Mesa): string => {
-    if (mesa.isProcessingPayment) return "yellow";
-    if (mesa.isOccupied) return "red";
-    return "green";
+    if (mesa.isProcessingPayment) return 'yellow';
+    if (mesa.isOccupied) return 'red';
+    return 'green';
   };
 
   return (
@@ -113,20 +107,12 @@ const RestaurantLayout: React.FC = () => {
       <Heading size="md" mb={4} textAlign="center">
         📍 Distribución de Mesas
       </Heading>
-      <Button
-        onClick={toggleLock}
-        mb={4}
-        colorScheme={isLocked ? "red" : "blue"}
-      >
-        {isLocked ? "Desbloquear Organización" : "Bloquear Organización"}
+      <Button onClick={toggleLock} mb={4} colorScheme={isLocked ? 'red' : 'blue'}>
+        {isLocked ? 'Desbloquear Organización' : 'Bloquear Organización'}
       </Button>
-      <Stage width={700} height={500} style={{ border: "2px solid black" }}>
+      <Stage width={700} height={500} style={{ border: '2px solid black' }}>
         <Layer>
-          <Text
-            text="Arrastra las mesas y haz clic para cambiar su forma"
-            x={10}
-            y={10}
-          />
+          <Text text="Arrastra las mesas y haz clic para cambiar su forma" x={10} y={10} />
           {mesas.map((mesa) => (
             <Group
               key={mesa.id}
@@ -136,7 +122,7 @@ const RestaurantLayout: React.FC = () => {
               onClick={() => toggleShape(mesa.id)}
               onDragEnd={(e) => handleDragEnd(e, mesa.id)}
             >
-              {mesa.shape === "rect" ? (
+              {mesa.shape === 'rect' ? (
                 <Rect
                   id={mesa.id}
                   width={60}
@@ -145,12 +131,7 @@ const RestaurantLayout: React.FC = () => {
                   shadowBlur={5}
                 />
               ) : (
-                <Circle
-                  id={mesa.id}
-                  radius={30}
-                  fill={getMesaColor(mesa)}
-                  shadowBlur={5}
-                />
+                <Circle id={mesa.id} radius={30} fill={getMesaColor(mesa)} shadowBlur={5} />
               )}
               <Text
                 text={mesa.id}
@@ -159,9 +140,9 @@ const RestaurantLayout: React.FC = () => {
                 fontStyle="bold"
                 align="center"
                 verticalAlign="middle"
-                x={mesa.shape === "rect" ? 20 : -5}
-                y={mesa.shape === "rect" ? 20 : -5}
-                width={mesa.shape === "rect" ? 20 : 10}
+                x={mesa.shape === 'rect' ? 20 : -5}
+                y={mesa.shape === 'rect' ? 20 : -5}
+                width={mesa.shape === 'rect' ? 20 : 10}
                 height={20}
               />
             </Group>
