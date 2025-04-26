@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"mime/multipart"
 	"restaurant_manager/src/domain/models"
 	"restaurant_manager/src/domain/ports"
@@ -33,9 +32,8 @@ func (s *RestaurantService) DeleteRestaurant(restaurantID string) error {
 	return s.repo.DeleteRestaurant(restaurantID)
 }
 
-func (s *RestaurantService) UploadFile(owner string, restaurant string, file multipart.File) (string, error) {
-	folder := fmt.Sprintf("%s-%s", owner, restaurant)
-	return s.imageManager.UploadImage(folder, "servu-web", file)
+func (s *RestaurantService) UploadFile(owner string, file multipart.File) (string, error) {
+	return s.imageManager.UploadImage(owner, "restaurant", "servu-web", file)
 }
 
 func (s *RestaurantService) GetAllRestaurant(OwnerID string) ([]*models.Restaurant, error) {

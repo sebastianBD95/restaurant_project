@@ -84,7 +84,7 @@ func GenerateJWT(userID string) (string, error) {
 	return string(signedToken), nil
 }
 
-func VerifyJWT(signedToken string) (string, error) {
+func verifyJWT(signedToken string) (string, error) {
 	tok, err := jwt.Parse([]byte(signedToken), jwt.WithKey(jwa.RS256(), publicKey))
 	if err != nil {
 		return "", err
@@ -97,7 +97,7 @@ func VerifyJWT(signedToken string) (string, error) {
 	return userID, nil
 }
 
-func GetBearerToken(r *http.Request) (string, error) {
+func getBearerToken(r *http.Request) (string, error) {
 
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
@@ -109,4 +109,18 @@ func GetBearerToken(r *http.Request) (string, error) {
 		return "", fmt.Errorf("Invalid Authorization header format")
 	}
 	return parts[1], nil
+}
+
+func TokenVerification(r *http.Request, w http.ResponseWriter) string {
+	tokenString, err := getBearerToken(r)
+	if err != nil {
+		http.Error(w, "Authorization header is missing or invalid", http.StatusUnauthorized)
+		return ""
+	}
+	owner, err := verifyJWT(tokenString)
+	if err != nil {
+		http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
+		return ""
+	}
+	return owner
 }

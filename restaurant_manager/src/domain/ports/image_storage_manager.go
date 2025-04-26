@@ -5,5 +5,5 @@ import (
 )
 
 type StorageImageManager interface {
-	UploadImage(folder string, bucket string, file multipart.File) (string, error)
+	UploadImage(folder string, subfolder string, bucket string, file multipart.File) (string, error)
 }

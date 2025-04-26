@@ -28,7 +28,7 @@ func main() {
 
 	userService := services.NewUserService(userRepo)
 	restaurantService := services.NewRestaurantService(restaurantRepo, &aws3)
-	menuService := services.NewMenuService(menuRepo)
+	menuService := services.NewMenuService(menuRepo, &aws3)
 	orderService := services.NewOrderService(orderRepo)
 	tableService := services.NewTableService(tableRepo)
 

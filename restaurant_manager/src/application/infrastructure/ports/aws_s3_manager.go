@@ -34,8 +34,8 @@ func InitS3(cfg *config.Properties) AwsS3Manager {
 	}
 }
 
-func (as3 *AwsS3Manager) UploadImage(folder string, bucketName string, file multipart.File) (string, error) {
-	fileName := fmt.Sprintf("%s/%s/%s", folder, "restaurants", generateUniqueFileName())
+func (as3 *AwsS3Manager) UploadImage(folder string, subfolder string, bucketName string, file multipart.File) (string, error) {
+	fileName := fmt.Sprintf("%s/%s/%s", folder, subfolder, generateUniqueFileName())
 
 	uploadParams := &s3.PutObjectInput{
 		Bucket:      aws.String(bucketName),

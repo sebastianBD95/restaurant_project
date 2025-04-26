@@ -21,33 +21,23 @@ func NewRestaurantHandler(service *services.RestaurantService) *RestaurantHandle
 // Create a new restaurant
 func (h *RestaurantHandler) CreateRestaurant(w http.ResponseWriter, r *http.Request) {
 
-	tokenString, err := utils.GetBearerToken(r)
-	if err != nil {
-		http.Error(w, "Authorization header is missing or invalid", http.StatusUnauthorized)
-		return
-	}
-	owner, err := utils.VerifyJWT(tokenString)
-	if err != nil {
-		http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
-		return
-	}
-	err = r.ParseMultipartForm(10 << 20)
+	owner := utils.TokenVerification(r, w)
+	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		http.Error(w, "Unable to parse form", http.StatusBadRequest)
 		return
 	}
-
 	name := r.FormValue("name")
 	description := r.FormValue("description")
-
 	file, _, err := r.FormFile("image")
+
 	if err != nil {
 		http.Error(w, "Unable to read image", http.StatusBadRequest)
 		return
 	}
 	defer file.Close()
 
-	imageURL, err := h.service.UploadFile(owner, name, file)
+	imageURL, err := h.service.UploadFile(owner, file)
 	if err != nil {
 		http.Error(w, "Failed to upload image to S3", http.StatusInternalServerError)
 		return
@@ -84,16 +74,7 @@ func (h *RestaurantHandler) GetRestaurant(w http.ResponseWriter, r *http.Request
 }
 
 func (h *RestaurantHandler) GetAllRestaurant(w http.ResponseWriter, r *http.Request) {
-	tokenString, err := utils.GetBearerToken(r)
-	if err != nil {
-		http.Error(w, "Authorization header is missing or invalid", http.StatusUnauthorized)
-		return
-	}
-	ownerID, err := utils.VerifyJWT(tokenString)
-	if err != nil {
-		http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
-		return
-	}
+	ownerID := utils.TokenVerification(r, w)
 	restaurants, err := h.service.GetAllRestaurant(ownerID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
