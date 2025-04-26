@@ -1,10 +1,10 @@
 import axios from 'axios';
-import { ResturantDataRequest, ResturantDataResponse } from '../interfaces/restaurant';
+import { MenuData, MenuItemRequest,MenuItemResponse } from '../interfaces/menuItems';
 
 const API_URL = 'http://localhost:8080';
-export const addMenu = async (formData: ResturantDataRequest, token: string): Promise<String> => {
+export const addMenu = async (formData: MenuItemRequest, token: string,restaurantId :string): Promise<String> => {
   try {
-    const response = await axios.post<String>(`${API_URL}/restaurants`, formData, {
+    const response = await axios.post<String>(`${API_URL}/menus/${restaurantId}/items`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
         Authorization: `Bearer ${token}`,
@@ -19,9 +19,9 @@ export const addMenu = async (formData: ResturantDataRequest, token: string): Pr
   }
 };
 
-export const getMenus = async (token: string): Promise<ResturantDataResponse[]> => {
+export const getMenus = async (token: string, restaurantId :string): Promise<MenuItemResponse[]> => {
   try {
-    const response = await axios.get<ResturantDataResponse[]>(`${API_URL}/restaurants`, {
+    const response = await axios.get<MenuItemResponse[]>(`${API_URL}/menus/${restaurantId}/items`, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
