@@ -4,17 +4,21 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"restaurant_manager/src/application/infrastructure/ports"
 	"restaurant_manager/src/application/infrastructure/repositories"
 	"restaurant_manager/src/application/interfaces/handlers"
 	"restaurant_manager/src/application/interfaces/routes"
 	"restaurant_manager/src/application/services"
+	"restaurant_manager/src/application/utils"
 	"restaurant_manager/src/config"
 )
 
 func main() {
 	cfg := config.LoadConfig()
 	config.ConnectDB(cfg)
+	utils.SetJWT(cfg)
 	defer config.DB.Close()
+	aws3 := ports.InitS3(cfg)
 
 	userRepo := repositories.NewUserRepository(config.DB)
 	restaurantRepo := repositories.NewRestaurantRepository(config.DB)
@@ -23,8 +27,8 @@ func main() {
 	tableRepo := repositories.NewTableRepository(config.DB)
 
 	userService := services.NewUserService(userRepo)
-	restaurantService := services.NewRestaurantService(restaurantRepo)
-	menuService := services.NewMenuService(menuRepo)
+	restaurantService := services.NewRestaurantService(restaurantRepo, &aws3)
+	menuService := services.NewMenuService(menuRepo, &aws3)
 	orderService := services.NewOrderService(orderRepo)
 	tableService := services.NewTableService(tableRepo)
 

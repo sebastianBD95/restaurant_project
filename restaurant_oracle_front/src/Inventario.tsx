@@ -1,18 +1,9 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Heading,
-  Button,
-  Input,
-  IconButton,
-  VStack,
-  Table,
-  Text,
-} from "@chakra-ui/react";
-import { IoAddCircleOutline } from "react-icons/io5";
-import { MdDeleteForever } from "react-icons/md";
+import React, { useEffect, useState } from 'react';
+import { Box, Heading, Button, Input, IconButton, VStack, Table, Text } from '@chakra-ui/react';
+import { IoAddCircleOutline } from 'react-icons/io5';
+import { MdDeleteForever } from 'react-icons/md';
 
 interface Alimento {
   id: string;
@@ -28,45 +19,47 @@ const Inventario: React.FC = () => {
   const [modoEdicion, setModoEdicion] = useState<{ [id: string]: boolean }>({});
 
   useEffect(() => {
-    const dataInventario = localStorage.getItem("inventarioAlimentos");
+    const dataInventario = localStorage.getItem('inventarioAlimentos');
     if (dataInventario) {
       setInventario(JSON.parse(dataInventario));
     }
 
-    const dataGuardados = localStorage.getItem("alimentosGuardados");
+    const dataGuardados = localStorage.getItem('alimentosGuardados');
     if (dataGuardados) {
       setAlimentosGuardados(JSON.parse(dataGuardados));
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("inventarioAlimentos", JSON.stringify(inventario));
+    localStorage.setItem('inventarioAlimentos', JSON.stringify(inventario));
   }, [inventario]);
 
   const agregarAlimento = () => {
     const existeVacio = inventario.some((item) => !item.nombre);
     if (existeVacio) {
-      alert("Completa el alimento anterior antes de agregar uno nuevo.");
+      alert('Completa el alimento anterior antes de agregar uno nuevo.');
       return;
     }
 
     const nuevo: Alimento = {
       id: crypto.randomUUID(),
-      nombre: "",
+      nombre: '',
       cantidad: 0,
-      unidad: "",
+      unidad: '',
       costoUnitario: 0,
     };
     const actualizado = [...inventario, nuevo];
     setInventario(actualizado);
-    localStorage.setItem("inventarioAlimentos", JSON.stringify(actualizado));
+    localStorage.setItem('inventarioAlimentos', JSON.stringify(actualizado));
   };
 
   const guardarAlimentos = () => {
     const fusionados: Alimento[] = [...alimentosGuardados];
 
     inventario.forEach((nuevo) => {
-      const index = fusionados.findIndex((a) => a.nombre.toLowerCase() === nuevo.nombre.toLowerCase());
+      const index = fusionados.findIndex(
+        (a) => a.nombre.toLowerCase() === nuevo.nombre.toLowerCase()
+      );
       if (index === -1) {
         fusionados.push(nuevo);
       } else {
@@ -77,35 +70,25 @@ const Inventario: React.FC = () => {
     });
 
     setAlimentosGuardados(fusionados);
-    localStorage.setItem("alimentosGuardados", JSON.stringify(fusionados));
+    localStorage.setItem('alimentosGuardados', JSON.stringify(fusionados));
   };
 
   const eliminarAlimento = (id: string) => {
     setInventario((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const handleChange = (
-    id: string,
-    field: keyof Alimento,
-    value: string | number
-  ) => {
+  const handleChange = (id: string, field: keyof Alimento, value: string | number) => {
     setInventario((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, [field]: value } : item
-      )
+      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item))
     );
   };
 
-  const handleChangeGuardado = (
-    id: string,
-    field: keyof Alimento,
-    value: string | number
-  ) => {
+  const handleChangeGuardado = (id: string, field: keyof Alimento, value: string | number) => {
     const actualizados = alimentosGuardados.map((item) =>
       item.id === id ? { ...item, [field]: value } : item
     );
     setAlimentosGuardados(actualizados);
-    localStorage.setItem("alimentosGuardados", JSON.stringify(actualizados));
+    localStorage.setItem('alimentosGuardados', JSON.stringify(actualizados));
   };
 
   const toggleEditar = (id: string) => {
@@ -117,11 +100,7 @@ const Inventario: React.FC = () => {
       <Heading mb={4}>🧂 Inventario de Alimentos</Heading>
 
       <VStack align="start" mb={4} spacing={4}>
-        <Button
-          leftIcon={<IoAddCircleOutline />}
-          colorScheme="teal"
-          onClick={agregarAlimento}
-        >
+        <Button leftIcon={<IoAddCircleOutline />} colorScheme="teal" onClick={agregarAlimento}>
           Agregar Alimento
         </Button>
         <Button colorScheme="blue" onClick={guardarAlimentos}>
@@ -145,9 +124,7 @@ const Inventario: React.FC = () => {
               <Table.Cell>
                 <Input
                   value={item.nombre}
-                  onChange={(e) =>
-                    handleChange(item.id, "nombre", e.target.value)
-                  }
+                  onChange={(e) => handleChange(item.id, 'nombre', e.target.value)}
                   placeholder="Nombre del alimento"
                 />
               </Table.Cell>
@@ -157,20 +134,14 @@ const Inventario: React.FC = () => {
                   min={0}
                   value={item.cantidad}
                   onChange={(e) =>
-                    handleChange(
-                      item.id,
-                      "cantidad",
-                      parseInt(e.target.value, 10) || 0
-                    )
+                    handleChange(item.id, 'cantidad', parseInt(e.target.value, 10) || 0)
                   }
                 />
               </Table.Cell>
               <Table.Cell>
                 <Input
                   value={item.unidad}
-                  onChange={(e) =>
-                    handleChange(item.id, "unidad", e.target.value)
-                  }
+                  onChange={(e) => handleChange(item.id, 'unidad', e.target.value)}
                   placeholder="Ej: gramos, unidades, litros"
                 />
               </Table.Cell>
@@ -180,11 +151,7 @@ const Inventario: React.FC = () => {
                   min={0}
                   value={item.costoUnitario || 0}
                   onChange={(e) =>
-                    handleChange(
-                      item.id,
-                      "costoUnitario",
-                      parseFloat(e.target.value) || 0
-                    )
+                    handleChange(item.id, 'costoUnitario', parseFloat(e.target.value) || 0)
                   }
                 />
               </Table.Cell>
@@ -202,7 +169,9 @@ const Inventario: React.FC = () => {
 
       {alimentosGuardados.length > 0 && (
         <Box mt={10}>
-          <Heading size="md" mb={4}>📦 Alimentos Guardados</Heading>
+          <Heading size="md" mb={4}>
+            📦 Alimentos Guardados
+          </Heading>
           <Table.Root size="sm">
             <Table.Header>
               <Table.Row>
@@ -222,9 +191,7 @@ const Inventario: React.FC = () => {
                       <Table.Cell>
                         <Input
                           value={item.nombre}
-                          onChange={(e) =>
-                            handleChangeGuardado(item.id, "nombre", e.target.value)
-                          }
+                          onChange={(e) => handleChangeGuardado(item.id, 'nombre', e.target.value)}
                         />
                       </Table.Cell>
                       <Table.Cell>
@@ -235,7 +202,7 @@ const Inventario: React.FC = () => {
                           onChange={(e) =>
                             handleChangeGuardado(
                               item.id,
-                              "cantidad",
+                              'cantidad',
                               parseInt(e.target.value, 10) || 0
                             )
                           }
@@ -244,9 +211,7 @@ const Inventario: React.FC = () => {
                       <Table.Cell>
                         <Input
                           value={item.unidad}
-                          onChange={(e) =>
-                            handleChangeGuardado(item.id, "unidad", e.target.value)
-                          }
+                          onChange={(e) => handleChangeGuardado(item.id, 'unidad', e.target.value)}
                         />
                       </Table.Cell>
                       <Table.Cell>
@@ -257,7 +222,7 @@ const Inventario: React.FC = () => {
                           onChange={(e) =>
                             handleChangeGuardado(
                               item.id,
-                              "costoUnitario",
+                              'costoUnitario',
                               parseFloat(e.target.value) || 0
                             )
                           }
@@ -288,7 +253,7 @@ const Inventario: React.FC = () => {
                   )}
                   <Table.Cell>
                     <Button size="sm" onClick={() => toggleEditar(item.id)}>
-                      {modoEdicion[item.id] ? "Guardar" : "Editar"}
+                      {modoEdicion[item.id] ? 'Guardar' : 'Editar'}
                     </Button>
                   </Table.Cell>
                 </Table.Row>

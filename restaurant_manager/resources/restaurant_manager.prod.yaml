@@ -1,2 +1,5 @@
 restaurant_manager:
   database: "postgres://postgres:postgres@postgres:5432/servu?sslmode=disable"
+  aws:
+    profile: "devprofile"
+    region: "us-east-1"

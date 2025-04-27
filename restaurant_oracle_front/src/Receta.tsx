@@ -1,15 +1,7 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Heading,
-  Input,
-  Button,
-  Text,
-  Table,
-  VStack,
-} from "@chakra-ui/react";
+import React, { useEffect, useState } from 'react';
+import { Box, Heading, Input, Button, Text, Table, VStack } from '@chakra-ui/react';
 
 const PaginaReceta: React.FC = () => {
   const [inventario, setInventario] = useState<Alimento[]>([]);
@@ -19,10 +11,10 @@ const PaginaReceta: React.FC = () => {
   const todosLosPlatos = Object.values(menuData).flat();
 
   useEffect(() => {
-    const data = localStorage.getItem("alimentosGuardados");
+    const data = localStorage.getItem('alimentosGuardados');
     if (data) setInventario(JSON.parse(data));
 
-    const recetas = localStorage.getItem("recetasPlatos");
+    const recetas = localStorage.getItem('recetasPlatos');
     if (recetas) {
       const guardadas: PlatoReceta[] = JSON.parse(recetas);
       const nombresExistentes = guardadas.map((r) => r.nombre);
@@ -30,20 +22,20 @@ const PaginaReceta: React.FC = () => {
       const nuevas: PlatoReceta[] = faltantes.map((p) => ({ nombre: p.name, ingredientes: [] }));
       const completas = [...guardadas, ...nuevas];
       setRecetasGuardadas(completas);
-      localStorage.setItem("recetasPlatos", JSON.stringify(completas));
+      localStorage.setItem('recetasPlatos', JSON.stringify(completas));
       const edicionInicial = Object.fromEntries(completas.map((r) => [r.nombre, false]));
       setModoEdicion(edicionInicial);
     } else {
       const inicial = todosLosPlatos.map((p) => ({ nombre: p.name, ingredientes: [] }));
       setRecetasGuardadas(inicial);
-      localStorage.setItem("recetasPlatos", JSON.stringify(inicial));
+      localStorage.setItem('recetasPlatos', JSON.stringify(inicial));
       const edicionInicial = Object.fromEntries(inicial.map((r) => [r.nombre, false]));
       setModoEdicion(edicionInicial);
     }
   }, []);
 
   const guardarEnLocalStorage = (nuevasRecetas: PlatoReceta[]) => {
-    localStorage.setItem("recetasPlatos", JSON.stringify(nuevasRecetas));
+    localStorage.setItem('recetasPlatos', JSON.stringify(nuevasRecetas));
   };
 
   const handleIngredienteChange = (plato: string, alimentoId: string, cantidad: number) => {
@@ -150,7 +142,7 @@ const PaginaReceta: React.FC = () => {
               </Table.Cell>
               <Table.Cell textAlign="end">
                 <Button size="sm" onClick={() => toggleEdicion(plato.nombre)}>
-                  {modoEdicion[plato.nombre] ? "Guardar" : "Editar"}
+                  {modoEdicion[plato.nombre] ? 'Guardar' : 'Editar'}
                 </Button>
               </Table.Cell>
             </Table.Row>
@@ -181,20 +173,20 @@ interface PlatoReceta {
 
 const menuData = {
   entrada: [
-    { id: 1, name: "Bruschetta" },
-    { id: 2, name: "Ensalada César" },
+    { id: 1, name: 'Bruschetta' },
+    { id: 2, name: 'Ensalada César' },
   ],
   platoFuerte: [
-    { id: 3, name: "Bife de Chorizo" },
-    { id: 4, name: "Pasta Alfredo" },
+    { id: 3, name: 'Bife de Chorizo' },
+    { id: 4, name: 'Pasta Alfredo' },
   ],
   postres: [
-    { id: 5, name: "Tiramisú" },
-    { id: 6, name: "Cheesecake" },
+    { id: 5, name: 'Tiramisú' },
+    { id: 6, name: 'Cheesecake' },
   ],
   bebidas: [
-    { id: 7, name: "Jugo de Naranja" },
-    { id: 8, name: "Café Espresso" },
+    { id: 7, name: 'Jugo de Naranja' },
+    { id: 8, name: 'Café Espresso' },
   ],
 };
 

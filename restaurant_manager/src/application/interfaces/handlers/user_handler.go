@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 	"restaurant_manager/src/application/services"
+	"restaurant_manager/src/application/utils"
 	"restaurant_manager/src/domain/models"
+
+	"github.com/rs/zerolog/log"
 )
 
 type UserHandler struct {
@@ -17,11 +20,17 @@ func NewUserHandler(service *services.UserService) *UserHandler {
 
 // RegisterUser handles user registration
 func (h *UserHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
-	var user models.User
-	json.NewDecoder(r.Body).Decode(&user)
 
-	userID, err := h.service.RegisterUser(&user)
+	var user models.User
+	err := json.NewDecoder(r.Body).Decode(&user)
+	user.Role = "admin"
 	if err != nil {
+		log.Err(err)
+	}
+	userID, err := h.service.RegisterUser(&user)
+	log.Info().Msg(userID)
+	if err != nil {
+		log.Err(err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -44,7 +53,12 @@ func (h *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
 	}
-
+	token, err := utils.GenerateJWT(user.UserID)
+	if err != nil {
+		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Login successful", "user_id": user.UserID})
+	json.NewEncoder(w).Encode(map[string]string{"token": token, "role": user.Role})
 }
