@@ -29,8 +29,9 @@ CREATE TABLE servu.users (
 CREATE TABLE servu.restaurants (
                                    restaurant_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
                                    name VARCHAR(255) NOT NULL,
+                                   description TEXT,
+                                   image_url TEXT,
                                    owner_id UUID REFERENCES servu.users(user_id) ON DELETE SET NULL,
-                                   address TEXT,
                                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -42,21 +43,15 @@ CREATE TABLE servu.restaurant_tables (
                                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE servu.menus (
-                             menu_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                             restaurant_id UUID REFERENCES servu.restaurants(restaurant_id) ON DELETE CASCADE,
-                             name VARCHAR(255) NOT NULL,
-                             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
 
 CREATE TABLE servu.menu_items (
                                   menu_item_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                                  menu_id UUID REFERENCES servu.menus(menu_id) ON DELETE CASCADE,
+                                  restaurant_id UUID REFERENCES servu.restaurants(restaurant_id) ON DELETE CASCADE,
                                   name VARCHAR(255) NOT NULL,
                                   description TEXT,
                                   price DECIMAL(10,2) NOT NULL,
                                   available BOOLEAN DEFAULT TRUE,
-                                  category VARCHAR(50),
+                                  category VARCHAR(20) CHECK (category IN ('Appetizer', 'Dessert', 'Main','Soup','Salad','Drinks')) NOT NULL,
                                   image_url TEXT
 );
 
