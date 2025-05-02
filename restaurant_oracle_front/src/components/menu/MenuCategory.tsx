@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Grid, GridItem, Image, Text, Accordion, AbsoluteCenter } from '@chakra-ui/react';
 import { MenuItemResponse } from '../../interfaces/menuItems';
-import MenuItem from './MenuItem';
+import MenuItem from './MenuItemWaiter';
 import MenuForm from './MenuForm';
 
 interface MenuCategoryProps {
@@ -14,6 +14,7 @@ interface MenuCategoryProps {
   onAddToCart: (item: MenuItemResponse, quantity: number, observation: string) => void;
   orderPlaced: boolean;
   platoDisponible: (platoName: string) => boolean;
+
 }
 
 const MenuCategory: React.FC<MenuCategoryProps> = ({
