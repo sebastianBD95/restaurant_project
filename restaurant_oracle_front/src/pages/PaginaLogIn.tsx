@@ -34,7 +34,12 @@ const LoginForm: React.FC = () => {
 
       console.log(getCookie('role'));
       console.log(getCookie('token'));
-      navigate('/restaurantes');
+      if(data.role == "admin"){
+        navigate('/restaurantes');
+      }else if(data.role == "waiter"){
+        navigate(`/menu/${data.restaurant_id}`);
+      }
+      
     } catch (error: any) {
       setError(error.message);
       navigate('/');

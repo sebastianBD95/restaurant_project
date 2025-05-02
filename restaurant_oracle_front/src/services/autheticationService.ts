@@ -7,6 +7,7 @@ const API_URL = 'http://localhost:8080';
 interface AuthResponse {
   token?: string;
   role?: string;
+  restaurant_id?: string;
 }
 
 export const registerUser = async (formData: UserData): Promise<AuthResponse> => {

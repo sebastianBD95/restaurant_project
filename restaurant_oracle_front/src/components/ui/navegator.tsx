@@ -2,7 +2,8 @@ import React from 'react';
 import { Box, Button, Text, VStack, Icon } from '@chakra-ui/react';
 import { Link, useParams } from 'react-router-dom';
 import { FiChevronLeft, FiChevronRight, FiHome, FiMenu, FiShoppingCart, FiBarChart2, FiToggleLeft } from 'react-icons/fi';
-import { MdOutlineInventory2, MdRestaurantMenu, MdPayment } from 'react-icons/md';
+import { MdOutlineInventory2, MdRestaurantMenu, MdPayment ,MdAccountCircle } from 'react-icons/md';
+import { isWaiter } from '../../pages/utils/roleUtils';
 
 interface SidebarProps {
   isSidebarOpen: boolean;
@@ -12,8 +13,12 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar, restaurantId }) => {
   // If restaurantId is not provided as a prop, try to get it from URL params
+ 
   const params = useParams();
   const currentRestaurantId = restaurantId || params.restaurantId;
+  if (isWaiter()) {
+    return null;
+  } 
 
   return (
     <Box
@@ -59,6 +64,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar, 
             <Link to={currentRestaurantId ? `/pagos/${currentRestaurantId}` : "/pagos"} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
               <Icon as={MdPayment} />
               Pagos
+            </Link>
+            <Link to={currentRestaurantId ? `/usuarios/${currentRestaurantId}` : "/usuarios"} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
+              <Icon as={MdAccountCircle} />
+              Meseros
             </Link>
             <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
               <Icon as={FiToggleLeft} />

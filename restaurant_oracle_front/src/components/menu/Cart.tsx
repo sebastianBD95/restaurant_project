@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Text, Button, NativeSelect, Textarea } from '@chakra-ui/react';
 import { StepperInput } from '../ui/stepper-input';
 import { MenuItemResponse } from '../../interfaces/menuItems';
+import { isWaiter } from '../../pages/utils/roleUtils';
 
 interface CartItem {
   id: string;
@@ -33,6 +34,10 @@ const Cart: React.FC<CartProps> = ({
   placeOrder
 }) => {
   const totalCost = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+
+  if (!isWaiter()) {
+    return null;
+  }
 
   return (
     <Box mt={6} p={4} bg="white" borderRadius="md" boxShadow="md">

@@ -1,18 +1,19 @@
 import React from 'react';
 import RestaurantPage from './pages/RestaurantPage';
-import MenuPage from './pages/MenuPage';
+import MenuPage from './pages/admin/MenuPage';
 import LogIn from './pages/PaginaLogIn';
 import PaginaRegistro from './pages/PaginaRegistro';
-import Ordenes from './pages/PaginaOrdenes';
-import Historial from './pages/PaginaHistorial';
+import Ordenes from './pages/admin/PaginaOrdenes';
+import Historial from './pages/admin/PaginaHistorial';
 import DashboardDO from './components/dashboards/DailyOrders';
 import DashboardDR from './components/dashboards/DailyRevenue';
 import TrendingMenu from './components/dashboards/TrendingMenu';
-import Dashboard from './pages/Dashboard';
+import Dashboard from './pages/admin/DashboardPage';
 import RestaurantLayout from './RestaurantLayout';
 import Inventario from './Inventario';
 import PaginaReceta from './Receta';
 import PaginaPagos from './pages/pagos';
+import WaiterUserPage from './pages/admin/WaiterUserPage';
 import './App.css';
 
 import {
@@ -48,6 +49,7 @@ function App() {
             <Route path="/receta/:restaurantId" element={<PaginaReceta />} />
             <Route path="/pagos" element={<PaginaPagos />} />
             <Route path="/pagos/:restaurantId" element={<PaginaPagos />} />
+            <Route path="/usuarios/:restaurantId" element={<WaiterUserPage />} />
           </Routes>
         </Box>
       </Router>

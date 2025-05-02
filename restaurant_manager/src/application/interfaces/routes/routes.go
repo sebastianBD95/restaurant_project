@@ -49,6 +49,7 @@ func SetupRoutes(userHandler *handlers.UserHandler, restaurantHandler *handlers.
 
 	r.HandleFunc("/register", userHandler.RegisterUser).Methods("POST", "OPTIONS")
 	r.HandleFunc("/login", userHandler.LoginUser).Methods("POST", "OPTIONS")
+	r.HandleFunc("/users", userHandler.GetUsersByRestaurantID).Methods("GET", "OPTIONS")
 	r.HandleFunc("/restaurants", restaurantHandler.CreateRestaurant).Methods("POST", "OPTIONS")
 	r.HandleFunc("/restaurants", restaurantHandler.GetAllRestaurant).Methods("GET", "OPTIONS")
 	r.HandleFunc("/restaurants/{restaurant_id}", restaurantHandler.UpdateRestaurant).Methods("PUT")

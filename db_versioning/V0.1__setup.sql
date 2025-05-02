@@ -19,9 +19,9 @@ CREATE TABLE servu.users (
                              name VARCHAR(100),
                              email VARCHAR(100) UNIQUE NOT NULL,
                              password_hash TEXT NOT NULL,
-                             id_number VARCHAR(100) UNIQUE NOT NULL,
+                             id_number VARCHAR(100) UNIQUE DEFAULT NULL,
                              phone VARCHAR(100) UNIQUE NOT NULL,
-                             nit_number VARCHAR(100) UNIQUE NOT NULL,
+                             nit_number VARCHAR(100) UNIQUE DEFAULT NULL,
                              role VARCHAR(20) CHECK (role IN ('admin', 'waiter', 'customer')) NOT NULL,
                              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -80,3 +80,12 @@ CREATE TABLE servu.payments (
                                 transaction_id TEXT,
                                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE servu.users
+ADD COLUMN restaurant_id UUID;
+
+ALTER TABLE servu.users
+ADD CONSTRAINT fk_users_restaurant
+FOREIGN KEY (restaurant_id)
+REFERENCES servu.restaurants(restaurant_id)
+ON DELETE SET NULL;
