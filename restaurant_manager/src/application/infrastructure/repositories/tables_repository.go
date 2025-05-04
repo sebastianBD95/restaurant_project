@@ -1,9 +1,10 @@
 package repositories
 
 import (
-	"github.com/jmoiron/sqlx"
 	"restaurant_manager/src/domain/models"
 	"restaurant_manager/src/domain/repositories"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type TableRepositoryImpl struct {
@@ -32,6 +33,17 @@ func (repo *TableRepositoryImpl) GetTable(tableID string) (*models.Table, error)
 		return nil, err
 	}
 	return &table, nil
+}
+
+// Get tables by restaurant ID
+func (repo *TableRepositoryImpl) GetTablesByRestaurantId(restaurantID string) ([]models.Table, error) {
+	var tables []models.Table
+	query := `SELECT * FROM servu.restaurant_tables WHERE restaurant_id = $1`
+	err := repo.db.Select(&tables, query, restaurantID)
+	if err != nil {
+		return nil, err
+	}
+	return tables, nil
 }
 
 // Update table details

@@ -28,6 +28,10 @@ func (service *OrderService) GetOrder(orderID string) (*models.Order, error) {
 	return service.repo.GetOrder(orderID)
 }
 
+func (service *OrderService) GetOrderByRestaurantID(restaurantID string) ([]models.Order, []models.OrderItem, error) {
+	return service.repo.GetOrderByRestaurantID(restaurantID)
+}
+
 func (s *OrderService) AddOrderItem(orderItem *models.OrderItem) (string, error) {
 	return s.repo.AddOrderItem(orderItem)
 }

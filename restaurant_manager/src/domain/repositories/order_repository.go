@@ -7,6 +7,7 @@ type OrderRepository interface {
 	DeleteOrder(orderID string) error
 	UpdateOrder(order *models.Order) error
 	GetOrder(orderID string) (*models.Order, error)
+	GetOrderByRestaurantID(restaurantID string) ([]models.Order, []models.OrderItem, error)
 	AddOrderItem(orderItem *models.OrderItem) (string, error)
 	UpdateOrderItem(orderItem *models.OrderItem) error
 	DeleteOrderItem(orderItemID string) error

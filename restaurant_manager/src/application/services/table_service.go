@@ -28,3 +28,7 @@ func (s *TableService) UpdateTable(table *models.Table) error {
 func (s *TableService) DeleteTable(tableID string) error {
 	return s.repo.DeleteTable(tableID)
 }
+
+func (s *TableService) GetTablesByRestaurantId(restaurantID string) ([]models.Table, error) {
+	return s.repo.GetTablesByRestaurantId(restaurantID)
+}
