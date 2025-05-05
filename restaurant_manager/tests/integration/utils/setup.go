@@ -1,8 +1,6 @@
 package utils
 
 import (
-	"github.com/gorilla/mux"
-	"github.com/jmoiron/sqlx"
 	"net/http"
 	"net/http/httptest"
 	"restaurant_manager/src/application/infrastructure/repositories"
@@ -10,13 +8,16 @@ import (
 	"restaurant_manager/src/application/interfaces/routes"
 	"restaurant_manager/src/application/services"
 	"testing"
+
+	"github.com/gorilla/mux"
+	"gorm.io/gorm"
 )
 
 type mockImpl struct {
-	db *sqlx.DB
+	db *gorm.DB
 }
 
-func NewMock(db *sqlx.DB) *mockImpl {
+func NewMock(db *gorm.DB) *mockImpl {
 	return &mockImpl{db: db}
 }
 

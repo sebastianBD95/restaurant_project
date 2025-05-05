@@ -28,7 +28,7 @@ func (service *OrderService) GetOrder(orderID string) (*models.Order, error) {
 	return service.repo.GetOrder(orderID)
 }
 
-func (service *OrderService) GetOrderByRestaurantID(restaurantID string) ([]models.Order, []models.OrderItem, error) {
+func (service *OrderService) GetOrderByRestaurantID(restaurantID string) ([]models.Order, error) {
 	return service.repo.GetOrderByRestaurantID(restaurantID)
 }
 

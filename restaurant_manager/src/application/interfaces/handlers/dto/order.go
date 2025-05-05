@@ -5,6 +5,7 @@ import "restaurant_manager/src/domain/models"
 type OrderDTO struct {
 	OrderID      string         `json:"order_id"`
 	TableID      string         `json:"table_id"`
+	Table        int            `json:"table"`
 	RestaurantID string         `json:"restaurant_id"`
 	Items        []OrderItemDTO `json:"items"`
 	Status       string         `json:"status"`
@@ -13,6 +14,7 @@ type OrderDTO struct {
 
 type OrderItemDTO struct {
 	MenuItemID  string  `json:"menu_item_id"`
+	Name        string  `json:"name"`
 	Quantity    int     `json:"quantity"`
 	Price       float64 `json:"price"`
 	Observation string  `json:"observation"`
@@ -25,28 +27,32 @@ func safeString(s *string) string {
 	return *s
 }
 
-func FromOrders(orders []models.Order, orderItems []models.OrderItem) []OrderDTO {
+func FromOrders(orders []models.Order) []OrderDTO {
 	orderDTOs := make([]OrderDTO, len(orders))
 	for i, order := range orders {
-		var items []OrderItemDTO
-		for _, item := range orderItems {
-			if item.OrderID == order.OrderID {
-				items = append(items, OrderItemDTO{
-					MenuItemID:  item.MenuItemID,
-					Quantity:    item.Quantity,
-					Price:       item.Price,
-					Observation: safeString(item.Observation),
-				})
-			}
-		}
 		orderDTOs[i] = OrderDTO{
 			OrderID:      order.OrderID,
-			TableID:      order.TableID,
+			TableID:      order.Table.TableID,
+			Table:        order.Table.TableNumber,
 			RestaurantID: order.RestaurantID,
-			Items:        items,
 			Status:       string(order.Status),
 			TotalPrice:   order.TotalPrice,
+			Items:        FromOrderItems(order.OrderItems),
 		}
 	}
 	return orderDTOs
+}
+
+func FromOrderItems(orderItems []models.OrderItem) []OrderItemDTO {
+	orderItemDTOs := make([]OrderItemDTO, len(orderItems))
+	for i, orderItem := range orderItems {
+		orderItemDTOs[i] = OrderItemDTO{
+			MenuItemID:  orderItem.MenuItemID,
+			Name:        orderItem.MenuItem.Name,
+			Quantity:    orderItem.Quantity,
+			Price:       orderItem.Price,
+			Observation: safeString(orderItem.Observation),
+		}
+	}
+	return orderItemDTOs
 }

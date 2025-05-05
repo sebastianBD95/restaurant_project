@@ -1,25 +1,14 @@
 package models
 
-import "time"
-
-type Menu struct {
-	MenuID       string    `db:"menu_id" json:"menu_id"`
-	RestaurantID string    `db:"restaurant_id" json:"restaurant_id"`
-	Name         string    `db:"name" json:"name"`
-	Description  string    `db:"description" json:"description"`
-	CreatedAt    time.Time `db:"created_at" json:"created_at"`
-}
-
 type MenuItem struct {
-	MenuItemID   string    `db:"menu_item_id" json:"menu_item_id"`
-	RestaurantID string    `db:"restaurant_id" json:"restaurant_id"`
-	Name         string    `db:"name" json:"name"`
-	Description  string    `db:"description" json:"description"`
-	Price        float64   `db:"price" json:"price"`
-	Available    bool      `db:"available" json:"available"`
-	ImageURL     string    `db:"image_url" json:"image_url"`
-	CreatedAt    time.Time `db:"created_at" json:"created_at"`
-	Category     Category  `db:"category" json:"category"`
+	MenuItemID   string   `gorm:"primaryKey;column:menu_item_id" json:"menu_item_id"`
+	RestaurantID string   `gorm:"column:restaurant_id" json:"restaurant_id"`
+	Name         string   `gorm:"column:name" json:"name"`
+	Description  string   `gorm:"column:description" json:"description"`
+	Price        float64  `gorm:"column:price" json:"price"`
+	Available    bool     `gorm:"column:available" json:"available"`
+	ImageURL     string   `gorm:"column:image_url" json:"image_url"`
+	Category     Category `gorm:"column:category" json:"category"`
 }
 
 type Category string

@@ -30,16 +30,11 @@ func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	orderID, err := h.service.CreateOrder(&order)
 	for _, item := range orderDto.Items {
 		orderItem := models.OrderItem{
-			OrderID:    orderID,
-			MenuItemID: item.MenuItemID,
-			Quantity:   item.Quantity,
-			Price:      item.Price,
-			Observation: func() *string {
-				if item.Observation != "" {
-					return &item.Observation
-				}
-				return nil
-			}(),
+			OrderID:     orderID,
+			MenuItemID:  item.MenuItemID,
+			Quantity:    item.Quantity,
+			Price:       item.Price,
+			Observation: &item.Observation,
 		}
 		_, err := h.service.AddOrderItem(&orderItem)
 		if err != nil {
@@ -97,12 +92,12 @@ func (h *OrderHandler) GetOrder(w http.ResponseWriter, r *http.Request) {
 func (h *OrderHandler) GetOrderByRestaurantID(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
 	restaurantID := queryParams.Get("restaurant_id")
-	orders, orderItems, err := h.service.GetOrderByRestaurantID(restaurantID)
-	orderDTOs := dto.FromOrders(orders, orderItems)
+	orders, err := h.service.GetOrderByRestaurantID(restaurantID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
+	orderDTOs := dto.FromOrders(orders)
 	json.NewEncoder(w).Encode(orderDTOs)
 }
 

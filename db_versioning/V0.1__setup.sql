@@ -44,7 +44,7 @@ CREATE TABLE servu.restaurants (
 CREATE INDEX idx_restaurants_name ON servu.restaurants(name);
 CREATE INDEX idx_restaurants_owner_id ON servu.restaurants(owner_id);
 
-CREATE TABLE servu.restaurant_tables (
+CREATE TABLE servu.tables (
                                          table_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
                                          restaurant_id UUID REFERENCES servu.restaurants(restaurant_id) ON DELETE CASCADE,
                                          table_number INT NOT NULL,
@@ -52,10 +52,10 @@ CREATE TABLE servu.restaurant_tables (
                                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Indexes for restaurant_tables table
-CREATE INDEX idx_restaurant_tables_restaurant_id ON servu.restaurant_tables(restaurant_id);
-CREATE INDEX idx_restaurant_tables_table_number ON servu.restaurant_tables(table_number);
-CREATE INDEX idx_restaurant_tables_qr_code ON servu.restaurant_tables(qr_code);
+-- Indexes for tables table
+CREATE INDEX idx_tables_restaurant_id ON servu.tables(restaurant_id);
+CREATE INDEX idx_tables_table_number ON servu.tables(table_number);
+CREATE INDEX idx_tables_qr_code ON servu.tables(qr_code);
 
 CREATE TABLE servu.menu_items (
                                   menu_item_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -76,7 +76,7 @@ CREATE INDEX idx_menu_items_available ON servu.menu_items(available);
 
 CREATE TABLE servu.orders (
                               order_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                              table_id UUID REFERENCES servu.restaurant_tables(table_id) ON DELETE CASCADE,
+                              table_id UUID REFERENCES servu.tables(table_id) ON DELETE CASCADE,
                               restaurant_id UUID REFERENCES servu.restaurants(restaurant_id) ON DELETE CASCADE,
                               status VARCHAR(20) CHECK (status IN ('ordered', 'delivered', 'payed', 'cancelled')) DEFAULT 'ordered',
                               total_price DECIMAL(10,2) DEFAULT 0.0,
@@ -95,6 +95,7 @@ CREATE TABLE servu.order_items (
                                    menu_item_id UUID REFERENCES servu.menu_items(menu_item_id) ON DELETE CASCADE,
                                    quantity INT CHECK (quantity > 0),
                                    price DECIMAL(10,2) NOT NULL, -- Price at the time of order
+                                   observation TEXT,
                                    PRIMARY KEY (order_id, menu_item_id)
 );
 
