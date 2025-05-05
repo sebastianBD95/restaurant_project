@@ -7,6 +7,7 @@ import TableDistribution from '../../components/orders/TableComponent';
 import { Sidebar } from '../../components/ui/navegator';
 import { useSidebar } from '../../hooks/useSidebar';
 import { getOrdersByRestaurant, updateOrderStatus as updateOrderStatusService } from '../../services/orderService';
+import OrderCard from '../../components/orders/OrderCard';
 
 const statusMap: Record<string, string> = {
   'ordered': 'Pedido',
@@ -101,40 +102,15 @@ const Ordenes: React.FC = () => {
                 <VStack align="stretch" gap={4}>
                   {orders
                     .filter(order => order.status !== 'payed' && order.status !== 'canceled')
-                    .map((order) => (
-                    <Box key={order.order_id} bg="white" p={{ base: 2, md: 4 }} borderRadius="md" boxShadow="md">
-                      <Heading size="md">Mesa {order.table}</Heading>
-                      <Text fontSize="sm" color="gray.500">
-                        Total: ${order.total_price}
-                      </Text>
-                      {order.items.map((item, idx) => (
-                        <Text key={idx}>
-                          {item.quantity}x {item.name} - ${item.price * item.quantity}
-                          {item.observation && ` - ${item.observation}`}
-                        </Text>
-                      ))}
-                      <Text fontSize="md" fontWeight="bold" mt={3} color="purple.600">
-                        Estado: {statusMap[order.status] || order.status}
-                      </Text>
-
-                      {order.status !== 'delivered' && (
-                        <Button
-                          mt={2}
-                          colorScheme="blue"
-                          size="sm"
-                          onClick={() => updateOrderStatus(order.order_id, 'delivered')}
-                        >
-                          Marcar como Entregado
-                        </Button>
-                      )}
-
-                      {order.status === 'delivered' && (
-                        <Button mt={2} colorScheme="green" size="sm" onClick={() => updateOrderStatus(order.order_id, 'payed' )}>
-                          Marcar como Pagado
-                        </Button>
-                      )}
-                    </Box>
-                  ))}
+                    .map(order => (
+                      <OrderCard
+                        key={order.order_id}
+                        order={order}
+                        onDeliver={orderId => updateOrderStatus(orderId, 'delivered')}
+                        onPay={orderId => updateOrderStatus(orderId, 'payed')}
+                        highlight={order.status === 'delivered'}
+                      />
+                    ))}
                 </VStack>
               )}
             </Box>

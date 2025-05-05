@@ -6,15 +6,28 @@ import (
 )
 
 type OrderService struct {
-	repo repositories.OrderRepository
+	repo         repositories.OrderRepository
+	tableService *TableService
 }
 
-func NewOrderService(repo repositories.OrderRepository) *OrderService {
-	return &OrderService{repo}
+func NewOrderService(repo repositories.OrderRepository, tableService *TableService) *OrderService {
+	return &OrderService{repo, tableService}
 }
 
 func (service *OrderService) CreateOrder(order *models.Order) (string, error) {
-	return service.repo.CreateOrder(order)
+	table := models.Table{
+		TableID: order.TableID,
+		Status:  models.TableStatus(order.Table.Status),
+	}
+	err := service.tableService.UpdateTable(&table)
+	if err != nil {
+		return "", err
+	}
+	orderId, err := service.repo.CreateOrder(order)
+	if err != nil {
+		return "", err
+	}
+	return orderId, nil
 }
 
 func (service *OrderService) DeleteOrder(orderID string) error {

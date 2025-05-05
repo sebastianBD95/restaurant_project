@@ -48,7 +48,8 @@ CREATE TABLE servu.tables (
                                          table_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
                                          restaurant_id UUID REFERENCES servu.restaurants(restaurant_id) ON DELETE CASCADE,
                                          table_number INT NOT NULL,
-                                         qr_code TEXT UNIQUE NOT NULL, -- QR Code stores table-specific URL or identifier
+                                         qr_code TEXT UNIQUE NOT NULL, 
+                                         status VARCHAR(20) CHECK (status IN ('available', 'occupied', 'reserved')) DEFAULT 'available',
                                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
