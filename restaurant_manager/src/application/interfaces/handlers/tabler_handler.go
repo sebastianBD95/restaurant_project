@@ -40,6 +40,17 @@ func (h *TableHandler) GetTable(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(table)
 }
 
+func (h *TableHandler) GetTablesByRestaurantId(w http.ResponseWriter, r *http.Request) {
+	queryParams := r.URL.Query()
+	restaurantID := queryParams.Get("restaurant_id")
+	table, err := h.service.GetTablesByRestaurantId(restaurantID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	json.NewEncoder(w).Encode(table)
+}
+
 // Update table
 func (h *TableHandler) UpdateTable(w http.ResponseWriter, r *http.Request) {
 	var table models.Table

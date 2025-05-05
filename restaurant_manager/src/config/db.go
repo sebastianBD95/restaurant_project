@@ -4,15 +4,20 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
-var DB *sqlx.DB
+var DB *gorm.DB
 
 func ConnectDB(cfg *Properties) {
 	var err error
-	DB, err = sqlx.Connect("postgres", cfg.RestaurantManager.Database)
+	DB, err = gorm.Open(postgres.Open(cfg.RestaurantManager.Database), &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix: "servu.",
+		},
+	})
 	if err != nil {
 		log.Fatalf("Error connecting to database: %v", err)
 	}

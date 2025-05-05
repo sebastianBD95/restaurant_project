@@ -22,7 +22,6 @@ func FromUsertoUserResponse(u *models.User) UserResponse {
 		Role:         u.Role,
 		IdNumber:     u.IdNumber,
 		Phone:        u.Phone,
-		CompanyName:  u.CompanyName,
 		RestaurantId: u.RestaurantId,
 		NitNumber:    u.NitNumber,
 	}

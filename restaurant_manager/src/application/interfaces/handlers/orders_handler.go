@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/gorilla/mux"
 	"net/http"
+	"restaurant_manager/src/application/interfaces/handlers/dto"
 	"restaurant_manager/src/application/services"
 	"restaurant_manager/src/domain/models"
+
+	"github.com/gorilla/mux"
 )
 
 type OrderHandler struct {
@@ -17,9 +19,29 @@ func NewOrderHandler(service *services.OrderService) *OrderHandler {
 }
 
 func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
-	var order *models.Order
-	json.NewDecoder(r.Body).Decode(&order)
-	orderID, err := h.service.CreateOrder(order)
+	var orderDto *dto.OrderDTO
+	json.NewDecoder(r.Body).Decode(&orderDto)
+	order := models.Order{
+		TableID:      orderDto.TableID,
+		RestaurantID: orderDto.RestaurantID,
+		Status:       models.OrderStatus(orderDto.Status),
+		TotalPrice:   orderDto.TotalPrice,
+	}
+	orderID, err := h.service.CreateOrder(&order)
+	for _, item := range orderDto.Items {
+		orderItem := models.OrderItem{
+			OrderID:     orderID,
+			MenuItemID:  item.MenuItemID,
+			Quantity:    item.Quantity,
+			Price:       item.Price,
+			Observation: &item.Observation,
+		}
+		_, err := h.service.AddOrderItem(&orderItem)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -40,13 +62,16 @@ func (h *OrderHandler) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *OrderHandler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
-	var orderID string
-	vars := mux.Vars(r)
-	orderID = vars["orders_id"]
-	var order *models.Order
-	json.NewDecoder(r.Body).Decode(&order)
-	order.OrderID = orderID
-	err := h.service.UpdateOrder(order)
+	var orderDto *dto.OrderDTO
+	json.NewDecoder(r.Body).Decode(&orderDto)
+	order := models.Order{
+		OrderID:      orderDto.OrderID,
+		TableID:      orderDto.TableID,
+		RestaurantID: orderDto.RestaurantID,
+		Status:       models.OrderStatus(orderDto.Status),
+		TotalPrice:   orderDto.TotalPrice,
+	}
+	err := h.service.UpdateOrder(&order)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -67,6 +92,18 @@ func (h *OrderHandler) GetOrder(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(order)
 }
 
+func (h *OrderHandler) GetOrderByRestaurantID(w http.ResponseWriter, r *http.Request) {
+	queryParams := r.URL.Query()
+	restaurantID := queryParams.Get("restaurant_id")
+	orders, err := h.service.GetOrderByRestaurantID(restaurantID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	orderDTOs := dto.FromOrders(orders)
+	json.NewEncoder(w).Encode(orderDTOs)
+}
+
 func (h *OrderHandler) AddOrderItem(w http.ResponseWriter, r *http.Request) {
 	var orderItem models.OrderItem
 	json.NewDecoder(r.Body).Decode(&orderItem)
@@ -75,7 +112,7 @@ func (h *OrderHandler) AddOrderItem(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(map[string]string{"order_item_id": orderItemID})
+	json.NewEncoder(w).Encode(map[string]string{"order_id": orderItemID})
 }
 
 // Update an order item
@@ -92,7 +129,7 @@ func (h *OrderHandler) UpdateOrderItem(w http.ResponseWriter, r *http.Request) {
 
 // Delete an order item
 func (h *OrderHandler) DeleteOrderItem(w http.ResponseWriter, r *http.Request) {
-	orderItemID := mux.Vars(r)["order_item_id"]
+	orderItemID := mux.Vars(r)["order_id"]
 	err := h.service.DeleteOrderItem(orderItemID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

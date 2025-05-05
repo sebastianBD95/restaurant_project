@@ -57,7 +57,7 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
           {items.length > 0 && 
             items.map((item: MenuItemResponse) => (
               <MenuItem
-                key={item.id}
+                key={item.menu_item_id}
                 item={item}
                 onAdd={onAddToCart}
                 orderPlaced={orderPlaced}

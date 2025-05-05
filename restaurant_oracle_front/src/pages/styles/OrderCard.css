@@ -1,0 +1,10 @@
+.card {
+  margin-bottom: 1rem;
+  transition: box-shadow 0.2s;
+}
+.card:hover {
+  box-shadow: 0 0 0 2px #38a169;
+}
+.status {
+  color: #805ad5;
+} 

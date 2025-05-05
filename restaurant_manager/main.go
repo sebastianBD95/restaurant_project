@@ -17,7 +17,6 @@ func main() {
 	cfg := config.LoadConfig()
 	config.ConnectDB(cfg)
 	utils.SetJWT(cfg)
-	defer config.DB.Close()
 	aws3 := ports.InitS3(cfg)
 
 	userRepo := repositories.NewUserRepository(config.DB)
@@ -29,8 +28,8 @@ func main() {
 	userService := services.NewUserService(userRepo)
 	restaurantService := services.NewRestaurantService(restaurantRepo, &aws3)
 	menuService := services.NewMenuService(menuRepo, &aws3)
-	orderService := services.NewOrderService(orderRepo)
 	tableService := services.NewTableService(tableRepo)
+	orderService := services.NewOrderService(orderRepo, tableService)
 
 	userHandler := handlers.NewUserHandler(userService)
 	restaurantHandler := handlers.NewRestaurantHandler(restaurantService)

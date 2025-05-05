@@ -34,6 +34,7 @@ import { Sidebar } from '../../components/ui/navegator';
 import { useSidebar } from '../../hooks/useSidebar';
 import MenuCategory from '../../components/menu/MenuCategory';
 import Cart from '../../components/menu/Cart';
+import { placeOrder as placeOrderService } from '../../services/orderService';
 
 const formSchema = z.object({
   quantity: z.string({ message: 'Debe seleccionar una cantidad válida.' }),
@@ -72,7 +73,7 @@ const MenuPage: React.FC = () => {
   const [error, setError] = useState('');
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
   const dialogRef = useRef<HTMLButtonElement>(null);
-  const { isSidebarOpen, toggleSidebar } = useSidebar();
+  const { isSidebarOpen, toggleSidebar, handleHomeClick } = useSidebar();
 
   const navigate = useNavigate();
 
@@ -173,7 +174,7 @@ const MenuPage: React.FC = () => {
   const addToCart = (item: MenuItemResponse, quantity: number, observation: string) => {
     if (quantity > 0) {
       setCart((prevCart) => {
-        const existingItemIndex = prevCart.findIndex((cartItem) => cartItem.id === item.id);
+        const existingItemIndex = prevCart.findIndex((cartItem) => cartItem.menu_item_id === item.menu_item_id);
         if (existingItemIndex !== -1) {
           prevCart[existingItemIndex].quantity += quantity;
           prevCart[existingItemIndex].observation += ` | ${observation}`;
@@ -195,7 +196,7 @@ const MenuPage: React.FC = () => {
     }
   };
 
-  const placeOrder = () => {
+  const placeOrder = async () => {
     if (!tableNumber.trim()) {
       alert('Por favor, selecciona un número de mesa antes de ordenar.');
       return;
@@ -206,19 +207,29 @@ const MenuPage: React.FC = () => {
       return;
     }
 
-    const storedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-    const newOrder = {
-      table: tableNumber,
-      items: cart,
-      observations,
-      timestamp: new Date().toLocaleString(),
-    };
-
-    localStorage.setItem('orders', JSON.stringify([...storedOrders, newOrder]));
-    setCart([]);
-    setObservations('');
-    setOrderPlaced(true);
-    alert(`Pedido realizado con éxito en la mesa ${tableNumber}.`);
+    try {
+      const orderData = {
+        table_id: tableNumber,
+        restaurant_id: restaurantId,
+        status: 'ordered',
+        items: cart.map(item => ({
+          menu_item_id: item.menu_item_id,
+          quantity: item.quantity,
+          observation: item.observation,
+          price: item.price
+        })),
+        total_price: totalCost
+      };
+      console.log(orderData);
+      await placeOrderService(orderData);
+      setCart([]);
+      setObservations('');
+      setOrderPlaced(true);
+      alert(`Pedido realizado con éxito en la mesa ${tableNumber}.`);
+    } catch (error) {
+      console.error('Error placing order:', error);
+      alert('Error al realizar el pedido. Por favor, intente nuevamente.');
+    }
   };
 
   const totalCost = cart.reduce((total, item) => total + item.price * item.quantity, 0);

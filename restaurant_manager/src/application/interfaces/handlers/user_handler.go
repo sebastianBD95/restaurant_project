@@ -94,7 +94,11 @@ func (h *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 
 // GetUsersByRestaurantID handles retrieving users by restaurant ID
 func (h *UserHandler) GetUsersByRestaurantID(w http.ResponseWriter, r *http.Request) {
-	_ = utils.TokenVerification(r, w)
+	owner := utils.TokenVerification(r, w)
+	if owner == "" {
+		h.writeErrorResponse(w, http.StatusUnauthorized, "Invalid token")
+		return
+	}
 	restaurantID := r.URL.Query().Get("restaurantId")
 	role := r.URL.Query().Get("role")
 	if restaurantID == "" {

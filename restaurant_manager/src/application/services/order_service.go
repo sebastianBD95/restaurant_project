@@ -6,15 +6,30 @@ import (
 )
 
 type OrderService struct {
-	repo repositories.OrderRepository
+	repo         repositories.OrderRepository
+	tableService *TableService
 }
 
-func NewOrderService(repo repositories.OrderRepository) *OrderService {
-	return &OrderService{repo}
+func NewOrderService(repo repositories.OrderRepository, tableService *TableService) *OrderService {
+	return &OrderService{repo, tableService}
 }
 
 func (service *OrderService) CreateOrder(order *models.Order) (string, error) {
-	return service.repo.CreateOrder(order)
+	// First create the order
+	orderId, err := service.repo.CreateOrder(order)
+	if err != nil {
+		return "", err
+	}
+
+	// Then update table status through a dedicated method
+	err = service.tableService.UpdateTableStatus(order.TableID, "occupied")
+	if err != nil {
+		// If table update fails, we should rollback the order creation
+		_ = service.repo.DeleteOrder(orderId)
+		return "", err
+	}
+
+	return orderId, nil
 }
 
 func (service *OrderService) DeleteOrder(orderID string) error {
@@ -26,6 +41,10 @@ func (service *OrderService) UpdateOrder(order *models.Order) error {
 
 func (service *OrderService) GetOrder(orderID string) (*models.Order, error) {
 	return service.repo.GetOrder(orderID)
+}
+
+func (service *OrderService) GetOrderByRestaurantID(restaurantID string) ([]models.Order, error) {
+	return service.repo.GetOrderByRestaurantID(restaurantID)
 }
 
 func (s *OrderService) AddOrderItem(orderItem *models.OrderItem) (string, error) {

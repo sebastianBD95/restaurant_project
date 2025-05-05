@@ -16,22 +16,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar, 
  
   const params = useParams();
   const currentRestaurantId = restaurantId || params.restaurantId;
-  if (isWaiter()) {
-    return null;
-  } 
 
   return (
     <Box
       bg="white"
       color="white"
       p={4}
-      width={isSidebarOpen ? '250px' : '60px'}
+      width={isSidebarOpen ? '200px' : '40px'}
       transition="width 0.3s"
     >
-      <Button onClick={toggleSidebar} mb={4} colorScheme="teal">
+      <Button onClick={toggleSidebar} mb={3} colorScheme="teal" width="100%">
         {isSidebarOpen ? <FiChevronLeft /> : <FiChevronRight />}
       </Button>
-      {isSidebarOpen && (
+      {isSidebarOpen && !isWaiter() && (
         <>
           <Text fontSize="2xl" fontWeight="bold" mb={6} color="black" textAlign="center">
             Restaurante
@@ -40,14 +37,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar, 
             <Link to="/restaurantes" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
               <Icon as={FiHome} />
               Inicio
-            </Link>
-            <Link to={currentRestaurantId ? `/menu/${currentRestaurantId}` : "/menu"} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
-              <Icon as={FiMenu} />
-              Menú
-            </Link>
-            <Link to={currentRestaurantId ? `/ordenes/${currentRestaurantId}` : "/ordenes"} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
-              <Icon as={FiShoppingCart} />
-              Pedidos
             </Link>
             <Link to={currentRestaurantId ? `/dashboard/${currentRestaurantId}` : "/dashboard"} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
               <Icon as={FiBarChart2} />
@@ -61,14 +50,47 @@ export const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar, 
               <Icon as={MdRestaurantMenu} />
               Recetas
             </Link>
-            <Link to={currentRestaurantId ? `/pagos/${currentRestaurantId}` : "/pagos"} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
-              <Icon as={MdPayment} />
-              Pagos
-            </Link>
             <Link to={currentRestaurantId ? `/usuarios/${currentRestaurantId}` : "/usuarios"} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
               <Icon as={MdAccountCircle} />
               Meseros
             </Link>
+            <Link to={currentRestaurantId ? `/menu/${currentRestaurantId}` : "/menu"} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
+              <Icon as={FiMenu} />
+              Menú
+            </Link>
+            <Link to={currentRestaurantId ? `/ordenes/${currentRestaurantId}` : "/ordenes"} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
+              <Icon as={FiShoppingCart} />
+              Pedidos
+            </Link>
+            <Link to={currentRestaurantId ? `/pagos/${currentRestaurantId}` : "/pagos"} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
+                <Icon as={MdPayment} />
+                Pagos
+            </Link>
+            <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
+              <Icon as={FiToggleLeft} />
+              Cerrar sesión
+            </Link>
+          </VStack>
+        </>
+      )}
+      {isWaiter() && isSidebarOpen && (
+        <>
+          <Text fontSize="2xl" fontWeight="bold" mb={6} color="black" textAlign="center">
+          Restaurante
+          </Text>
+          <VStack align="stretch">
+            <Link to={currentRestaurantId ? `/menu/${currentRestaurantId}` : "/menu"} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
+              <Icon as={FiMenu} />
+              Menú
+            </Link>
+            <Link to={currentRestaurantId ? `/ordenes/${currentRestaurantId}` : "/ordenes"} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
+              <Icon as={FiShoppingCart} />
+              Pedidos
+            </Link>
+            <Link to={currentRestaurantId ? `/pagos/${currentRestaurantId}` : "/pagos"} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
+                  <Icon as={MdPayment} />
+                  Pagos
+              </Link>
             <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
               <Icon as={FiToggleLeft} />
               Cerrar sesión

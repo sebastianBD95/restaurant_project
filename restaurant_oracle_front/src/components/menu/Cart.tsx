@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Text, Button, NativeSelect, Textarea } from '@chakra-ui/react';
 import { StepperInput } from '../ui/stepper-input';
 import { MenuItemResponse } from '../../interfaces/menuItems';
 import { isWaiter } from '../../pages/utils/roleUtils';
+import { getTables } from '../../services/tableService';
+import { useParams } from 'react-router-dom';
+import { Table } from '../../interfaces/table';
 
 interface CartItem {
   id: string;
@@ -20,7 +23,7 @@ interface CartProps {
   observations: string;
   setObservations: (value: string) => void;
   updateCartQuantity: (id: string, newQuantity: number) => void;
-  placeOrder: () => void;
+  placeOrder: () => Promise<void>;
 }
 
 const Cart: React.FC<CartProps> = ({
@@ -31,13 +34,28 @@ const Cart: React.FC<CartProps> = ({
   observations,
   setObservations,
   updateCartQuantity,
-  placeOrder
+  placeOrder,
 }) => {
+  const [tables, setTables] = useState<Table[]>([]);
+  const { restaurantId } = useParams();
   const totalCost = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+
+  useEffect(() => {
+    const fetchTables = async () => {
+      try {
+        const fetchedTables = await getTables(restaurantId!);
+        setTables(fetchedTables);
+      } catch (error) {
+        console.error('Error fetching tables:', error);
+      }
+    };
+    fetchTables();
+  }, [restaurantId]);
 
   if (!isWaiter()) {
     return null;
   }
+
 
   return (
     <Box mt={6} p={4} bg="white" borderRadius="md" boxShadow="md">
@@ -54,9 +72,9 @@ const Cart: React.FC<CartProps> = ({
           value={tableNumber}
           onChange={(e) => setTableNumber(e.target.value)}
         >
-          {Array.from({ length: 20 }, (_, i) => i + 1).map((table) => (
-            <option key={table} value={table}>
-              {table}
+          {tables.map((table) => (
+            <option key={table.table_id} value={table.table_id}>
+              {table.table_number}
             </option>
           ))}
         </NativeSelect.Field>
@@ -105,7 +123,7 @@ const Cart: React.FC<CartProps> = ({
         colorScheme="green"
         width="full"
         onClick={placeOrder}
-        disabled={cart.length === 0 || orderPlaced}
+        disabled={cart.length === 0 || orderPlaced || !tableNumber}
       >
         Ordenar
       </Button>

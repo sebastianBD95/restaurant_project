@@ -3,13 +3,13 @@ import RestaurantPage from './pages/RestaurantPage';
 import MenuPage from './pages/admin/MenuPage';
 import LogIn from './pages/PaginaLogIn';
 import PaginaRegistro from './pages/PaginaRegistro';
-import Ordenes from './pages/admin/PaginaOrdenes';
+import Ordenes from './pages/admin/OrdersPage';
 import Historial from './pages/admin/PaginaHistorial';
 import DashboardDO from './components/dashboards/DailyOrders';
 import DashboardDR from './components/dashboards/DailyRevenue';
 import TrendingMenu from './components/dashboards/TrendingMenu';
 import Dashboard from './pages/admin/DashboardPage';
-import RestaurantLayout from './RestaurantLayout';
+import RestaurantLayout from './components/orders/TableComponent';
 import Inventario from './Inventario';
 import PaginaReceta from './Receta';
 import PaginaPagos from './pages/pagos';
@@ -31,7 +31,6 @@ function App() {
           <Routes>
             <Route path="/" element={<LogIn />} />
             <Route path="/restaurantes" element={<RestaurantPage />} />
-            <Route path="/menu" element={<MenuPage />} />
             <Route path="/menu/:restaurantId" element={<MenuPage />} />
             <Route path="/registro" element={<PaginaRegistro />} />
             <Route path="/ordenes" element={<Ordenes />} />
@@ -40,7 +39,6 @@ function App() {
             <Route path="/daily_orders" element={<DashboardDO />} />
             <Route path="/daily_revenue" element={<DashboardDR />} />
             <Route path="/trending_menu" element={<TrendingMenu />} />
-            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/:restaurantId" element={<Dashboard />} />
             <Route path="/restaurante_layaout" element={<RestaurantLayout />} />
             <Route path="/inventario" element={<Inventario />} />

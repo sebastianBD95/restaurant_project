@@ -22,6 +22,10 @@ func NewRestaurantHandler(service *services.RestaurantService) *RestaurantHandle
 func (h *RestaurantHandler) CreateRestaurant(w http.ResponseWriter, r *http.Request) {
 
 	owner := utils.TokenVerification(r, w)
+	if owner == "" {
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		return
+	}
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		http.Error(w, "Unable to parse form", http.StatusBadRequest)
