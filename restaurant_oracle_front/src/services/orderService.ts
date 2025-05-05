@@ -11,6 +11,11 @@ interface OrderRequest {
   items: OrderItem[];
 }
 
+interface OrderStatusUpdate {
+  order_id: string;
+  status: string;
+}
+
 export const placeOrder = async (orderData: OrderRequest) => {
   const token = getCookie(document.cookie, 'token');
   if (!token) {
@@ -51,4 +56,25 @@ export const getOrdersByRestaurant = async (restaurantId: string) => {
   }
 
   return response.json();
+};
+
+export const updateOrderStatus = async (orderData: OrderStatusUpdate) => {
+  const token = getCookie(document.cookie, 'token');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  const response = await fetch('http://localhost:8080/orders', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(orderData)
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to update order status');
+  }
+
 }; 

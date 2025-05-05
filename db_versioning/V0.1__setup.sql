@@ -78,7 +78,7 @@ CREATE TABLE servu.orders (
                               order_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
                               table_id UUID REFERENCES servu.tables(table_id) ON DELETE CASCADE,
                               restaurant_id UUID REFERENCES servu.restaurants(restaurant_id) ON DELETE CASCADE,
-                              status VARCHAR(20) CHECK (status IN ('ordered', 'delivered', 'payed', 'cancelled')) DEFAULT 'ordered',
+                              status VARCHAR(20) CHECK (status IN ('ordered', 'delivered', 'paid', 'cancelled')) DEFAULT 'ordered',
                               total_price DECIMAL(10,2) DEFAULT 0.0,
                               observation TEXT,
                               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

@@ -62,13 +62,16 @@ func (h *OrderHandler) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *OrderHandler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
-	var orderID string
-	vars := mux.Vars(r)
-	orderID = vars["orders_id"]
-	var order *models.Order
-	json.NewDecoder(r.Body).Decode(&order)
-	order.OrderID = orderID
-	err := h.service.UpdateOrder(order)
+	var orderDto *dto.OrderDTO
+	json.NewDecoder(r.Body).Decode(&orderDto)
+	order := models.Order{
+		OrderID:      orderDto.OrderID,
+		TableID:      orderDto.TableID,
+		RestaurantID: orderDto.RestaurantID,
+		Status:       models.OrderStatus(orderDto.Status),
+		TotalPrice:   orderDto.TotalPrice,
+	}
+	err := h.service.UpdateOrder(&order)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
