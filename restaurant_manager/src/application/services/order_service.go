@@ -15,18 +15,20 @@ func NewOrderService(repo repositories.OrderRepository, tableService *TableServi
 }
 
 func (service *OrderService) CreateOrder(order *models.Order) (string, error) {
-	table := models.Table{
-		TableID: order.TableID,
-		Status:  models.TableStatus(order.Table.Status),
-	}
-	err := service.tableService.UpdateTable(&table)
-	if err != nil {
-		return "", err
-	}
+	// First create the order
 	orderId, err := service.repo.CreateOrder(order)
 	if err != nil {
 		return "", err
 	}
+
+	// Then update table status through a dedicated method
+	err = service.tableService.UpdateTableStatus(order.TableID, "occupied")
+	if err != nil {
+		// If table update fails, we should rollback the order creation
+		_ = service.repo.DeleteOrder(orderId)
+		return "", err
+	}
+
 	return orderId, nil
 }
 
