@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Image, Text, Button, Textarea } from '@chakra-ui/react';
+import { Box, Image, Text, Button, Textarea, Stack } from '@chakra-ui/react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -19,9 +19,12 @@ interface MenuItemProps {
   onAdd: (item: MenuItemResponse, quantity: number, observation: string) => void;
   orderPlaced: boolean;
   disabled: boolean;
+  onEdit?: (item: MenuItemResponse) => void;
+  onDelete?: (item: MenuItemResponse) => void;
+  onHide?: (item: MenuItemResponse) => void;
 }
 
-const MenuItem: React.FC<MenuItemProps> = ({ item, onAdd, orderPlaced, disabled }) => {
+const MenuItem: React.FC<MenuItemProps> = ({ item, onAdd, orderPlaced, disabled, onEdit, onDelete, onHide }) => {
   const {
     control,
     handleSubmit,
@@ -107,6 +110,14 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onAdd, orderPlaced, disabled 
             Agregar al Pedido
           </Button>
         </>
+      )}
+
+      {!isWaiter() && (
+        <Stack mt={2} direction="row" gap={2}>
+          <Button size="sm" colorScheme="blue" onClick={() => onEdit && onEdit(item)}>Editar</Button>
+          <Button size="sm" colorScheme="red" onClick={() => onDelete && onDelete(item)}>Eliminar</Button>
+          <Button size="sm" colorScheme="gray" onClick={() => onHide && onHide(item)}>Ocultar</Button>
+        </Stack>
       )}
     </Box>
   );

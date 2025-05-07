@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Grid, GridItem, Image, Text, Accordion, AbsoluteCenter } from '@chakra-ui/react';
 import { MenuItemResponse } from '../../interfaces/menuItems';
 import MenuItem from './MenuItemWaiter';
 import MenuForm from './MenuForm';
+import { editMenuItem, hideMenuItem, deleteMenuItem } from '../../services/menuService';
+import { getCookie } from '../../pages/utils/cookieManager';
 
 interface MenuCategoryProps {
   category: string;
@@ -14,7 +16,6 @@ interface MenuCategoryProps {
   onAddToCart: (item: MenuItemResponse, quantity: number, observation: string) => void;
   orderPlaced: boolean;
   platoDisponible: (platoName: string) => boolean;
-
 }
 
 const MenuCategory: React.FC<MenuCategoryProps> = ({
@@ -26,8 +27,29 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
   MAX_FILE_SIZE,
   onAddToCart,
   orderPlaced,
-  platoDisponible
+  platoDisponible,
 }) => {
+  const token = getCookie(document.cookie, 'token');
+  const restaurantId = window.location.pathname.split('/').find((v, i, arr) => arr[i-1] === 'menu') || '';
+  const [isFormOpen, setIsFormOpen] = useState(false);
+
+  const handleEdit = async (item: MenuItemResponse) => {
+    // Implement edit logic here (e.g., open modal, then call editMenuItem)
+    // await editMenuItem(item.menu_item_id, { ... }, token, restaurantId!);
+    console.log('Editando:', item);
+    setIsFormOpen(true);
+  };
+
+  const handleDelete = async (item: MenuItemResponse) => {
+    await deleteMenuItem(item.menu_item_id, token!, restaurantId);
+    window.location.reload();
+  };
+
+  const handleHide = async (item: MenuItemResponse) => {
+    await hideMenuItem(item.menu_item_id, token!, restaurantId);
+    window.location.reload();
+  };
+
   return (
     <Accordion.Item key={category} value={category}>
       <Box position="relative">
@@ -49,6 +71,8 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
             onSubmit={onSubmit}
             error={error}
             MAX_FILE_SIZE={MAX_FILE_SIZE}
+            isOpen={isFormOpen}
+            setIsOpen={setIsFormOpen}
           />
         </AbsoluteCenter>
       </Box>
@@ -62,6 +86,9 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
                 onAdd={onAddToCart}
                 orderPlaced={orderPlaced}
                 disabled={!platoDisponible(item.name)}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onHide={handleHide}
               />
             ))
           }

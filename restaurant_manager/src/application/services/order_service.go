@@ -20,7 +20,6 @@ func (service *OrderService) CreateOrder(order *models.Order) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
 	// Then update table status through a dedicated method
 	err = service.tableService.UpdateTableStatus(order.TableID, "occupied")
 	if err != nil {

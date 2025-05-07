@@ -243,6 +243,7 @@ const MenuPage: React.FC = () => {
     });
   };
 
+  
   return (
     <Flex height="100vh" direction="row">
       {/* Barra lateral de navegación plegable */}

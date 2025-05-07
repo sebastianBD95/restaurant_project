@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Button, Dialog, Portal, Stack, Input, Field, Box, Image } from '@chakra-ui/react';
-import { MenuItemRequest } from '../../interfaces/menuItems';
+import { MenuItemRequest, MenuItemResponse } from '../../interfaces/menuItems';
 
 interface MenuFormProps {
   category: string;
@@ -8,6 +8,10 @@ interface MenuFormProps {
   onSubmit: (e: React.FormEvent, category: string) => Promise<void>;
   error: string;
   MAX_FILE_SIZE: number;
+  initialData?: MenuItemResponse;
+  onClose?: () => void;
+  isOpen?: boolean;
+  setIsOpen?: (isOpen: boolean) => void;
 }
 
 const MenuForm: React.FC<MenuFormProps> = ({
@@ -15,14 +19,18 @@ const MenuForm: React.FC<MenuFormProps> = ({
   categoryMap,
   onSubmit,
   error,
-  MAX_FILE_SIZE
+  MAX_FILE_SIZE,
+  initialData,
+  onClose,
+  isOpen,
+  setIsOpen
 }) => {
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: 0,
+    name: initialData?.name || '',
+    description: initialData?.description || '',
+    price: initialData?.price ||  0,
   });
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(initialData?.image_url || null);
   const [file, setFile] = useState<File | null>(null);
   const dialogRef = useRef<HTMLButtonElement>(null);
 
@@ -44,12 +52,7 @@ const MenuForm: React.FC<MenuFormProps> = ({
   };
 
   return (
-    <Dialog.Root initialFocusEl={() => dialogRef.current}>
-      <Dialog.Trigger asChild>
-        <Button className="add-plate-button" size="xs">
-          Añadir Plato
-        </Button>
-      </Dialog.Trigger>
+    <Dialog.Root open={isOpen} onOpenChange={(details) => setIsOpen?.(details.open)} initialFocusEl={() => dialogRef.current}>
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner>

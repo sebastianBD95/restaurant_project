@@ -33,3 +33,44 @@ export const getMenus = async (token: string, restaurantId :string): Promise<Men
     throw error;
   }
 };
+
+export const editMenuItem = async (menuItemId: string, data: Partial<MenuItemRequest>, token: string, restaurantId: string) => {
+  try {
+    const response = await axios.put(`${API_URL}/menus/${restaurantId}/items/${menuItemId}`, data, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+export const hideMenuItem = async (menuItemId: string, token: string, restaurantId: string) => {
+  try {
+    const response = await axios.patch(`${API_URL}/menus/${restaurantId}/items/${menuItemId}`, { hidden: true }, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+export const deleteMenuItem = async (menuItemId: string, token: string, restaurantId: string) => {
+  try {
+    const response = await axios.delete(`${API_URL}/menus/${restaurantId}/items/${menuItemId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};

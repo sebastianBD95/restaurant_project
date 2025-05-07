@@ -13,6 +13,7 @@ export interface MenuItemResponse  {
     price: number;
     image_url: string;
     category:string;
+    hidden?: boolean;
   };
   
 export interface MenuData  {
