@@ -27,7 +27,7 @@ import { StepperInput } from '../../components/ui/stepper-input';
 import { useNavigate } from 'react-router-dom';
 import '../styles/MenuPage.css';
 import { MenuData, MenuItemRequest, MenuItemResponse } from '../../interfaces/menuItems';
-import { addMenu, getMenus } from '../../services/menuService';
+import { addMenu, getMenus, editMenuItem } from '../../services/menuService';
 import { getCookie } from '../utils/cookieManager';
 import {useParams } from 'react-router-dom';
 import { Sidebar } from '../../components/ui/navegator';
@@ -132,19 +132,19 @@ const MenuPage: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent, category: string) => {
+  const handleSubmit = async (e: React.FormEvent, category: string, editingItem?: MenuItemResponse) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.description || file == undefined || formData.price < 0) {
-      alert('Please complete all fields.');
+    if (!formData.name || !formData.description || (!file && !editingItem) || formData.price <= 0) {
+      alert('Please complete all fields and ensure price is greater than 0.');
       return;
     }
 
     let menuData: MenuItemRequest = {
       name: formData.name,
       description: formData.description,
-      image: file!,
-      price: formData.price,
+      image: file || new File([], ''),
+      price: Number(formData.price),
       category: categoryMap[category]
     };
 
@@ -154,8 +154,18 @@ const MenuPage: React.FC = () => {
         setError('No authentication token found');
         return;
       }
-      await addMenu(menuData, token, restaurantId!);
+
+      if (editingItem) {
+        // If we're editing and have a new file, use it. Otherwise, keep the existing image
+        if (!file) {
+          menuData.image = new File([], ''); // Empty file to indicate no new image
+        }
+        await editMenuItem(editingItem.menu_item_id, menuData, token, restaurantId!);
+      } else {
+        await addMenu(menuData, token, restaurantId!);
+      }
       
+      // Reset form state
       setFile(null);
       setImagePreview(null);
       setFormData({
@@ -243,8 +253,9 @@ const MenuPage: React.FC = () => {
     });
   };
 
+  
   return (
-    <Flex height="100vh" direction="row">
+    <Flex height="100vh" direction={{ base: "column", md: "row" }}>
       {/* Barra lateral de navegación plegable */}
       <Sidebar 
         isSidebarOpen={isSidebarOpen} 
@@ -253,12 +264,15 @@ const MenuPage: React.FC = () => {
       />
 
       {/* Contenido Principal */}
-      <Box flex={1} p={6} overflowY="auto">
-        <Box p={8} bg="gray.100" minH="100vh">
-          <Heading textAlign="center" mb={6}>
+      <Box flex={1} p={{ base: 2, md: 6 }} overflowY="auto">
+        <Box p={{ base: 4, md: 8 }} bg="gray.100" minH="100vh">
+          <Heading 
+            textAlign="center" 
+            mb={6}
+            fontSize={{ base: "xl", md: "2xl", lg: "3xl" }}
+          >
             Menú
           </Heading>
-          
           
           <Accordion.Root collapsible>
             {Object.entries(menuData).map(([category, items]) => (
@@ -273,6 +287,11 @@ const MenuPage: React.FC = () => {
                 onAddToCart={addToCart}
                 orderPlaced={orderPlaced}
                 platoDisponible={platoDisponible}
+                formData={formData}
+                setFormData={setFormData}
+                file={file}
+                setFile={setFile}
+                onMenuUpdate={fetchMenuItems}
               />
             ))}
           </Accordion.Root>

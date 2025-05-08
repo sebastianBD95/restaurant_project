@@ -91,3 +91,26 @@ func (s *UserService) GetUsersByRestaurantIDAndRole(restaurantID string, role st
 
 	return users, nil
 }
+
+func (s *UserService) UpdateUser(user *models.User) error {
+	return s.repo.UpdateUser(user)
+}
+
+func (s *UserService) GetUserByEmail(email string) (*models.User, error) {
+	return s.repo.GetUserByEmail(email)
+}
+
+func (s *UserService) DeleteUser(userID string) error {
+	if strings.TrimSpace(userID) == "" {
+		return errors.New("user ID is required")
+	}
+
+	return s.repo.DeleteUser(userID)
+}
+
+func (s *UserService) GetUserById(userID string) (*models.User, error) {
+	if strings.TrimSpace(userID) == "" {
+		return nil, errors.New("user ID is required")
+	}
+	return s.repo.GetUserById(userID)
+}

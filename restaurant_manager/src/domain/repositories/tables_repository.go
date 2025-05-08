@@ -8,5 +8,4 @@ type TableRepository interface {
 	GetTablesByRestaurantId(restaurantID string) ([]models.Table, error)
 	UpdateTable(table *models.Table) error
 	DeleteTable(tableID string) error
-	UpdateTableStatus(tableID string, status models.TableStatus) error
 }

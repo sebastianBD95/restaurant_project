@@ -4,7 +4,7 @@ const API_URL = 'http://localhost:8080';
 
 
 
-export const createWaiterUser = async (userData: Omit<WaiterUser, 'id' | 'role'>, token: string): Promise<String> => {
+export const createWaiterUser = async (userData: Omit<WaiterUser, 'user_id' | 'role'>, token: string): Promise<String> => {
   try {
     const response = await axios.post<String>(`${API_URL}/register`, 
       { ...userData, role: 'waiter' }, 
@@ -24,9 +24,9 @@ export const createWaiterUser = async (userData: Omit<WaiterUser, 'id' | 'role'>
   }
 };
 
-export const getWaiterUsers = async (token: string,restaurant: string): Promise<Omit<WaiterUser,'id'|'password'>[]> => {
+export const getWaiterUsers = async (token: string,restaurant: string): Promise<Omit<WaiterUser,'password'>[]> => {
   try {
-    const response = await axios.get<Omit<WaiterUser,'id'|'password'>[]>(`${API_URL}/users?restaurantId=${restaurant}&role=waiter`, {
+    const response = await axios.get<Omit<WaiterUser,'password'>[]>(`${API_URL}/users?restaurantId=${restaurant}&role=waiter`, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
@@ -43,7 +43,7 @@ export const getWaiterUsers = async (token: string,restaurant: string): Promise<
 
 export const updateWaiterUser = async (id: string, userData: Partial<WaiterUser>, token: string): Promise<WaiterUser> => {
   try {
-    const response = await axios.put<WaiterUser>(`${API_URL}/users/waiter/${id}`, 
+    const response = await axios.put<WaiterUser>(`${API_URL}/users?id=${id}`, 
       userData, 
       {
         headers: {
@@ -63,7 +63,7 @@ export const updateWaiterUser = async (id: string, userData: Partial<WaiterUser>
 
 export const deleteWaiterUser = async (id: string, token: string): Promise<void> => {
   try {
-    await axios.delete(`${API_URL}/users/waiter/${id}`, {
+    await axios.delete(`${API_URL}/users?id=${id}`, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,

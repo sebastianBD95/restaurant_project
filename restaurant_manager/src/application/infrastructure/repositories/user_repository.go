@@ -59,3 +59,24 @@ func (repo *UserRepositoryImpl) GetUsersByRestaurantIDAndRole(restaurantID strin
 	}
 	return users, nil
 }
+
+func (repo *UserRepositoryImpl) UpdateUser(user *models.User) error {
+	result := repo.db.Model(&models.User{}).
+		Where("user_id = ?", user.UserID).
+		Updates(user)
+	return result.Error
+}
+
+func (repo *UserRepositoryImpl) DeleteUser(userID string) error {
+	result := repo.db.Delete(&models.User{}, "user_id = ?", userID)
+	return result.Error
+}
+
+func (repo *UserRepositoryImpl) GetUserById(userID string) (*models.User, error) {
+	var user models.User
+	result := repo.db.Where("user_id = ?", userID).First(&user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &user, nil
+}
