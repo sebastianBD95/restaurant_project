@@ -59,3 +59,10 @@ func (repo *UserRepositoryImpl) GetUsersByRestaurantIDAndRole(restaurantID strin
 	}
 	return users, nil
 }
+
+func (repo *UserRepositoryImpl) UpdateUser(user *models.User) error {
+	result := repo.db.Model(&models.User{}).
+		Where("user_id = ?", user.UserID).
+		Updates(user)
+	return result.Error
+}

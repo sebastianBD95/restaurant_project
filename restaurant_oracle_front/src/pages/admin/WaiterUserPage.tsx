@@ -20,23 +20,36 @@ import { WaiterUser } from '../../interfaces/waiter';
 import { Sidebar } from '../../components/ui/navegator';
 import { useSidebar } from '../../hooks/useSidebar';
 import { Toaster, toaster } from "../../components/ui/toaster"
+import WaiterUserForm from '../../components/waiters/WaiterUserForm';
+import { stat } from 'fs';
 
 
 // Custom toast function
 const showToast = (title: string, description: string, status: 'success' | 'error' | 'info' = 'info') => {
-  console.log(`${status.toUpperCase()}: ${title} - ${description}`);
-  // In a real app, you would use a proper toast library or component
+  toaster.create({
+    title: title,
+    description: description,
+    type: status,
+  })
 };
 
+interface WaiterFormData {
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+  restaurant_id?: string;
+}
+
 const WaiterUserPage: React.FC = () => {
-  const [formData, setFormData] = useState<Omit<WaiterUser, 'id' | 'role'>>({
+  const [formData, setFormData] = useState<Omit<WaiterUser, 'user_id' | 'role'>>({
     name: '',
     email: '',
     phone: '',
     password: '',
     restaurant_id: '',
   });
-  const [waiters, setWaiters] = useState<Omit<WaiterUser, "id" | "password">[]>([]);
+  const [waiters, setWaiters] = useState<Omit<WaiterUser, "password">[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -88,18 +101,27 @@ const WaiterUserPage: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const validateForm = (formData: WaiterFormData, isEditing: boolean) => {
+    return (
+      formData.name &&
+      formData.email &&
+      formData.phone &&
+      (isEditing ? true : formData.password)
+    );
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
-    // Validate form
-    if (!formData.name || !formData.email || !formData.phone || !formData.password) {
-      showToast('Error', 'Por favor complete todos los campos');
+
+    if (!validateForm(formData, isEditing)) {
+      showToast('Error', 'Por favor complete todos los campos', 'error');
       return;
     }
+
     formData.restaurant_id = restaurantId!;
+    setIsLoading(true);
 
     try {
-      setIsLoading(true);
       const token = getToken();
       if (!token) {
         showToast('Error', 'No se encontró el token de autenticación', 'error');
@@ -107,18 +129,15 @@ const WaiterUserPage: React.FC = () => {
       }
 
       if (isEditing && editingId) {
-        // Update existing waiter
         await updateWaiterUser(editingId, formData, token);
         showToast('Usuario actualizado', 'El usuario mesero ha sido actualizado correctamente', 'success');
         setIsEditing(false);
         setEditingId(null);
       } else {
-        // Add new waiter
         await createWaiterUser(formData, token);
         showToast('Usuario creado', 'El usuario mesero ha sido creado correctamente', 'success');
       }
 
-      // Reset form and refresh data
       setFormData({
         name: '',
         email: '',
@@ -134,21 +153,16 @@ const WaiterUserPage: React.FC = () => {
     }
   };
 
-  const handleEdit = (waiter: Omit<WaiterUser, "id" | "password">) => {
-    /* setFormData({
+  const handleEdit = (waiter: Omit<WaiterUser,  "password">) => {
+     setFormData({
       name: waiter.name,
       email: waiter.email,
       phone: waiter.phone,
       password: '', // Don't show password for security
-      restaurant: ''
+      restaurant_id: restaurantId!
     });
     setIsEditing(true);
-    setEditingId(waiter.name); */
-    
-    toaster.create({
-      description: "File saved successfully",
-      type: "info",
-    })
+    setEditingId(waiter.user_id); 
   };
 
   const handleDelete = async (id: string) => {
@@ -184,133 +198,90 @@ const WaiterUserPage: React.FC = () => {
   };
 
   return (
-    <Flex height="100vh" direction="row">
+    <Flex height="100vh" direction={{ base: "column", md: "row" }}>
       <Sidebar 
         isSidebarOpen={isSidebarOpen} 
         toggleSidebar={toggleSidebar} 
         restaurantId={restaurantId}
       />
-    <Box flex={1} p={6} maxW="auto" mx="auto">
-      <Toaster />
-      <Heading mb={6}>Gestión de Usuarios Meseros</Heading>
-      
-      <Box bg="white" p={6} borderRadius="md" boxShadow="md" mb={6}>
+      <Box flex={1} p={{ base: 2, md: 6 }} maxW="100vw" mx="auto">
+        <Toaster />
+        <Heading mb={{ base: 4, md: 6 }} fontSize={{ base: "lg", md: "2xl" }}>
+          Gestión de Usuarios Meseros
+        </Heading>
         <Heading size="md" mb={4}>
           {isEditing ? 'Editar Usuario Mesero' : 'Agregar Nuevo Usuario Mesero'}
         </Heading>
-        
-        <form onSubmit={handleSubmit}>
-          <VStack align="stretch">
-            <Box>
-              <Text fontWeight="bold" mb={1}>Nombre Completo *</Text>
-              <Input
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Ingrese el nombre completo"
-                required
-              />
-            </Box>
-            
-            <Box>
-              <Text fontWeight="bold" mb={1}>Correo Electrónico *</Text>
-              <Input
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Ingrese el correo electrónico"
-                required
-              />
-            </Box>
-            
-            <Box>
-              <Text fontWeight="bold" mb={1}>Teléfono *</Text>
-              <Input
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="Ingrese el número de teléfono"
-                required
-              />
-            </Box>
-            
-            <Box>
-              <Text fontWeight="bold" mb={1}>Contraseña *</Text>
-              <Input
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder={isEditing ? "Dejar en blanco para mantener la contraseña actual" : "Ingrese la contraseña"}
-                required={!isEditing}
-              />
-            </Box>
-            
-            <HStack justify="flex-end">
-              {isEditing && (
-                <Button onClick={handleCancel} variant="outline">
-                  Cancelar
-                </Button>
-              )}
-              <Button type="submit" colorScheme="blue">
-                {isEditing ? 'Actualizar' : 'Agregar'}
-              </Button>
-            </HStack>
-          </VStack>
-        </form>
-      </Box>
-      
-      <Box bg="white" p={6} borderRadius="md" boxShadow="md">
-        <Heading size="md" mb={4}>Lista de Usuarios Meseros</Heading>
-        
-        {isLoading ? (
-          <Text>Cargando usuarios...</Text>
-        ) : waiters.length === 0 ? (
-          <Text>No hay usuarios meseros registrados.</Text>
-        ) : (
-          <Table.Root>
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeader>Nombre</Table.ColumnHeader>
-                <Table.ColumnHeader>Correo</Table.ColumnHeader>
-                <Table.ColumnHeader>Teléfono</Table.ColumnHeader>
-                <Table.ColumnHeader>Acciones</Table.ColumnHeader>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {waiters.map(waiter => (
-                <Table.Row key={waiter.role}>
-                  <Table.Cell>{waiter.name}</Table.Cell>
-                  <Table.Cell>{waiter.email}</Table.Cell>
-                  <Table.Cell>{waiter.phone}</Table.Cell>
-                  <Table.Cell>
-                    <HStack>
-                      <IconButton
-                        aria-label="Editar mesero"
-                        size="sm"
-                        onClick={() => handleEdit(waiter)}
-                      >
-                        <FiEdit2 />
-                      </IconButton>
-                      <IconButton
-                        aria-label="Eliminar mesero"
-                        size="sm"
-                        colorScheme="red"
-                        onClick={() => handleDelete(waiter.email)}
-                      >
-                        <FiTrash2 />
-                      </IconButton>
-                    </HStack>
-                  </Table.Cell>
+        <WaiterUserForm
+          formData={formData}
+          setFormData={setFormData}
+          isEditing={isEditing}
+          isLoading={isLoading}
+          onCancel={handleCancel}
+          onSubmit={handleSubmit}
+        />
+        <Box
+          bg="white"
+          p={{ base: 2, md: 6 }}
+          borderRadius="md"
+          boxShadow="md"
+          overflowX="auto"
+          w="100%"
+        >
+          <Heading size="md" mb={4}>Lista de Usuarios Meseros</Heading>
+          <Box overflowX="auto" w="100%">
+            <Table.Root minWidth="600px">
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeader>Nombre</Table.ColumnHeader>
+                  <Table.ColumnHeader>Correo</Table.ColumnHeader>
+                  <Table.ColumnHeader>Teléfono</Table.ColumnHeader>
+                  <Table.ColumnHeader>Acciones</Table.ColumnHeader>
                 </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
-        )}
+              </Table.Header>
+              <Table.Body>
+                {isLoading ? (
+                  <Table.Row>
+                    <Table.Cell colSpan={4}><Text>Cargando usuarios...</Text></Table.Cell>
+                  </Table.Row>
+                ) : waiters.length === 0 ? (
+                  <Table.Row>
+                    <Table.Cell colSpan={4}><Text>No hay usuarios meseros registrados.</Text></Table.Cell>
+                  </Table.Row>
+                ) : (
+                  waiters.map(waiter => (
+                    <Table.Row key={waiter.role}>
+                      <Table.Cell>{waiter.name}</Table.Cell>
+                      <Table.Cell>{waiter.email}</Table.Cell>
+                      <Table.Cell>{waiter.phone}</Table.Cell>
+                      <Table.Cell>
+                        <HStack>
+                          <IconButton
+                            aria-label="Editar mesero"
+                            size="sm"
+                            onClick={() => handleEdit(waiter)}
+                          >
+                            <FiEdit2 />
+                          </IconButton>
+                          <IconButton
+                            aria-label="Eliminar mesero"
+                            size="sm"
+                            colorScheme="red"
+                            onClick={() => handleDelete(waiter.email)}
+                          >
+                            <FiTrash2 />
+                          </IconButton>
+                        </HStack>
+                      </Table.Cell>
+                    </Table.Row>
+                  ))
+                )}
+              </Table.Body>
+            </Table.Root>
+          </Box>
+        </Box>
       </Box>
-    </Box>
-    </Flex> 
+    </Flex>
   );
 };
 

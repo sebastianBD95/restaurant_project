@@ -91,3 +91,11 @@ func (s *UserService) GetUsersByRestaurantIDAndRole(restaurantID string, role st
 
 	return users, nil
 }
+
+func (s *UserService) UpdateUser(user *models.User) error {
+	return s.repo.UpdateUser(user)
+}
+
+func (s *UserService) GetUserByEmail(email string) (*models.User, error) {
+	return s.repo.GetUserByEmail(email)
+}

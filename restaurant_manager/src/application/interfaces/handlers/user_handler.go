@@ -119,3 +119,46 @@ func (h *UserHandler) GetUsersByRestaurantID(w http.ResponseWriter, r *http.Requ
 
 	h.writeJSONResponse(w, http.StatusOK, responses)
 }
+
+func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
+	userID := r.URL.Query().Get("id")
+	if userID == "" {
+		h.writeErrorResponse(w, http.StatusBadRequest, "User ID is required")
+		return
+	}
+
+	var req models.User
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Error().Err(err).Msg("Failed to decode request body")
+		h.writeErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Get existing user to preserve optional fields if not provided
+	existingUser, err := h.service.GetUserByEmail(req.Email)
+	if err != nil {
+		log.Error().Err(err).Msg("User not found")
+		h.writeErrorResponse(w, http.StatusNotFound, "User not found")
+		return
+	}
+
+	user := &models.User{
+		UserID:    userID,
+		Name:      req.Name,
+		Email:     req.Email,
+		Phone:     req.Phone,
+		Role:      existingUser.Role,
+		IdNumber:  existingUser.IdNumber,
+		NitNumber: existingUser.NitNumber,
+	}
+
+	if err := h.service.UpdateUser(user); err != nil {
+		log.Error().Err(err).Msg("Failed to update user")
+		h.writeErrorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	h.writeJSONResponse(w, http.StatusOK, map[string]string{
+		"message": "User updated successfully",
+	})
+}
