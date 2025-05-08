@@ -9,4 +9,6 @@ type UserRepository interface {
 	GetUserByEmail(email string) (*models.User, error)
 	GetUsersByRestaurantIDAndRole(restaurantID string, role string) ([]*models.User, error)
 	UpdateUser(user *models.User) error
+	DeleteUser(userID string) error
+	GetUserById(userID string) (*models.User, error)
 }

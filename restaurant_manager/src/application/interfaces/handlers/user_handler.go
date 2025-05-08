@@ -162,3 +162,28 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		"message": "User updated successfully",
 	})
 }
+
+func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	userID := r.URL.Query().Get("id")
+	if userID == "" {
+		h.writeErrorResponse(w, http.StatusBadRequest, "User ID is required")
+		return
+	}
+
+	_, err := h.service.GetUserById(userID)
+	if err != nil {
+		log.Error().Err(err).Msg("User not found")
+		h.writeErrorResponse(w, http.StatusNotFound, "User not found")
+		return
+	}
+
+	if err := h.service.DeleteUser(userID); err != nil {
+		log.Error().Err(err).Msg("Failed to delete user")
+		h.writeErrorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	h.writeJSONResponse(w, http.StatusOK, map[string]string{
+		"message": "User deleted successfully",
+	})
+}

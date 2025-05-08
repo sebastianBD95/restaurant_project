@@ -267,7 +267,7 @@ const WaiterUserPage: React.FC = () => {
                             aria-label="Eliminar mesero"
                             size="sm"
                             colorScheme="red"
-                            onClick={() => handleDelete(waiter.email)}
+                            onClick={() => handleDelete(waiter.user_id)}
                           >
                             <FiTrash2 />
                           </IconButton>

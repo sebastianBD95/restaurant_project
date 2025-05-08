@@ -63,7 +63,7 @@ export const updateWaiterUser = async (id: string, userData: Partial<WaiterUser>
 
 export const deleteWaiterUser = async (id: string, token: string): Promise<void> => {
   try {
-    await axios.delete(`${API_URL}/users/waiter/${id}`, {
+    await axios.delete(`${API_URL}/users?id=${id}`, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
