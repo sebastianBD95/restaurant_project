@@ -35,6 +35,7 @@ import { useSidebar } from '../../hooks/useSidebar';
 import MenuCategory from '../../components/menu/MenuCategory';
 import Cart from '../../components/menu/Cart';
 import { placeOrder as placeOrderService } from '../../services/orderService';
+import { Toaster, toaster } from "../../components/ui/toaster"
 
 const formSchema = z.object({
   quantity: z.string({ message: 'Debe seleccionar una cantidad válida.' }),
@@ -230,15 +231,23 @@ const MenuPage: React.FC = () => {
         })),
         total_price: totalCost
       };
-      console.log(orderData);
+    
       await placeOrderService(orderData);
       setCart([]);
       setObservations('');
       setOrderPlaced(true);
-      alert(`Pedido realizado con éxito en la mesa ${tableNumber}.`);
+      toaster.create({
+        title: 'Pedido realizado con éxito',
+        description: `Pedido realizado con éxito en la mesa ${tableNumber}.`,
+        type: 'success',
+      });
     } catch (error) {
       console.error('Error placing order:', error);
-      alert('Error al realizar el pedido. Por favor, intente nuevamente.');
+      toaster.create({
+        title: 'Error al realizar el pedido',
+        description: 'Error al realizar el pedido. Por favor, intente nuevamente.',
+        type: 'error',
+      });
     }
   };
 

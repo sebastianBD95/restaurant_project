@@ -4,6 +4,8 @@ import { Box, Heading, VStack } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { BarChart, Bar, Tooltip, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { useParams } from 'react-router-dom';
+import { getOrdersByRestaurant } from '../../services/orderService';
 
 //Componente DailyOrders para mostrar la gráfica
 const DailyOrders = ({ data }: { data: { date: string; value: number }[] }) => {
@@ -25,27 +27,27 @@ const DailyOrders = ({ data }: { data: { date: string; value: number }[] }) => {
 
 const DashboardDO: React.FC = () => {
   const [chartData, setChartData] = useState<{ date: string; value: number }[]>([]);
+  const { restaurantId } = useParams();
 
   useEffect(() => {
-    // Obtener los pedidos del historial
-    const storedOrders = JSON.parse(localStorage.getItem('history') || '[]');
-
-    // Agrupar órdenes por día
-    const ordersPerDay: { [key: string]: number } = {};
-
-    storedOrders.forEach((order: any) => {
-      const date = dayjs(order.timestamp).format('YYYY-MM-DD');
-      ordersPerDay[date] = (ordersPerDay[date] || 0) + 1;
-    });
-
-    // Convertir a array de objetos para la gráfica
-    const formattedData = Object.entries(ordersPerDay).map(([date, value]) => ({
-      date,
-      value,
-    }));
-
-    setChartData(formattedData);
-  }, []);
+    async function fetchOrders() {
+      if (!restaurantId) return;
+      const orders = await getOrdersByRestaurant(restaurantId);
+      // Agrupar órdenes por día
+      const ordersPerDay: { [key: string]: number } = {};
+      orders.forEach((order: any) => {
+        const date = dayjs(order.created_at).format('YYYY-MM-DD');
+        ordersPerDay[date] = (ordersPerDay[date] || 0) + 1;
+      });
+      // Convertir a array de objetos para la gráfica
+      const formattedData = Object.entries(ordersPerDay).map(([date, value]) => ({
+        date,
+        value,
+      }));
+      setChartData(formattedData);
+    }
+    fetchOrders();
+  }, [restaurantId]);
 
   return (
     <Box p={6} bg="gray.100" h="470px">

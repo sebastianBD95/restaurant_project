@@ -9,6 +9,8 @@ import { Icon } from '@chakra-ui/react';
 import { PiStarThin } from 'react-icons/pi';
 import { IoTriangle } from 'react-icons/io5';
 import type { ReactNode } from 'react';
+import { useParams } from 'react-router-dom';
+import { getOrdersByRestaurant } from '../../services/orderService';
 
 interface ITrendingProduct {
   id: number;
@@ -19,31 +21,35 @@ interface ITrendingProduct {
 
 const TrendingMenu: React.FC = () => {
   const [trending, setTrending] = useState<ITrendingProduct[]>([]);
+  const { restaurantId } = useParams();
 
   useEffect(() => {
-    // Obtener los pedidos del historial
-    const storedOrders = JSON.parse(localStorage.getItem('history') || '[]');
+    async function fetchTrending() {
+      if (!restaurantId) return;
+      const orders = await getOrdersByRestaurant(restaurantId);
 
-    // 📌 Contar cuántas veces se ha ordenado cada plato
-    const dishCount: { [key: string]: { name: string; image: string; orderCount: number } } = {};
+      // 📌 Contar cuántas veces se ha ordenado cada plato
+      const dishCount: { [key: string]: { name: string; image: string; orderCount: number } } = {};
 
-    storedOrders.forEach((order: any) => {
-      order.items.forEach((item: any) => {
-        if (!dishCount[item.id]) {
-          dishCount[item.id] = { name: item.name, image: item.image, orderCount: 0 };
-        }
-        dishCount[item.id].orderCount += item.quantity;
+      orders.forEach((order: any) => {
+        order.items.forEach((item: any) => {
+          if (!dishCount[item.menu_item_id]) {
+            dishCount[item.menu_item_id] = { name: item.name, image: item.image, orderCount: 0 };
+          }
+          dishCount[item.menu_item_id].orderCount += item.quantity;
+        });
       });
-    });
 
-    // 📌 Convertir el objeto a un array y ordenar por número de pedidos
-    const sortedDishes = Object.entries(dishCount)
-      .map(([id, data]) => ({ id: Number(id), ...data }))
-      .sort((a, b) => b.orderCount - a.orderCount)
-      .slice(0, 5); // Tomar solo los 5 más pedidos
+      // 📌 Convertir el objeto a un array y ordenar por número de pedidos
+      const sortedDishes = Object.entries(dishCount)
+        .map(([id, data]) => ({ id: Number(id), ...data }))
+        .sort((a, b) => b.orderCount - a.orderCount)
+        .slice(0, 5); // Tomar solo los 5 más pedidos
 
-    setTrending(sortedDishes);
-  }, []);
+      setTrending(sortedDishes);
+    }
+    fetchTrending();
+  }, [restaurantId]);
 
   return (
     <Stack spacing={2} sx={{ p: 2 }}>

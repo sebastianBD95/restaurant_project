@@ -5,6 +5,7 @@ import MenuItem from './MenuItemWaiter';
 import MenuForm from './MenuForm';
 import { editMenuItem, hideMenuItem, deleteMenuItem } from '../../services/menuService';
 import { getCookie } from '../../pages/utils/cookieManager';
+import { isAdmin } from '../../pages/utils/roleUtils';
 
 interface MenuCategoryProps {
   category: string;
@@ -105,15 +106,17 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
             >
               {category.replace(/([A-Z])/g, ' $1').trim()}
             </Box>
-            <Button
-              colorScheme="blue"
-              onClick={() => setIsFormOpen(true)}
-              size={{ base: "sm", md: "md" }}
-              fontSize={{ base: "sm", md: "md" }}
-              ml="auto"
-            >
-              Añadir Plato
-            </Button>
+            {isAdmin() && (
+              <Button
+                colorScheme="blue"
+                onClick={() => setIsFormOpen(true)}
+                size={{ base: "sm", md: "md" }}
+                fontSize={{ base: "sm", md: "md" }}
+                ml="auto"
+              >
+                Añadir Plato
+              </Button>
+            )}
           </Box>
         </Accordion.ItemTrigger>
         <AbsoluteCenter axis="vertical" insetEnd={{ base: 2, md: 4 }}>
