@@ -3,9 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Heading, Button, Icon, Flex, Stack, useBreakpointValue } from '@chakra-ui/react';
 import { Stage, Layer, Rect, Circle, Text, Group } from 'react-konva';
-import { getTables, createTable } from '../../services/tableService';
 import { Table } from '../../interfaces/table';
-import { useParams } from 'react-router-dom';
 import { FaLock, FaUnlock, FaPlus } from 'react-icons/fa';
 import '../../pages/styles/TableComponent.css';
 
@@ -20,90 +18,62 @@ interface Mesa {
   qr_code: string;
 }
 
-const TableDistribution: React.FC = () => {
-  const [mesas, setMesas] = useState<Mesa[]>([]);
+interface TableDistributionProps {
+  mesas: Table[];
+  fetchTables: () => Promise<void>;
+}
+
+const TableDistribution: React.FC<TableDistributionProps> = ({ mesas, fetchTables }) => {
+  const [layout, setLayout] = useState<Mesa[]>([]);
   const [isLocked, setIsLocked] = useState<boolean>(false);
   const [hoveredTable, setHoveredTable] = useState<number | null>(null);
-  const restaurantId = useParams().restaurantId;
 
   // Responsive stage size
   const stageWidth = useBreakpointValue({ base: 320, sm: 400, md: 700, lg: 800 });
   const stageHeight = useBreakpointValue({ base: 300, sm: 350, md: 500, lg: 550 });
 
   useEffect(() => {
-    const fetchTables = async () => {
-      try {
-        const tables = await getTables(restaurantId!);
-        const savedLayout = localStorage.getItem('mesasLayout');
-        let positions: { [key: string]: { x: number; y: number } } = {};
-        
-        if (savedLayout) {
-          const savedMesas = JSON.parse(savedLayout);
-          positions = savedMesas.reduce((acc: { [key: string]: { x: number; y: number } }, mesa: Mesa) => {
-            acc[mesa.table_id] = { x: mesa.x, y: mesa.y };
-            return acc;
-          }, {});
-        }
-
-        const newMesas = tables.map((table: Table, index: number) => ({
-          table_id: table.table_id,
-          x: positions[table.table_id]?.x ?? 100 + (index % 5) * 100,
-          y: positions[table.table_id]?.y ?? 100 + Math.floor(index / 5) * 100,
-          shape: 'rect' as const,
-          isOccupied: false,
-          isProcessingPayment: false,
-          table_number: table.table_number,
-          qr_code: table.qr_code,
-        }));
-
-        setMesas(newMesas);
-      } catch (error) {
-        console.error('Error fetching tables:', error);
-      }
-    };
-
-    fetchTables();
-  }, [restaurantId]);
-
-  useEffect(() => {
-    if (mesas.length > 0) {
-      localStorage.setItem('mesasLayout', JSON.stringify(mesas));
+    // Map mesas prop to layout state with positions
+    const savedLayout = localStorage.getItem('mesasLayout');
+    let positions: { [key: string]: { x: number; y: number } } = {};
+    if (savedLayout) {
+      const savedMesas = JSON.parse(savedLayout);
+      positions = savedMesas.reduce((acc: { [key: string]: { x: number; y: number } }, mesa: Mesa) => {
+        acc[mesa.table_id] = { x: mesa.x, y: mesa.y };
+        return acc;
+      }, {});
     }
+    const newLayout = mesas.map((table: Table, index: number) => ({
+      table_id: table.table_id,
+      x: positions[table.table_id]?.x ?? 100 + (index % 5) * 100,
+      y: positions[table.table_id]?.y ?? 100 + Math.floor(index / 5) * 100,
+      shape: 'rect' as const,
+      isOccupied: table.status === "occupied",
+      isProcessingPayment: table.status === "processing_payment",
+      table_number: table.table_number,
+      qr_code: table.qr_code,
+    }));
+    setLayout(newLayout);
   }, [mesas]);
 
-  const handleCreateTable = async () => {
-    try {
-      const tableNumber = mesas.length + 1;
-      const response = await createTable({
-        restaurant_id: restaurantId!,
-        table_number: tableNumber,
-        qr_code: `/tables/${tableNumber}`,
-      });
-
-      setMesas((prevMesas) => [
-        ...prevMesas,
-        {
-          table_id: response.table_id,
-          x: 100 + (prevMesas.length % 5) * 100,
-          y: 100 + Math.floor(prevMesas.length / 5) * 100,
-          shape: 'rect',
-          isOccupied: false,
-          isProcessingPayment: false,
-          table_number: tableNumber,
-          qr_code: `/tables/${tableNumber}`,
-        },
-      ]);
-    } catch (error) {
-      console.error('Error creating table:', error);
+  useEffect(() => {
+    if (layout.length > 0) {
+      localStorage.setItem('mesasLayout', JSON.stringify(layout));
     }
+  }, [layout]);
+
+  const handleCreateTable = async () => {
+    // You may want to call fetchTables after creating a table in the parent
+    // ...
+    await fetchTables();
   };
 
   const handleDragEnd = (e: any, tableNumber: number) => {
     if (isLocked) return;
     const newX = e.target.x();
     const newY = e.target.y();
-    setMesas((prevMesas) =>
-      prevMesas.map((mesa) =>
+    setLayout((prevLayout) =>
+      prevLayout.map((mesa) =>
         mesa.table_number === tableNumber ? { ...mesa, x: newX, y: newY } : mesa
       )
     );
@@ -114,8 +84,8 @@ const TableDistribution: React.FC = () => {
   };
 
   const toggleShape = (tableNumber: number) => {
-    setMesas(
-      mesas.map((mesa) =>
+    setLayout(
+      layout.map((mesa) =>
         mesa.table_number === tableNumber
           ? { ...mesa, shape: mesa.shape === 'rect' ? 'circle' : 'rect' }
           : mesa
@@ -166,7 +136,7 @@ const TableDistribution: React.FC = () => {
               y={20} 
               fontSize={14}
             />
-            {mesas.map((mesa) => (
+            {layout.map((mesa) => (
               <Group
                 key={mesa.table_id}
                 draggable={!isLocked}

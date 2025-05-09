@@ -8,11 +8,13 @@ import { Sidebar } from '../../components/ui/navegator';
 import { useSidebar } from '../../hooks/useSidebar';
 import { getOrdersByRestaurant, updateOrderStatus as updateOrderStatusService } from '../../services/orderService';
 import OrderCard from '../../components/orders/OrderCard';
+import { getTables } from '../../services/tableService';
+import { Table } from '../../interfaces/table';
 
 const statusMap: Record<string, string> = {
   'ordered': 'Pedido',
   'delivered': 'Entregado a la mesa',
-  'payed': 'Pagado',
+  'paid': 'Pagado',
   'canceled': 'Cancelado'
 };
 
@@ -39,6 +41,7 @@ const Ordenes: React.FC = () => {
   const [checkedState, setCheckedState] = useState<boolean[]>([]);
   const { restaurantId } = useParams();
   const { isSidebarOpen, toggleSidebar } = useSidebar();
+  const [mesas, setMesas] = useState<Table[]>([]);
 
   const fetchOrders = async () => {
     try {
@@ -51,8 +54,20 @@ const Ordenes: React.FC = () => {
     }
   };
 
+  const fetchTables = async () => {
+    try {
+      if (restaurantId) {
+        const tables = await getTables(restaurantId);
+        setMesas(tables);
+      }
+    } catch (error) {
+      console.error('Error fetching tables:', error);
+    }
+  };
+
   useEffect(() => {
     fetchOrders();
+    fetchTables();
   }, [restaurantId]);
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
@@ -64,6 +79,7 @@ const Ordenes: React.FC = () => {
       
       // Wait for the orders to be refreshed
       await fetchOrders();
+      await fetchTables();
     } catch (error) {
       console.error('Error updating order status:', error);
     }
@@ -101,13 +117,13 @@ const Ordenes: React.FC = () => {
               ) : (
                 <VStack align="stretch" gap={4}>
                   {orders
-                    .filter(order => order.status !== 'payed' && order.status !== 'canceled')
+                    .filter(order => order.status !== 'paid' && order.status !== 'canceled')
                     .map(order => (
                       <OrderCard
                         key={order.order_id}
                         order={order}
                         onDeliver={orderId => updateOrderStatus(orderId, 'delivered')}
-                        onPay={orderId => updateOrderStatus(orderId, 'payed')}
+                        onPay={orderId => updateOrderStatus(orderId, 'paid')}
                         highlight={order.status === 'delivered'}
                       />
                     ))}
@@ -129,7 +145,7 @@ const Ordenes: React.FC = () => {
                 Distribución Mesas
               </Heading>
               <Box minW={{ base: '320px', md: 'auto' }}>
-                <TableDistribution />
+                <TableDistribution mesas={mesas} fetchTables={fetchTables} />
               </Box>
             </Box>
           </Grid>

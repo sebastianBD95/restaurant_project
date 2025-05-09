@@ -34,8 +34,24 @@ func (service *OrderService) CreateOrder(order *models.Order) (string, error) {
 func (service *OrderService) DeleteOrder(orderID string) error {
 	return service.repo.DeleteOrder(orderID)
 }
+
 func (service *OrderService) UpdateOrder(order *models.Order) error {
-	return service.repo.UpdateOrder(order)
+	err := service.repo.UpdateOrder(order)
+	if err != nil {
+		return err
+	}
+	order, err = service.repo.GetOrder(order.OrderID)
+	if err != nil {
+		return err
+	}
+	if order.Status == models.Paid {
+		err = service.tableService.UpdateTableStatus(order.TableID, string(models.TableStatusAvailable))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (service *OrderService) GetOrder(orderID string) (*models.Order, error) {

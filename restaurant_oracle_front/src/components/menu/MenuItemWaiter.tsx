@@ -9,7 +9,9 @@ import { MenuItemResponse } from '../../interfaces/menuItems';
 import { isWaiter } from '../../pages/utils/roleUtils';
 
 const formSchema = z.object({
-  quantity: z.string({ message: 'Debe seleccionar una cantidad válida.' }),
+  quantity: z
+    .string()
+    .refine(val => Number(val) > 0, { message: 'Debe ingresar una cantidad positiva.' }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -79,6 +81,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onAdd, orderPlaced, disabled,
               control={control}
               render={({ field }) => (
                 <NumberInputRoot
+                  min={1}
                   disabled={field.disabled || disabled}
                   name={field.name}
                   value={field.value}
@@ -105,7 +108,6 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onAdd, orderPlaced, disabled,
             mt={3}
             colorScheme="blue"
             onClick={() => handleSubmit((data) => onAdd(item, Number(data.quantity), observation))()}
-            disabled={orderPlaced || disabled}
           >
             Agregar al Pedido
           </Button>

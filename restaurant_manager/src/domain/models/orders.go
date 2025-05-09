@@ -21,7 +21,7 @@ type OrderStatus string
 const (
 	Ordered   OrderStatus = "ordered"
 	Delivered OrderStatus = "delivered"
-	Payed     OrderStatus = "payed"
+	Paid      OrderStatus = "paid"
 	cancelled OrderStatus = "cancelled"
 )
 

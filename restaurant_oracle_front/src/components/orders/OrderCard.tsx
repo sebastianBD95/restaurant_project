@@ -23,7 +23,7 @@ interface Order {
 const statusMap: Record<string, string> = {
   'ordered': 'Pedido',
   'delivered': 'Entregado a la mesa',
-  'payed': 'Pagado',
+  'paid': 'Pagado',
   'canceled': 'Cancelado'
 };
 
@@ -47,7 +47,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onDeliver, onPay, highligh
     <Text fontSize="md" fontWeight="bold" mt={3} color="purple.600">
       Estado: <span style={{ color: '#805ad5' }}>{statusMap[order.status] || order.status}</span>
     </Text>
-    {order.status !== 'delivered' && order.status !== 'payed' && order.status !== 'canceled' && (
+    {order.status !== 'delivered' && order.status !== 'paid' && order.status !== 'canceled' && (
       <Button mt={2} colorScheme="blue" size="sm" onClick={() => onDeliver(order.order_id)}>
         Marcar como Entregado
       </Button>
