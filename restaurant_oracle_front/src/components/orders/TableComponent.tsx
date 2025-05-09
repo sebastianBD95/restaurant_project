@@ -3,9 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Heading, Button, Icon, Flex, Stack, useBreakpointValue } from '@chakra-ui/react';
 import { Stage, Layer, Rect, Circle, Text, Group } from 'react-konva';
-import { Table } from '../../interfaces/table';
+import { CreateTableRequest, Table } from '../../interfaces/table';
 import { FaLock, FaUnlock, FaPlus } from 'react-icons/fa';
 import '../../pages/styles/TableComponent.css';
+import { createTable } from '../../services/tableService';
+import { useParams } from 'react-router-dom';
 
 interface Mesa {
   table_id: string;
@@ -24,6 +26,7 @@ interface TableDistributionProps {
 }
 
 const TableDistribution: React.FC<TableDistributionProps> = ({ mesas, fetchTables }) => {
+  const { restaurantId } = useParams();
   const [layout, setLayout] = useState<Mesa[]>([]);
   const [isLocked, setIsLocked] = useState<boolean>(false);
   const [hoveredTable, setHoveredTable] = useState<number | null>(null);
@@ -63,8 +66,13 @@ const TableDistribution: React.FC<TableDistributionProps> = ({ mesas, fetchTable
   }, [layout]);
 
   const handleCreateTable = async () => {
-    // You may want to call fetchTables after creating a table in the parent
-    // ...
+    const table: CreateTableRequest = {
+      status: "available",
+      restaurant_id: restaurantId!,
+      table_number: layout.length + 1,
+      qr_code: `/tables/${layout.length + 1}`
+    };
+    await createTable(table);
     await fetchTables();
   };
 

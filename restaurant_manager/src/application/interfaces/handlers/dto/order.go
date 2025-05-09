@@ -1,6 +1,9 @@
 package dto
 
-import "restaurant_manager/src/domain/models"
+import (
+	"restaurant_manager/src/domain/models"
+	"time"
+)
 
 type OrderDTO struct {
 	OrderID      string         `json:"order_id"`
@@ -10,6 +13,7 @@ type OrderDTO struct {
 	Items        []OrderItemDTO `json:"items"`
 	Status       string         `json:"status"`
 	TotalPrice   float64        `json:"total_price"`
+	CreatedAt    time.Time      `json:"created_at"`
 }
 
 type OrderItemDTO struct {
@@ -18,6 +22,7 @@ type OrderItemDTO struct {
 	Quantity    int     `json:"quantity"`
 	Price       float64 `json:"price"`
 	Observation string  `json:"observation"`
+	Image       string  `json:"image"`
 }
 
 func safeString(s *string) string {
@@ -38,6 +43,7 @@ func FromOrders(orders []models.Order) []OrderDTO {
 			Status:       string(order.Status),
 			TotalPrice:   order.TotalPrice,
 			Items:        FromOrderItems(order.OrderItems),
+			CreatedAt:    order.CreatedAt,
 		}
 	}
 	return orderDTOs
@@ -52,6 +58,7 @@ func FromOrderItems(orderItems []models.OrderItem) []OrderItemDTO {
 			Quantity:    orderItem.Quantity,
 			Price:       orderItem.Price,
 			Observation: safeString(orderItem.Observation),
+			Image:       orderItem.MenuItem.ImageURL,
 		}
 	}
 	return orderItemDTOs

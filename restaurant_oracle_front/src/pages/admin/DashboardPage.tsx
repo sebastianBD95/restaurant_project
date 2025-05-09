@@ -4,8 +4,8 @@ import { Button, Box, Heading, VStack, Grid, Flex } from '@chakra-ui/react';
 import DailyRevenue from '../../components/dashboards/DailyRevenue';
 import TrendingMenu from '../../components/dashboards/TrendingMenu';
 import DailyOrders from '../../components/dashboards/DailyOrders';
-import Historial from './PaginaHistorial';
-import PaginaGanancia from '../../components/dashboards/Ganancias';
+import Historial from '../../components/dashboards/PaginaHistorial';
+import PaginaGanancia from '../../components/dashboards/Reveneu';
 import { useParams } from 'react-router-dom';
 import { Sidebar } from '../../components/ui/navegator';
 import { useSidebar } from '../../hooks/useSidebar';
@@ -15,7 +15,7 @@ const Dashboard: React.FC = () => {
   const { isSidebarOpen, toggleSidebar } = useSidebar();
 
   return (
-    <Flex height="100vh" direction="row">
+    <Flex height="100vh" width="100vw" direction="row">
       {/* Barra lateral de navegación plegable */}
       <Sidebar 
         isSidebarOpen={isSidebarOpen} 
