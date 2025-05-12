@@ -1,12 +1,20 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Button, Dialog, Portal, Stack, Input, Box, Image } from '@chakra-ui/react';
-import { CustomField } from '../ui/field';
-import { MenuItemRequest, MenuItemResponse } from '../../interfaces/menuItems';
+import { Button, Dialog, Portal, Stack, Steps, ButtonGroup, Box, Text } from '@chakra-ui/react';
+import { MenuItemResponse } from '../../interfaces/menuItems';
+import BasicInfoForm from './BasicInfoForm';
+import IngredientsForm from './IngredientsForm';
+
+interface Ingredient {
+  name: string;
+  quantity: number;
+  unit: string;
+  price: number;
+}
 
 interface MenuFormProps {
   category: string;
   categoryMap: Record<string, string>;
-  onSubmit: (e: React.FormEvent, category: string) => Promise<void>;
+  onSubmit: (e: React.FormEvent, category: string, ingredients: Ingredient[]) => Promise<void>;
   error: string;
   MAX_FILE_SIZE: number;
   initialData?: MenuItemResponse;
@@ -46,6 +54,43 @@ const MenuForm: React.FC<MenuFormProps> = ({
     price: false,
     image: false,
   });
+  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
+  const [currentStep, setCurrentStep] = useState(0);
+
+  const handleStepChange = (step: number) => {
+    setCurrentStep(step);
+  };
+
+  const isStep1Valid = () => {
+    return formData.name && formData.description && formData.price > 0 && (file || initialData?.image_url);
+  };
+
+  const isStep2Valid = () => {
+    return ingredients.length > 0;
+  };
+
+  const isCurrentStepValid = () => {
+    switch (currentStep) {
+      case 0:
+        return isStep1Valid();
+      case 1:
+        return isStep2Valid();
+      default:
+        return true;
+    }
+  };
+
+  const handleNext = () => {
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -80,11 +125,12 @@ const MenuForm: React.FC<MenuFormProps> = ({
       description: !formData.description,
       price: !formData.price || formData.price <= 0,
       image: !file && !initialData,
+      ingredients: !ingredients,
     };
     setErrors(newErrors);
     if (Object.values(newErrors).some(Boolean)) return;
     try {
-      await onSubmit(e, category);
+      await onSubmit(e, category, ingredients);
       setFormData({
         name: '',
         description: '',
@@ -93,6 +139,7 @@ const MenuForm: React.FC<MenuFormProps> = ({
       setFile(null);
       setImagePreview(null);
       setIsOpen?.(false);
+      setIngredients([]);
     } catch (error) {
       console.error('Error submitting form:', error);
     }
@@ -105,6 +152,33 @@ const MenuForm: React.FC<MenuFormProps> = ({
     }
   }, [initialData]);
 
+  const steps = [
+    {
+      title: "Step 1",
+      description: "Step 1 description",
+      content: (
+        <BasicInfoForm
+          formData={formData}
+          handleChange={handleChange}
+          handleFileChange={handleFileChange}
+          errors={errors}
+          imagePreview={imagePreview}
+          initialData={initialData}
+        />
+      )
+    },
+    {
+      title: "Step 2",
+      description: "Step 2 description",
+      content: (
+        <IngredientsForm
+          ingredients={ingredients}
+          onIngredientsChange={setIngredients}
+        />
+      )
+    },
+  ]
+
   return (
     <Dialog.Root open={isOpen} onOpenChange={(details) => setIsOpen?.(details.open)} initialFocusEl={() => dialogRef.current}>
       <Portal>
@@ -115,99 +189,127 @@ const MenuForm: React.FC<MenuFormProps> = ({
               <Dialog.Title>{initialData ? 'Editar Plato' : 'Añadir Plato'}</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body pb="4">
-              <form onSubmit={handleSubmit}>
-                <Stack gap="4">
-                  <CustomField
-                    label="Nombre"
-                    required
-                    errorText={errors.name ? "Este campo es obligatorio." : undefined}
+              <Steps.Root count={2} defaultStep={currentStep} onStepComplete={() => handleStepChange(currentStep + 1)}>
+                <Steps.List>
+                  {steps.map((step, index) => (
+                    <Steps.Item key={index} index={index} title={step.title}>
+                      <Steps.Indicator />
+                      <Steps.Title>{step.title}</Steps.Title>
+                      <Steps.Separator />
+                    </Steps.Item>
+                  ))}
+                </Steps.List>
+
+                {steps.map((step, index) => (
+                  <Steps.Content key={index} index={index}>
+                    {step.content}
+                  </Steps.Content>
+                ))}
+                <Steps.CompletedContent>
+                  <Box p={4} bg="gray.50" borderRadius="md">
+                    <Text fontSize="lg" fontWeight="bold" mb={4}>Resumen de Datos</Text>
+                    <Stack gap={4}>
+                      <Box>
+                        <Text fontWeight="semibold">Información Básica</Text>
+                        <Box as="table" width="100%" mt={2}>
+                          <Box as="tbody">
+                            <Box as="tr">
+                              <Box as="td" p={2} borderBottom="1px" borderColor="gray.200">Nombre:</Box>
+                              <Box as="td" p={2} borderBottom="1px" borderColor="gray.200">{formData.name}</Box>
+                            </Box>
+                            <Box as="tr">
+                              <Box as="td" p={2} borderBottom="1px" borderColor="gray.200">Descripción:</Box>
+                              <Box as="td" p={2} borderBottom="1px" borderColor="gray.200">{formData.description}</Box>
+                            </Box>
+                            <Box as="tr">
+                              <Box as="td" p={2} borderBottom="1px" borderColor="gray.200">Precio:</Box>
+                              <Box as="td" p={2} borderBottom="1px" borderColor="gray.200">${formData.price.toFixed(2)}</Box>
+                            </Box>
+                            <Box as="tr">
+                              <Box as="td" p={2} borderBottom="1px" borderColor="gray.200">Categoría:</Box>
+                              <Box as="td" p={2} borderBottom="1px" borderColor="gray.200">{categoryMap[category]}</Box>
+                            </Box>
+                            <Box as="tr">
+                              <Box as="td" p={2} borderBottom="1px" borderColor="gray.200">Imagen:</Box>
+                              <Box as="td" p={2} borderBottom="1px" borderColor="gray.200">
+                                {file ? file.name : initialData?.image_url ? 'Imagen existente' : 'No se ha seleccionado imagen'}
+                              </Box>
+                            </Box>
+                          </Box>
+                        </Box>
+                      </Box>
+
+                      <Box>
+                        <Text fontWeight="semibold" mb={2}>Ingredientes</Text>
+                        {ingredients.length > 0 ? (
+                          <Box as="table" width="100%" mt={2}>
+                            <Box as="thead">
+                              <Box as="tr" bg="gray.100">
+                                <Box as="th" p={2} textAlign="left">Ingrediente</Box>
+                                <Box as="th" p={2} textAlign="right">Cantidad</Box>
+                                <Box as="th" p={2} textAlign="left">Unidad</Box>
+                                <Box as="th" p={2} textAlign="right">Precio</Box>
+                              </Box>
+                            </Box>
+                            <Box as="tbody">
+                              {ingredients.map((ingredient, index) => (
+                                <Box as="tr" key={index} borderBottom="1px" borderColor="gray.200">
+                                  <Box as="td" p={2}>{ingredient.name}</Box>
+                                  <Box as="td" p={2} textAlign="right">{ingredient.quantity}</Box>
+                                  <Box as="td" p={2}>{ingredient.unit}</Box>
+                                  <Box as="td" p={2} textAlign="right">${ingredient.price.toFixed(2)}</Box>
+                                </Box>
+                              ))}
+                            </Box>
+                          </Box>
+                        ) : (
+                          <Text color="gray.500">No se han agregado ingredientes</Text>
+                        )}
+                      </Box>
+                    </Stack>
+                  </Box>
+                </Steps.CompletedContent>
+
+                <ButtonGroup size="sm" variant="outline">
+                  <Steps.PrevTrigger asChild>
+                    <Button onClick={handlePrev} >Prev</Button>
+                  </Steps.PrevTrigger>
+                  <Steps.NextTrigger asChild>
+                    <Button 
+                      onClick={handleNext} 
+                      disabled={!isCurrentStepValid()}
+                      hidden={currentStep === steps.length}
+                    >
+                      Next
+                    </Button>
+                  </Steps.NextTrigger>
+                    <Button
+                      hidden={currentStep !== steps.length} 
+                      variant="outline"
+                      onClick={() => {
+                        setFormData({
+                          name: '',
+                          description: '',
+                          price: 0,
+                        });
+                        setFile(null);
+                        setImagePreview(null);
+                        setIsOpen?.(false);
+                        setErrors({ name: false, description: false, price: false, image: false });
+                        setIngredients([]);
+                      }}
+                    >
+                    Cancelar
+                  </Button>
+                  <Button 
+                    onClick={handleSubmit}
+                    hidden={currentStep !== steps.length}
                   >
-                    <Input
-                      placeholder="Nombre"
-                      value={formData.name}
-                      onChange={handleChange}
-                      name="name"
-                    />
-                  </CustomField>
-                  <CustomField
-                    label="Descripcion"
-                    required
-                    errorText={errors.description ? "Este campo es obligatorio." : undefined}
-                  >
-                    <Input
-                      placeholder="Descripcion"
-                      value={formData.description}
-                      onChange={handleChange}
-                      name="description"
-                    />
-                  </CustomField>
-                  <CustomField
-                    label="Precio"
-                    required
-                    errorText={errors.price ? "Ingrese un precio válido mayor a 0." : undefined}
-                  >
-                    <Input
-                      placeholder="Precio"
-                      value={formData.price}
-                      onChange={handleChange}
-                      name="price"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                    />
-                  </CustomField>
-                  <CustomField
-                    label={`Imagen${initialData ? ' (opcional)' : ''}`}
-                    required={!initialData}
-                    errorText={errors.image ? "Debe seleccionar una imagen." : undefined}
-                  >
-                    <Input
-                      type="file"
-                      name="image"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                    />
-                  </CustomField>
-                  {imagePreview && (
-                    <Box mt={4}>
-                      <Box fontWeight="semibold" mb={2}>Pre-vista imagen</Box>
-                      <Image
-                        border={1}
-                        src={imagePreview}
-                        alt="Image preview"
-                        boxSize="200px"
-                        objectFit="cover"
-                      />
-                    </Box>
-                  )}
-                </Stack>
-              </form>
+                    {initialData ? 'Actualizar' : 'Guardar'}
+                  </Button>
+                </ButtonGroup>
+              </Steps.Root>
             </Dialog.Body>
-            <Dialog.Footer>
-              <Dialog.ActionTrigger asChild>
-                <Button 
-                  variant="outline"
-                  onClick={() => {
-                    setFormData({
-                      name: '',
-                      description: '',
-                      price: 0,
-                    });
-                    setFile(null);
-                    setImagePreview(null);
-                    setIsOpen?.(false);
-                    setErrors({ name: false, description: false, price: false, image: false });
-                  }}
-                >
-                  Cancelar
-                </Button>
-              </Dialog.ActionTrigger>
-              <Dialog.ActionTrigger asChild>
-                <Button onClick={handleSubmit}>
-                  {initialData ? 'Actualizar' : 'Guardar'}
-                </Button>
-              </Dialog.ActionTrigger>
-            </Dialog.Footer>
           </Dialog.Content>
         </Dialog.Positioner>
       </Portal>

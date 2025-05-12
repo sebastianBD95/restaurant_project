@@ -69,6 +69,43 @@ CREATE TABLE servu.menu_items (
                                   image_url TEXT
 );
 
+CREATE TABLE servu.ingredients (
+                                  ingredient_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                                  menu_item_id UUID REFERENCES servu.menu_items(menu_item_id),
+                                  name VARCHAR(255) NOT NULL,
+                                  price DECIMAL(10,2) NOT NULL,
+                                  amount DECIMAL(10,2) NOT NULL,
+                                  unit VARCHAR(20) CHECK (unit IN ('g', 'ml', 'kg', 'l', 'un')) NOT NULL
+);
+
+-- Indexes for ingredients table
+CREATE INDEX idx_ingredients_menu_item_id ON servu.ingredients(menu_item_id);
+CREATE INDEX idx_ingredients_name ON servu.ingredients(name);
+
+CREATE TABLE servu.inventory (
+    inventory_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    restaurant_id UUID REFERENCES servu.restaurants(restaurant_id) ON DELETE CASCADE,
+    ingredient_id UUID REFERENCES servu.ingredients(ingredient_id) ON DELETE CASCADE,
+    quantity DECIMAL(10,2) NOT NULL,
+    unit VARCHAR(20) CHECK (unit IN ('g', 'ml', 'kg', 'l', 'un')) NOT NULL,
+    minimum_quantity DECIMAL(10,2) NOT NULL,
+    last_restock_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(restaurant_id, ingredient_id)
+);
+
+-- Indexes for inventory table
+CREATE INDEX idx_inventory_restaurant_id ON servu.inventory(restaurant_id);
+CREATE INDEX idx_inventory_ingredient_id ON servu.inventory(ingredient_id);
+CREATE INDEX idx_inventory_last_restock_date ON servu.inventory(last_restock_date);
+
+-- Add trigger for updating updated_at timestamp
+CREATE TRIGGER update_inventory_timestamp
+    BEFORE UPDATE ON servu.inventory
+    FOR EACH ROW
+    EXECUTE FUNCTION update_timestamp();
+
 -- Indexes for menu_items table
 CREATE INDEX idx_menu_items_restaurant_id ON servu.menu_items(restaurant_id);
 CREATE INDEX idx_menu_items_name ON servu.menu_items(name);

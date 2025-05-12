@@ -27,6 +27,7 @@ import { StepperInput } from '../../components/ui/stepper-input';
 import { useNavigate } from 'react-router-dom';
 import '../styles/MenuPage.css';
 import { MenuData, MenuItemRequest, MenuItemResponse } from '../../interfaces/menuItems';
+import { Ingredient } from '../../interfaces/ingredients';
 import { addMenu, getMenus, editMenuItem } from '../../services/menuService';
 import { getCookie } from '../utils/cookieManager';
 import {useParams } from 'react-router-dom';
@@ -133,7 +134,7 @@ const MenuPage: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent, category: string, editingItem?: MenuItemResponse) => {
+  const handleSubmit = async (e: React.FormEvent, category: string, ingredients: Ingredient[], editingItem?: MenuItemResponse) => {
     e.preventDefault();
 
     if (!formData.name || !formData.description || (!file && !editingItem) || formData.price <= 0) {
@@ -146,7 +147,8 @@ const MenuPage: React.FC = () => {
       description: formData.description,
       image: file || new File([], ''),
       price: Number(formData.price),
-      category: categoryMap[category]
+      category: categoryMap[category],
+      ingredients: ingredients
     };
 
     try {
