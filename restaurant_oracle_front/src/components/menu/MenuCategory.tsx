@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
-import { Box, Grid, GridItem, Image, Text, Accordion, AbsoluteCenter, Button } from '@chakra-ui/react';
+import { Box, Grid, GridItem, Image, Text, Accordion, AbsoluteCenter, Button, ButtonGroup } from '@chakra-ui/react';
 import { MenuItemResponse } from '../../interfaces/menuItems';
 import MenuItem from './MenuItemWaiter';
 import MenuForm from './MenuForm';
 import { editMenuItem, hideMenuItem, deleteMenuItem } from '../../services/menuService';
 import { getCookie } from '../../pages/utils/cookieManager';
 import { isAdmin } from '../../pages/utils/roleUtils';
+import { Ingredient } from '../../interfaces/ingredients';
 
 interface MenuCategoryProps {
   category: string;
   items: MenuItemResponse[];
   categoryMap: Record<string, string>;
-  onSubmit: (e: React.FormEvent, category: string, item?: MenuItemResponse) => Promise<void>;
+  onSubmit: (e: React.FormEvent, category: string, ingredients: Ingredient[], item?: MenuItemResponse) => Promise<void>;
   error: string;
   MAX_FILE_SIZE: number;
   onAddToCart: (item: MenuItemResponse, quantity: number, observation: string) => void;
@@ -26,6 +27,8 @@ interface MenuCategoryProps {
   file: File | null;
   setFile: (file: File | null) => void;
   onMenuUpdate: () => Promise<void>;
+  ingredients: Ingredient[];
+  setIngredients: (ingredients: Ingredient[]) => void;
 }
 
 const MenuCategory: React.FC<MenuCategoryProps> = ({
@@ -42,7 +45,9 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
   setFormData,
   file,
   setFile,
-  onMenuUpdate
+  onMenuUpdate,
+  ingredients,
+  setIngredients
 }) => {
   const token = getCookie(document.cookie, 'token');
   const restaurantId = window.location.pathname.split('/').find((v, i, arr) => arr[i-1] === 'menu') || '';
@@ -123,7 +128,7 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
           <MenuForm
             category={category}
             categoryMap={categoryMap}
-            onSubmit={(e) => onSubmit(e, category, editingItem)}
+            onSubmit={(e) => onSubmit(e, category, ingredients, editingItem)}
             error={error}
             MAX_FILE_SIZE={MAX_FILE_SIZE}
             isOpen={isFormOpen}
@@ -133,6 +138,8 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
             file={file}
             setFile={setFile}
             initialData={editingItem}
+            ingredients={ingredients}
+            setIngredients={setIngredients}
           />
         </AbsoluteCenter>
       </Box>

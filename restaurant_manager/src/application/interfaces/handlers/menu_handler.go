@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"restaurant_manager/src/application/services"
 	"restaurant_manager/src/application/utils"
@@ -48,6 +49,36 @@ func (h *MenuHandler) AddMenuItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Parse ingredients from form
+	ingredients := []models.Ingredient{}
+	for i := 0; ; i++ {
+		ingredientName := r.FormValue(fmt.Sprintf("ingredients[%d][name]", i))
+		if ingredientName == "" {
+			break // No more ingredients
+		}
+		quantityStr := r.FormValue(fmt.Sprintf("ingredients[%d][quantity]", i))
+		unit := r.FormValue(fmt.Sprintf("ingredients[%d][unit]", i))
+		priceStr := r.FormValue(fmt.Sprintf("ingredients[%d][price]", i))
+
+		quantity, err := strconv.ParseFloat(quantityStr, 64)
+		if err != nil {
+			http.Error(w, "Invalid ingredient quantity", http.StatusBadRequest)
+			return
+		}
+		ingredientPrice, err := strconv.ParseFloat(priceStr, 64)
+		if err != nil {
+			http.Error(w, "Invalid ingredient price", http.StatusBadRequest)
+			return
+		}
+
+		ingredients = append(ingredients, models.Ingredient{
+			Name:   ingredientName,
+			Amount: quantity,
+			Unit:   unit,
+			Price:  ingredientPrice,
+		})
+	}
+
 	menuItem := models.MenuItem{
 		RestaurantID: restaurantID,
 		Name:         name,
@@ -56,6 +87,7 @@ func (h *MenuHandler) AddMenuItem(w http.ResponseWriter, r *http.Request) {
 		Available:    true,
 		Price:        price,
 		Category:     models.Category(category),
+		Ingredients:  ingredients,
 	}
 	menuItemID, err := h.service.AddMenuItem(&menuItem)
 	if err != nil {

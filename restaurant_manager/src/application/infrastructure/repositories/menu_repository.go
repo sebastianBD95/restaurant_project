@@ -17,7 +17,7 @@ func NewMenuRepository(db *gorm.DB) repositories.MenuRepository {
 }
 
 func (repo *MenuRepositoryImpl) AddMenuItem(menuItem *models.MenuItem) (string, error) {
-	result := repo.db.Clauses(clause.Returning{}).Omit("menu_item_id").Create(&menuItem)
+	result := repo.db.Clauses(clause.Returning{}).Omit("menu_item_id", "Ingredients").Create(&menuItem)
 	if result.Error != nil {
 		return "", result.Error
 	}
@@ -36,6 +36,6 @@ func (repo *MenuRepositoryImpl) UpdateMenuItem(menuItem *models.MenuItem) error 
 
 func (repo *MenuRepositoryImpl) GetMenuItems(restaurantID string) ([]models.MenuItem, error) {
 	var items []models.MenuItem
-	err := repo.db.Where("restaurant_id = ?", restaurantID).Find(&items).Error
+	err := repo.db.Preload("Ingredients").Where("restaurant_id = ?", restaurantID).Find(&items).Error
 	return items, err
 }

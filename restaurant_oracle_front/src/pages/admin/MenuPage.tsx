@@ -15,7 +15,8 @@ import {
   Accordion,
   AbsoluteCenter,
   GridItem,
-  Flex
+  Flex,
+  Spinner
 } from '@chakra-ui/react';
 import { NumberInputField, NumberInputRoot } from '../../components/ui/number-input';
 import { useEffect, useState, useRef } from 'react';
@@ -27,6 +28,7 @@ import { StepperInput } from '../../components/ui/stepper-input';
 import { useNavigate } from 'react-router-dom';
 import '../styles/MenuPage.css';
 import { MenuData, MenuItemRequest, MenuItemResponse } from '../../interfaces/menuItems';
+import { Ingredient } from '../../interfaces/ingredients';
 import { addMenu, getMenus, editMenuItem } from '../../services/menuService';
 import { getCookie } from '../utils/cookieManager';
 import {useParams } from 'react-router-dom';
@@ -57,6 +59,8 @@ const MenuPage: React.FC = () => {
     postres: [],
     bebidas: [],
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
   const { restaurantId } = useParams();
   const [cart, setCart] = useState<any[]>([]);
   const [orderPlaced, setOrderPlaced] = useState(false);
@@ -71,7 +75,7 @@ const MenuPage: React.FC = () => {
     description: '',
     price: 0,
   });
-  const [error, setError] = useState('');
+  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
   const dialogRef = useRef<HTMLButtonElement>(null);
   const { isSidebarOpen, toggleSidebar, handleHomeClick } = useSidebar();
@@ -88,13 +92,17 @@ const MenuPage: React.FC = () => {
   }, []);
 
   const fetchMenuItems = async () => {
+    setIsLoading(true);
+    setError('');
     try {
       let token = getCookie(document.cookie, 'token');
       if (!token) {
         setError('No authentication token found');
         return;
       }
+      
       const response = await getMenus(token, restaurantId!);
+      console.log('Menu items response:', response); // Debug log
       
       let menuItems = response as MenuItemResponse[];
       const appetizers = menuItems.filter(item => item.category === 'Appetizer');
@@ -110,7 +118,10 @@ const MenuPage: React.FC = () => {
       });
 
     } catch (error) {
-      console.error('Error fetching restaurants:', error);
+      console.error('Error fetching menu items:', error);
+      setError('Error loading menu items. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -133,7 +144,7 @@ const MenuPage: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent, category: string, editingItem?: MenuItemResponse) => {
+  const handleSubmit = async (e: React.FormEvent, category: string, ingredients: Ingredient[], editingItem?: MenuItemResponse) => {
     e.preventDefault();
 
     if (!formData.name || !formData.description || (!file && !editingItem) || formData.price <= 0) {
@@ -146,7 +157,8 @@ const MenuPage: React.FC = () => {
       description: formData.description,
       image: file || new File([], ''),
       price: Number(formData.price),
-      category: categoryMap[category]
+      category: categoryMap[category],
+      ingredients: ingredients
     };
 
     try {
@@ -283,38 +295,58 @@ const MenuPage: React.FC = () => {
             Menú
           </Heading>
           
-          <Accordion.Root collapsible>
-            {Object.entries(menuData).map(([category, items]) => (
-              <MenuCategory
-                key={category}
-                category={category}
-                items={items}
-                categoryMap={categoryMap}
-                onSubmit={handleSubmit}
-                error={error}
-                MAX_FILE_SIZE={MAX_FILE_SIZE}
-                onAddToCart={addToCart}
-                orderPlaced={orderPlaced}
-                platoDisponible={platoDisponible}
-                formData={formData}
-                setFormData={setFormData}
-                file={file}
-                setFile={setFile}
-                onMenuUpdate={fetchMenuItems}
-              />
-            ))}
-          </Accordion.Root>
+          {isLoading ? (
+            <Box display="flex" justifyContent="center" alignItems="center" minH="200px">
+              <Spinner size="xl" />
+            </Box>
+          ) : error ? (
+            <Box 
+              textAlign="center" 
+              p={4} 
+              bg="red.50" 
+              color="red.600" 
+              borderRadius="md"
+            >
+              {error || 'An unexpected error occurred'}
+            </Box>
+          ) : (
+            <>
+              <Accordion.Root collapsible>
+                {Object.entries(menuData).map(([category, items]) => (
+                  <MenuCategory
+                    key={category}
+                    category={category}
+                    items={items}
+                    categoryMap={categoryMap}
+                    onSubmit={handleSubmit}
+                    error={error}
+                    MAX_FILE_SIZE={MAX_FILE_SIZE}
+                    onAddToCart={addToCart}
+                    orderPlaced={orderPlaced}
+                    platoDisponible={platoDisponible}
+                    formData={formData}
+                    setFormData={setFormData}
+                    file={file}
+                    setFile={setFile}
+                    onMenuUpdate={fetchMenuItems}
+                    ingredients={ingredients}
+                    setIngredients={setIngredients}
+                  />
+                ))}
+              </Accordion.Root>
 
-          <Cart
-            cart={cart}
-            orderPlaced={orderPlaced}
-            tableNumber={tableNumber}
-            setTableNumber={setTableNumber}
-            observations={observations}
-            setObservations={setObservations}
-            updateCartQuantity={updateCartQuantity}
-            placeOrder={placeOrder}
-          />
+              <Cart
+                cart={cart}
+                orderPlaced={orderPlaced}
+                tableNumber={tableNumber}
+                setTableNumber={setTableNumber}
+                observations={observations}
+                setObservations={setObservations}
+                updateCartQuantity={updateCartQuantity}
+                placeOrder={placeOrder}
+              />
+            </>
+          )}
         </Box>
       </Box>
     </Flex>

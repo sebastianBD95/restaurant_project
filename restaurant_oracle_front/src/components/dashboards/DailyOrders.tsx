@@ -33,13 +33,11 @@ const DashboardDO: React.FC = () => {
     async function fetchOrders() {
       if (!restaurantId) return;
       const orders = await getOrdersByRestaurant(restaurantId);
-      // Agrupar órdenes por día
       const ordersPerDay: { [key: string]: number } = {};
       orders.forEach((order: any) => {
         const date = dayjs(order.created_at).format('YYYY-MM-DD');
         ordersPerDay[date] = (ordersPerDay[date] || 0) + 1;
       });
-      // Convertir a array de objetos para la gráfica
       const formattedData = Object.entries(ordersPerDay).map(([date, value]) => ({
         date,
         value,

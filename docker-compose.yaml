@@ -16,7 +16,7 @@ services:
       - FLYWAY_USER=postgres
       - FLYWAY_PASSWORD=postgres
       - FLYWAY_URL=jdbc:postgresql://postgres:5432/servu
-      - FLYWAY_SCHEMAS=flyway
+      - FLYWAY_SCHEMAS=servu
       - FLYWAY_GROUP=true
     volumes:
       - ./db_versioning:/flyway/sql

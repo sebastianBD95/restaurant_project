@@ -4,15 +4,31 @@ export interface MenuItemRequest  {
     price: number;
     image: File;
     category: string;
+    ingredients: {
+      name: string;
+      price: number;
+      amount: number;
+      unit: string;
+    }[];
   };
 
 export interface MenuItemResponse  {
-    menu_item_id: string
+    menu_item_id: string;
+    restaurant_id: string;
     name: string;
     description: string;
     price: number;
+    available: boolean;
     image_url: string;
-    category:string;
+    category: string;
+    ingredients: {
+      ingredient_id: string;
+      menu_item_id: string;
+      name: string;
+      price: number;
+      amount: number;
+      unit: string;
+    }[];
     hidden?: boolean;
   };
   
