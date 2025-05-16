@@ -1,12 +1,12 @@
 package models
 
 type Ingredient struct {
-	Ingredient_id string  `json:"ingredient_id"`
-	MenuItemID    string  `json:"menu_item_id,omitempty"`
-	Name          string  `json:"name"`
-	Price         float64 `json:"price"`
-	Amount        float64 `json:"amount"`
-	Unit          string  `json:"unit"`
+	IngredientID string  `gorm:"primaryKey;column:ingredient_id" json:"ingredient_id"`
+	MenuItemID   string  `gorm:"column:menu_item_id" json:"menu_item_id"`
+	Name         string  `gorm:"column:name" json:"name"`
+	Price        float64 `gorm:"column:price" json:"price"`
+	Amount       float64 `gorm:"column:amount" json:"amount"`
+	Unit         string  `gorm:"column:unit" json:"unit"`
 }
 
 const (

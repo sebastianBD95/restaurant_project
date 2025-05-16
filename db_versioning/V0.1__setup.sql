@@ -65,14 +65,23 @@ CREATE TABLE servu.menu_items (
                                   description TEXT,
                                   price DECIMAL(10,2) NOT NULL,
                                   available BOOLEAN DEFAULT TRUE,
-                                  category VARCHAR(20) CHECK (category IN ('Appetizer', 'Dessert', 'Main','Soup','Salad','Drinks')) NOT NULL,
+                                  category VARCHAR(20) CHECK (category IN ('Appetizer', 'Dessert', 'Main','Soup','Salad','Drinks','Side')) NOT NULL,
                                   image_url TEXT
 );
 
+CREATE TABLE servu.raw_ingredients (
+    raw_ingredient_id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    category VARCHAR(20) CHECK (category IN ('Verdura', 'Fruta', 'Pollo', 'Res', 'Cerdo', 'Cereal', 'Legumbre', 'Lácteo', 'Grasa', 'Condimento', 'Harina', 'Grano', 'Marisco', 'Pescado', 'Hongo')) NOT NULL
+);
+
+CREATE INDEX idx_raw_ingredients_category ON servu.raw_ingredients(category);
+CREATE INDEX idx_raw_ingredients_name ON servu.raw_ingredients(name);
+
 CREATE TABLE servu.ingredients (
                                   ingredient_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                                  menu_item_id UUID REFERENCES servu.menu_items(menu_item_id),
-                                  name VARCHAR(255) NOT NULL,
+                                  menu_item_id UUID REFERENCES servu.menu_items(menu_item_id) ON DELETE CASCADE, 
+                                  raw_ingredient_id SERIAL REFERENCES servu.raw_ingredients(raw_ingredient_id),
                                   price DECIMAL(10,2) NOT NULL,
                                   amount DECIMAL(10,2) NOT NULL,
                                   unit VARCHAR(20) CHECK (unit IN ('g', 'ml', 'kg', 'l', 'un')) NOT NULL
@@ -80,29 +89,32 @@ CREATE TABLE servu.ingredients (
 
 -- Indexes for ingredients table
 CREATE INDEX idx_ingredients_menu_item_id ON servu.ingredients(menu_item_id);
-CREATE INDEX idx_ingredients_name ON servu.ingredients(name);
+CREATE INDEX idx_ingredients_raw_ingredient_id ON servu.ingredients(raw_ingredient_id);
 
-CREATE TABLE servu.inventory (
+
+
+CREATE TABLE servu.inventories (
     inventory_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     restaurant_id UUID REFERENCES servu.restaurants(restaurant_id) ON DELETE CASCADE,
-    ingredient_id UUID REFERENCES servu.ingredients(ingredient_id) ON DELETE CASCADE,
+    raw_ingredient_id SERIAL REFERENCES servu.raw_ingredients(raw_ingredient_id),
     quantity DECIMAL(10,2) NOT NULL,
     unit VARCHAR(20) CHECK (unit IN ('g', 'ml', 'kg', 'l', 'un')) NOT NULL,
     minimum_quantity DECIMAL(10,2) NOT NULL,
     last_restock_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    price DECIMAL(10,2) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(restaurant_id, ingredient_id)
+    UNIQUE(restaurant_id, raw_ingredient_id)
 );
 
 -- Indexes for inventory table
-CREATE INDEX idx_inventory_restaurant_id ON servu.inventory(restaurant_id);
-CREATE INDEX idx_inventory_ingredient_id ON servu.inventory(ingredient_id);
-CREATE INDEX idx_inventory_last_restock_date ON servu.inventory(last_restock_date);
+CREATE INDEX idx_inventories_restaurant_id ON servu.inventories(restaurant_id);
+CREATE INDEX idx_inventories_raw_ingredient_id ON servu.inventories(raw_ingredient_id);
+CREATE INDEX idx_inventories_last_restock_date ON servu.inventories(last_restock_date);
 
 -- Add trigger for updating updated_at timestamp
-CREATE TRIGGER update_inventory_timestamp
-    BEFORE UPDATE ON servu.inventory
+CREATE TRIGGER update_inventories_timestamp
+    BEFORE UPDATE ON servu.inventories
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
@@ -134,6 +146,8 @@ CREATE TABLE servu.order_items (
                                    quantity INT CHECK (quantity > 0),
                                    price DECIMAL(10,2) NOT NULL, -- Price at the time of order
                                    observation TEXT,
+                                   status VARCHAR(20) CHECK (status IN ('pending', 'completed', 'cancelled','void')) DEFAULT 'pending',
+                                   void_reason TEXT,
                                    PRIMARY KEY (order_id, menu_item_id)
 );
 

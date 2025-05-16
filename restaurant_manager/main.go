@@ -24,20 +24,25 @@ func main() {
 	menuRepo := repositories.NewMenuRepository(config.DB)
 	orderRepo := repositories.NewOrderRepository(config.DB)
 	tableRepo := repositories.NewTableRepository(config.DB)
+	inventoryRepo := repositories.NewInventoryRepository(config.DB)
+	ingredientRepo := repositories.NewIngredientRepository(config.DB)
 
+	ingredientService := services.NewIngredientsService(ingredientRepo)
 	userService := services.NewUserService(userRepo)
 	restaurantService := services.NewRestaurantService(restaurantRepo, &aws3)
-	menuService := services.NewMenuService(menuRepo, &aws3)
+	menuService := services.NewMenuService(menuRepo, &aws3, ingredientService)
 	tableService := services.NewTableService(tableRepo)
 	orderService := services.NewOrderService(orderRepo, tableService)
+	inventoryService := services.NewInventoryService(inventoryRepo)
 
 	userHandler := handlers.NewUserHandler(userService)
 	restaurantHandler := handlers.NewRestaurantHandler(restaurantService)
 	menuHandler := handlers.NewMenuHandler(menuService)
 	orderHandler := handlers.NewOrderHandler(orderService)
 	tableHandler := handlers.NewTableHandler(tableService)
-
-	r := routes.SetupRoutes(userHandler, restaurantHandler, menuHandler, orderHandler, tableHandler)
+	inventoryHandler := handlers.NewInventoryHandler(inventoryService)
+	ingredientHandler := handlers.NewIngredientHandler(ingredientService)
+	r := routes.SetupRoutes(userHandler, restaurantHandler, menuHandler, orderHandler, tableHandler, inventoryHandler, ingredientHandler)
 
 	fmt.Println("🚀 Server running on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", r))

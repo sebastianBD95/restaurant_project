@@ -13,10 +13,14 @@ func NewIngredientsService(repo repositories.IngredientsRepository) *Ingredients
 	return &IngredientsService{repo: repo}
 }
 
-func (s *IngredientsService) CreateIngredient(ingredient []models.Ingredient) ([]string, error) {
-	return s.repo.CreateIngredients(ingredient)
+func (s *IngredientsService) CreateIngredients(ingredients []models.Ingredient) ([]string, error) {
+	return s.repo.CreateIngredients(ingredients)
 }
 
 func (s *IngredientsService) GetIngredients() ([]*models.Ingredient, error) {
 	return s.repo.GetIngredients()
+}
+
+func (s *IngredientsService) GetIngredientsByRestaurantID(restaurantID string) ([]*models.Ingredient, error) {
+	return s.repo.GetIngredientsByRestaurantID(restaurantID)
 }

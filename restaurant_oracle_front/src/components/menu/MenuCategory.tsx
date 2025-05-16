@@ -27,6 +27,8 @@ interface MenuCategoryProps {
   file: File | null;
   setFile: (file: File | null) => void;
   onMenuUpdate: () => Promise<void>;
+  ingredients: Ingredient[];
+  setIngredients: (ingredients: Ingredient[]) => void;
 }
 
 const MenuCategory: React.FC<MenuCategoryProps> = ({
@@ -43,7 +45,9 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
   setFormData,
   file,
   setFile,
-  onMenuUpdate
+  onMenuUpdate,
+  ingredients,
+  setIngredients
 }) => {
   const token = getCookie(document.cookie, 'token');
   const restaurantId = window.location.pathname.split('/').find((v, i, arr) => arr[i-1] === 'menu') || '';
@@ -124,7 +128,7 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
           <MenuForm
             category={category}
             categoryMap={categoryMap}
-            onSubmit={(e) => onSubmit(e, category, [], editingItem)}
+            onSubmit={(e) => onSubmit(e, category, ingredients, editingItem)}
             error={error}
             MAX_FILE_SIZE={MAX_FILE_SIZE}
             isOpen={isFormOpen}
@@ -134,6 +138,8 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
             file={file}
             setFile={setFile}
             initialData={editingItem}
+            ingredients={ingredients}
+            setIngredients={setIngredients}
           />
         </AbsoluteCenter>
       </Box>

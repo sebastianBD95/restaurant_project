@@ -14,7 +14,7 @@ interface Ingredient {
 interface MenuFormProps {
   category: string;
   categoryMap: Record<string, string>;
-  onSubmit: (e: React.FormEvent, category: string, ingredients: Ingredient[]) => Promise<void>;
+  onSubmit: (e: React.FormEvent, category: string, ingredients: Ingredient[], editingItem?: MenuItemResponse) => Promise<void>;
   error: string;
   MAX_FILE_SIZE: number;
   initialData?: MenuItemResponse;
@@ -29,6 +29,8 @@ interface MenuFormProps {
   setFormData: (data: { name: string; description: string; price: number }) => void;
   file: File | null;
   setFile: (file: File | null) => void;
+  ingredients: Ingredient[];
+  setIngredients: (ingredients: Ingredient[]) => void;
 }
 
 const MenuForm: React.FC<MenuFormProps> = ({
@@ -44,7 +46,9 @@ const MenuForm: React.FC<MenuFormProps> = ({
   formData,
   setFormData,
   file,
-  setFile
+  setFile,
+  ingredients,
+  setIngredients
 }) => {
   const [imagePreview, setImagePreview] = useState<string | null>(initialData?.image_url || null);
   const dialogRef = useRef<HTMLButtonElement>(null);
@@ -54,7 +58,6 @@ const MenuForm: React.FC<MenuFormProps> = ({
     price: false,
     image: false,
   });
-  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
 
   const handleStepChange = (step: number) => {
@@ -130,7 +133,7 @@ const MenuForm: React.FC<MenuFormProps> = ({
     setErrors(newErrors);
     if (Object.values(newErrors).some(Boolean)) return;
     try {
-      await onSubmit(e, category, ingredients);
+      await onSubmit(e, category, ingredients, initialData);
       setFormData({
         name: '',
         description: '',

@@ -8,16 +8,29 @@ import (
 )
 
 type MenuService struct {
-	repo         repositories.MenuRepository
-	imageManager ports.StorageImageManager
+	repo              repositories.MenuRepository
+	imageManager      ports.StorageImageManager
+	ingredientService *IngredientsService
 }
 
-func NewMenuService(repo repositories.MenuRepository, awsS3 ports.StorageImageManager) *MenuService {
-	return &MenuService{repo: repo, imageManager: awsS3}
+func NewMenuService(repo repositories.MenuRepository, awsS3 ports.StorageImageManager, ingredientService *IngredientsService) *MenuService {
+	return &MenuService{repo: repo, imageManager: awsS3, ingredientService: ingredientService}
 }
 
 func (s *MenuService) AddMenuItem(menuItem *models.MenuItem) (string, error) {
-	return s.repo.AddMenuItem(menuItem)
+	menuItemID, err := s.repo.AddMenuItem(menuItem)
+	if err != nil {
+		return "", err
+	}
+	for i := range menuItem.Ingredients {
+		menuItem.Ingredients[i].MenuItemID = menuItemID
+	}
+	_, err = s.ingredientService.CreateIngredients(menuItem.Ingredients)
+	if err != nil {
+		return "", err
+	}
+
+	return menuItemID, nil
 }
 
 func (s *MenuService) DeleteMenuItem(menuItemID string) error {

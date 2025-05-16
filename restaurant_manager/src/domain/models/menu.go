@@ -9,7 +9,7 @@ type MenuItem struct {
 	Available    bool         `gorm:"column:available" json:"available"`
 	ImageURL     string       `gorm:"column:image_url" json:"image_url"`
 	Category     Category     `gorm:"column:category" json:"category"`
-	Ingredients  []Ingredient `gorm:"foreignKey:MenuItemID" json:"ingredients"`
+	Ingredients  []Ingredient `gorm:"foreignKey:MenuItemID;references:MenuItemID" json:"ingredients"`
 }
 
 type Category string

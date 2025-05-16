@@ -41,7 +41,7 @@ func accessControlMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func SetupRoutes(userHandler *handlers.UserHandler, restaurantHandler *handlers.RestaurantHandler, menuHandler *handlers.MenuHandler, orderHandler *handlers.OrderHandler, tableHandler *handlers.TableHandler) *mux.Router {
+func SetupRoutes(userHandler *handlers.UserHandler, restaurantHandler *handlers.RestaurantHandler, menuHandler *handlers.MenuHandler, orderHandler *handlers.OrderHandler, tableHandler *handlers.TableHandler, inventoryHandler *handlers.InventoryHandler, ingredientHandler *handlers.IngredientHandler) *mux.Router {
 	r := mux.NewRouter()
 
 	//r.Use(logRequests)
@@ -74,6 +74,7 @@ func SetupRoutes(userHandler *handlers.UserHandler, restaurantHandler *handlers.
 	r.HandleFunc("/tables", tableHandler.GetTablesByRestaurantId).Methods("GET", "OPTIONS")
 	r.HandleFunc("/tables/{table_id}", tableHandler.UpdateTable).Methods("PUT", "OPTIONS")
 	r.HandleFunc("/tables/{table_id}", tableHandler.DeleteTable).Methods("DELETE", "OPTIONS")
-
+	r.HandleFunc("/inventory", inventoryHandler.CreateInventory).Methods("POST", "OPTIONS")
+	r.HandleFunc("/ingredients", ingredientHandler.GetIngredientsByRestaurantID).Methods("GET", "OPTIONS")
 	return r
 }
