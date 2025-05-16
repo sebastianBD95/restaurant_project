@@ -5,6 +5,7 @@ import BasicInfoForm from './BasicInfoForm';
 import IngredientsForm from './IngredientsForm';
 
 interface Ingredient {
+  raw_ingredient_id: string;
   name: string;
   quantity: number;
   unit: string;

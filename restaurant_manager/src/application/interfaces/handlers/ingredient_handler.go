@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"restaurant_manager/src/application/interfaces/handlers/dto"
 	"restaurant_manager/src/application/services"
 	"restaurant_manager/src/application/utils"
 )
@@ -28,11 +27,7 @@ func (h *IngredientHandler) GetIngredientsByRestaurantID(w http.ResponseWriter, 
 	}
 
 	// Get ingredients
-	ingredients, err := h.service.GetIngredientsByRestaurantID(restaurantID)
-	ingredientsDTO := make([]*dto.Ingredient, len(ingredients))
-	for i, ingredient := range ingredients {
-		ingredientsDTO[i] = dto.FromModelIngredient(ingredient)
-	}
+	rawIngredients, err := h.service.GetIngredientsByRestaurantID(restaurantID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -40,5 +35,5 @@ func (h *IngredientHandler) GetIngredientsByRestaurantID(w http.ResponseWriter, 
 
 	// Return response
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(ingredientsDTO)
+	json.NewEncoder(w).Encode(rawIngredients)
 }
