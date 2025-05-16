@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"restaurant_manager/src/application/interfaces/handlers/dto"
 	"restaurant_manager/src/application/services"
 	"restaurant_manager/src/application/utils"
 	"restaurant_manager/src/domain/models"
@@ -52,8 +53,8 @@ func (h *MenuHandler) AddMenuItem(w http.ResponseWriter, r *http.Request) {
 	// Parse ingredients from form
 	ingredients := []models.Ingredient{}
 	for i := 0; ; i++ {
-		ingredientName := r.FormValue(fmt.Sprintf("ingredients[%d][name]", i))
-		if ingredientName == "" {
+		ingredientID := r.FormValue(fmt.Sprintf("ingredients[%d][raw_ingredient_id]", i))
+		if ingredientID == "" {
 			break // No more ingredients
 		}
 		quantityStr := r.FormValue(fmt.Sprintf("ingredients[%d][quantity]", i))
@@ -72,10 +73,10 @@ func (h *MenuHandler) AddMenuItem(w http.ResponseWriter, r *http.Request) {
 		}
 
 		ingredients = append(ingredients, models.Ingredient{
-			Name:   ingredientName,
-			Amount: quantity,
-			Unit:   unit,
-			Price:  ingredientPrice,
+			RawIngredientID: ingredientID,
+			Amount:          quantity,
+			Unit:            unit,
+			Price:           ingredientPrice,
 		})
 	}
 
@@ -99,13 +100,14 @@ func (h *MenuHandler) AddMenuItem(w http.ResponseWriter, r *http.Request) {
 
 func (h *MenuHandler) GetAllMenuItems(w http.ResponseWriter, r *http.Request) {
 	_ = utils.TokenVerification(r, w)
-	menuID := mux.Vars(r)["restaurant_id"]
-	menus, err := h.service.GetMenuItems(menuID)
+	restaurantID := mux.Vars(r)["restaurant_id"]
+	menus, err := h.service.GetMenuItems(restaurantID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	json.NewEncoder(w).Encode(menus)
+
+	json.NewEncoder(w).Encode(dto.FromMenuItems(menus))
 }
 
 // Update a menu item

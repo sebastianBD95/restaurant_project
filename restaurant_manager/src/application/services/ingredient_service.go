@@ -21,6 +21,6 @@ func (s *IngredientsService) GetIngredients() ([]*models.Ingredient, error) {
 	return s.repo.GetIngredients()
 }
 
-func (s *IngredientsService) GetIngredientsByRestaurantID(restaurantID string) ([]*models.Ingredient, error) {
+func (s *IngredientsService) GetIngredientsByRestaurantID(restaurantID string) ([]models.RawIngredient, error) {
 	return s.repo.GetIngredientsByRestaurantID(restaurantID)
 }

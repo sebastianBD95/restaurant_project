@@ -31,19 +31,24 @@ func (h *InventoryHandler) CreateInventory(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	var inventory models.Inventory
-	if err := json.NewDecoder(r.Body).Decode(&inventory); err != nil {
+	var inventories []models.Inventory
+	if err := json.NewDecoder(r.Body).Decode(&inventories); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	inventory.RestaurantID = restaurantID
-	inventoryID, err := h.service.CreateInventory(&inventory)
+
+	// Set restaurant ID for all inventory items
+	for i := range inventories {
+		inventories[i].RestaurantID = restaurantID
+	}
+
+	inventoryIDs, err := h.service.CreateInventory(inventories)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]string{"inventory_id": inventoryID})
+	json.NewEncoder(w).Encode(map[string][]string{"inventory_ids": inventoryIDs})
 }
 
 func (h *InventoryHandler) GetInventory(w http.ResponseWriter, r *http.Request) {
@@ -67,13 +72,19 @@ func (h *InventoryHandler) GetInventoryByRestaurantID(w http.ResponseWriter, r *
 }
 
 func (h *InventoryHandler) UpdateInventory(w http.ResponseWriter, r *http.Request) {
-	var inventory models.Inventory
-	if err := json.NewDecoder(r.Body).Decode(&inventory); err != nil {
+	owner := utils.TokenVerification(r, w)
+	if owner == "" {
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		return
+	}
+
+	var inventories []models.Inventory
+	if err := json.NewDecoder(r.Body).Decode(&inventories); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	err := h.service.UpdateInventory(&inventory)
+	err := h.service.UpdateInventory(inventories)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

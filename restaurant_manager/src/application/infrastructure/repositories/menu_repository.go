@@ -36,6 +36,6 @@ func (repo *MenuRepositoryImpl) UpdateMenuItem(menuItem *models.MenuItem) error 
 
 func (repo *MenuRepositoryImpl) GetMenuItems(restaurantID string) ([]models.MenuItem, error) {
 	var items []models.MenuItem
-	err := repo.db.Preload("Ingredients").Where("restaurant_id = ?", restaurantID).Find(&items).Error
+	err := repo.db.Preload("Ingredients").Preload("Ingredients.RawIngredient").Where("restaurant_id = ?", restaurantID).Find(&items).Error
 	return items, err
 }

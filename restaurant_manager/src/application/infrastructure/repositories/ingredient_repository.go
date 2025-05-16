@@ -33,12 +33,15 @@ func (repo *IngredientRepository) GetIngredients() ([]*models.Ingredient, error)
 	return ingredients, result.Error
 }
 
-func (repo *IngredientRepository) GetIngredientsByRestaurantID(restaurantID string) ([]*models.Ingredient, error) {
-	var ingredients []*models.Ingredient
+func (repo *IngredientRepository) GetIngredientsByRestaurantID(restaurantID string) ([]models.RawIngredient, error) {
+	var rawIngredients []models.RawIngredient
 	result := repo.db.Distinct().
-		Select("ingredients.*").
-		Joins("JOIN servu.menu_items ON menu_items.menu_item_id = ingredients.menu_item_id").
+		Select("raw_ingredients.*").
+		Table("servu.menu_items").
+		Joins("JOIN servu.ingredients ON ingredients.menu_item_id = menu_items.menu_item_id").
+		Joins("JOIN servu.raw_ingredients ON ingredients.raw_ingredient_id = raw_ingredients.raw_ingredient_id").
 		Where("menu_items.restaurant_id = ?", restaurantID).
-		Find(&ingredients)
-	return ingredients, result.Error
+		Find(&rawIngredients)
+
+	return rawIngredients, result.Error
 }

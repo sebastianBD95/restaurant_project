@@ -16,17 +16,27 @@ func NewInventoryRepository(db *gorm.DB) repositories.InventoryRepository {
 	return &InventoryRepositoryImpl{db}
 }
 
-func (repo *InventoryRepositoryImpl) CreateInventory(inventory *models.Inventory) (string, error) {
-	result := repo.db.Clauses(clause.Returning{}).Omit("inventory_id").Create(&inventory)
-	if result.Error != nil {
-		return "", result.Error
+func (repo *InventoryRepositoryImpl) CreateInventory(inventories []models.Inventory) ([]string, error) {
+	var inventoryIDs []string
+	err := repo.db.Transaction(func(tx *gorm.DB) error {
+		for i := range inventories {
+			result := tx.Clauses(clause.Returning{}).Omit("inventory_id").Create(&inventories[i])
+			if result.Error != nil {
+				return result.Error
+			}
+			inventoryIDs = append(inventoryIDs, inventories[i].InventoryID)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
-	return inventory.InventoryID, nil
+	return inventoryIDs, nil
 }
 
 func (repo *InventoryRepositoryImpl) GetInventory(inventoryID string) (*models.Inventory, error) {
 	var inventory models.Inventory
-	err := repo.db.Preload("Ingredient").First(&inventory, "inventory_id = ?", inventoryID).Error
+	err := repo.db.Preload("RawIngredient").First(&inventory, "inventory_id = ?", inventoryID).Error
 	if err != nil {
 		return nil, err
 	}
@@ -35,14 +45,20 @@ func (repo *InventoryRepositoryImpl) GetInventory(inventoryID string) (*models.I
 
 func (repo *InventoryRepositoryImpl) GetInventoryByRestaurantID(restaurantID string) ([]models.Inventory, error) {
 	var inventories []models.Inventory
-	err := repo.db.Preload("Ingredient").Where("restaurant_id = ?", restaurantID).Find(&inventories).Error
+	err := repo.db.Preload("RawIngredient").Where("restaurant_id = ?", restaurantID).Find(&inventories).Error
 	return inventories, err
 }
 
-func (repo *InventoryRepositoryImpl) UpdateInventory(inventory *models.Inventory) error {
-	return repo.db.Model(&models.Inventory{}).
-		Where("inventory_id = ?", inventory.InventoryID).
-		Updates(inventory).Error
+func (repo *InventoryRepositoryImpl) UpdateInventory(inventories []models.Inventory) error {
+	for _, inventory := range inventories {
+		err := repo.db.Model(&models.Inventory{}).
+			Where("inventory_id = ?", inventory.InventoryID).
+			Updates(inventory).Error
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (repo *InventoryRepositoryImpl) DeleteInventory(inventoryID string) error {

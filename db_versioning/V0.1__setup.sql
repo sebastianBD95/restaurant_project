@@ -58,6 +58,16 @@ CREATE INDEX idx_tables_restaurant_id ON servu.tables(restaurant_id);
 CREATE INDEX idx_tables_table_number ON servu.tables(table_number);
 CREATE INDEX idx_tables_qr_code ON servu.tables(qr_code);
 
+CREATE TABLE servu.raw_ingredients (
+    raw_ingredient_id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    category VARCHAR(20) CHECK (category IN ('Verdura', 'Fruta', 'Pollo', 'Res', 'Cerdo', 'Cereal', 'Legumbre', 'Lácteo', 'Grasa', 'Condimento', 'Harina', 'Grano', 'Marisco', 'Pescado', 'Hongo')) NOT NULL
+);
+
+CREATE INDEX idx_raw_ingredients_category ON servu.raw_ingredients(category);
+CREATE INDEX idx_raw_ingredients_name ON servu.raw_ingredients(name);
+
+
 CREATE TABLE servu.menu_items (
                                   menu_item_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
                                   restaurant_id UUID REFERENCES servu.restaurants(restaurant_id) ON DELETE CASCADE,
@@ -69,14 +79,12 @@ CREATE TABLE servu.menu_items (
                                   image_url TEXT
 );
 
-CREATE TABLE servu.raw_ingredients (
-    raw_ingredient_id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    category VARCHAR(20) CHECK (category IN ('Verdura', 'Fruta', 'Pollo', 'Res', 'Cerdo', 'Cereal', 'Legumbre', 'Lácteo', 'Grasa', 'Condimento', 'Harina', 'Grano', 'Marisco', 'Pescado', 'Hongo')) NOT NULL
-);
+-- Indexes for menu_items table
+CREATE INDEX idx_menu_items_restaurant_id ON servu.menu_items(restaurant_id);
+CREATE INDEX idx_menu_items_name ON servu.menu_items(name);
+CREATE INDEX idx_menu_items_category ON servu.menu_items(category);
+CREATE INDEX idx_menu_items_available ON servu.menu_items(available);
 
-CREATE INDEX idx_raw_ingredients_category ON servu.raw_ingredients(category);
-CREATE INDEX idx_raw_ingredients_name ON servu.raw_ingredients(name);
 
 CREATE TABLE servu.ingredients (
                                   ingredient_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -103,7 +111,7 @@ CREATE TABLE servu.inventories (
     last_restock_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     price DECIMAL(10,2) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIxMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(restaurant_id, raw_ingredient_id)
 );
 
@@ -118,11 +126,7 @@ CREATE TRIGGER update_inventories_timestamp
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
--- Indexes for menu_items table
-CREATE INDEX idx_menu_items_restaurant_id ON servu.menu_items(restaurant_id);
-CREATE INDEX idx_menu_items_name ON servu.menu_items(name);
-CREATE INDEX idx_menu_items_category ON servu.menu_items(category);
-CREATE INDEX idx_menu_items_available ON servu.menu_items(available);
+
 
 CREATE TABLE servu.orders (
                               order_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

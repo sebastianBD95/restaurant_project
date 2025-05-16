@@ -1,7 +1,14 @@
-import React, { useState } from 'react';
-import { Stack, Input, Box, Button, Grid, GridItem } from '@chakra-ui/react';
+import React, { useState, useEffect } from 'react';
+import { Stack, Input, Box, Button, Grid, GridItem, Spinner, Text, Select as ChakraSelect, Portal, createListCollection } from '@chakra-ui/react';
 import { CustomField } from '../ui/field';
 import { Ingredient } from '../../interfaces/ingredients';
+import { getRawIngredientsByCategory } from '../../services/ingredientService';
+import { getCookie } from '../../pages/utils/cookieManager';
+
+const categories = [
+  'Pollo', 'Fruta', 'Lácteo', 'Res', 'Cerdo', 'Condimento', 'Cereal', 'Pescado',
+  'Grano', 'Harina', 'Hongo', 'Grasa', 'Legumbre', 'Verdura', 'Marisco'
+];
 
 interface IngredientsFormProps {
   ingredients: Ingredient[];
@@ -13,16 +20,41 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
   onIngredientsChange
 }) => {
   const [currentIngredient, setCurrentIngredient] = useState<Ingredient>({
+    raw_ingredient_id: '',
     name: '',
     quantity: 0,
     unit: 'g',
     price: 0
   });
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [ingredientOptions, setIngredientOptions] = useState<{ raw_ingredient_id: string; name: string }[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
+  const [fetchError, setFetchError] = useState('');
   const [errors, setErrors] = useState({
     name: false,
     quantity: false,
     price: false
   });
+
+  useEffect(() => {
+    if (selectedCategory) {
+      setLoadingOptions(true);
+      setFetchError('');
+      const token = getCookie(document.cookie, 'token') || '';
+      getRawIngredientsByCategory(selectedCategory, token)
+        .then((data) => {
+          setIngredientOptions(data);
+        })
+        .catch(() => {
+          setFetchError('Error al cargar ingredientes.');
+          setIngredientOptions([]);
+        })
+        .finally(() => setLoadingOptions(false));
+    } else {
+      setIngredientOptions([]);
+    }
+    setCurrentIngredient((prev) => ({ ...prev, raw_ingredient_id: '', name: '' }));
+  }, [selectedCategory]);
 
   const handleIngredientChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -30,13 +62,31 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
       ...prev,
       [name]: name === 'quantity' || name === 'price' ? Number(value) || 0 : value
     }));
-    // Clear error when user starts typing
     setErrors(prev => ({ ...prev, [name]: false }));
   };
 
+  const handleIngredientSelectChange = (details: { value: string[] }) => {
+    const selectedId = details.value && details.value.length > 0 ? details.value[0] : '';
+    const selectedOption = ingredientOptions.find(opt => opt.raw_ingredient_id === selectedId);
+    setCurrentIngredient(prev => ({
+      ...prev,
+      raw_ingredient_id: selectedId,
+      name: selectedOption ? selectedOption.name : '',
+    }));
+    setErrors(prev => ({ ...prev, name: false }));
+  };
+
+  const ingredientCollection = createListCollection({
+    items: ingredientOptions.map(opt => ({
+      label: opt.name,
+      value: opt.raw_ingredient_id,
+      name: opt.name,
+    })),
+  });
+
   const validateIngredient = () => {
     const newErrors = {
-      name: !currentIngredient.name,
+      name: !currentIngredient.raw_ingredient_id,
       quantity: !currentIngredient.quantity || currentIngredient.quantity <= 0,
       price: !currentIngredient.price || currentIngredient.price <= 0
     };
@@ -49,6 +99,7 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
       const newIngredients = [...ingredients, currentIngredient];
       onIngredientsChange(newIngredients);
       setCurrentIngredient({
+        raw_ingredient_id: '',
         name: '',
         quantity: 0,
         unit: 'g',
@@ -66,17 +117,59 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
   return (
     <form onSubmit={(e) => e.preventDefault()}>
       <Stack gap="4">
+        <CustomField label="Categoría de ingrediente" required>
+          <select
+            style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #E2E8F0' }}
+            value={selectedCategory}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedCategory(e.target.value)}
+          >
+            <option value="">Selecciona una categoría</option>
+            {categories.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+        </CustomField>
         <CustomField
           label="Ingrediente"
           required
           errorText={errors.name ? "Este campo es obligatorio." : undefined}
         >
-          <Input
-            placeholder="Nombre del ingrediente"
-            value={currentIngredient.name}
-            onChange={handleIngredientChange}
-            name="name"
-          />
+          {loadingOptions ? (
+            <Spinner size="sm" />
+          ) : fetchError ? (
+            <Text color="red.500">{fetchError}</Text>
+          ) : (
+            <ChakraSelect.Root
+              value={currentIngredient.raw_ingredient_id ? [currentIngredient.raw_ingredient_id] : []}
+              onValueChange={handleIngredientSelectChange}
+              collection={ingredientCollection}
+              disabled={!selectedCategory || ingredientOptions.length === 0}
+              size="md"
+              width="100%"
+              multiple={false}
+            >
+              <ChakraSelect.HiddenSelect />
+              <ChakraSelect.Label>Ingrediente</ChakraSelect.Label>
+              <ChakraSelect.Control>
+                <ChakraSelect.Trigger>
+                  <ChakraSelect.ValueText placeholder={selectedCategory ? "Selecciona un ingrediente" : "Primero selecciona una categoría"} />
+                </ChakraSelect.Trigger>
+                <ChakraSelect.IndicatorGroup>
+                  <ChakraSelect.Indicator />
+                </ChakraSelect.IndicatorGroup>
+              </ChakraSelect.Control>
+                <ChakraSelect.Positioner>
+                  <ChakraSelect.Content>
+                    {ingredientCollection.items.map((item) => (
+                      <ChakraSelect.Item item={item} key={item.value}>
+                        {item.label}
+                        <ChakraSelect.ItemIndicator />
+                      </ChakraSelect.Item>
+                    ))}
+                  </ChakraSelect.Content>
+                </ChakraSelect.Positioner>
+            </ChakraSelect.Root>
+          )}
         </CustomField>
         <Stack direction="row" gap="4">
           <CustomField
@@ -135,7 +228,7 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
             />
           </CustomField>
         </Stack>
-        <Button onClick={addIngredient} colorScheme="blue">
+        <Button onClick={addIngredient} colorScheme="blue" disabled={!selectedCategory}>
           Agregar Ingrediente
         </Button>
 

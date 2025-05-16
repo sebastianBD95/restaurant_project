@@ -13,8 +13,8 @@ func NewInventoryService(repo repositories.InventoryRepository) *InventoryServic
 	return &InventoryService{repo: repo}
 }
 
-func (s *InventoryService) CreateInventory(inventory *models.Inventory) (string, error) {
-	return s.repo.CreateInventory(inventory)
+func (s *InventoryService) CreateInventory(inventories []models.Inventory) ([]string, error) {
+	return s.repo.CreateInventory(inventories)
 }
 
 func (s *InventoryService) GetInventory(inventoryID string) (*models.Inventory, error) {
@@ -25,7 +25,7 @@ func (s *InventoryService) GetInventoryByRestaurantID(restaurantID string) ([]mo
 	return s.repo.GetInventoryByRestaurantID(restaurantID)
 }
 
-func (s *InventoryService) UpdateInventory(inventory *models.Inventory) error {
+func (s *InventoryService) UpdateInventory(inventory []models.Inventory) error {
 	return s.repo.UpdateInventory(inventory)
 }
 

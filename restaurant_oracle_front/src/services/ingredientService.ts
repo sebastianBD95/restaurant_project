@@ -1,10 +1,11 @@
 import { getCookie } from '../pages/utils/cookieManager';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+
 export interface Ingredient {
+  raw_ingredient_id: string;
   name: string;
-  price: number;
-  amount: number;
-  unit: string;
+  category: string;
 }
 
 export const getIngredients = async (restaurantId: string): Promise<Ingredient[]> => {
@@ -13,7 +14,7 @@ export const getIngredients = async (restaurantId: string): Promise<Ingredient[]
     throw new Error('No authentication token found');
   }
 
-  const response = await fetch(`http://localhost:8080/ingredients?restaurant_id=${restaurantId}`, {
+  const response = await fetch(`${API_BASE_URL}/ingredients?restaurant_id=${restaurantId}`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
@@ -25,3 +26,13 @@ export const getIngredients = async (restaurantId: string): Promise<Ingredient[]
 
   return response.json();
 }; 
+
+export const getRawIngredientsByCategory = async (category: string, token: string) => {
+  const response = await fetch(
+    `${API_BASE_URL}/raw-ingredients?category=${encodeURIComponent(category)}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  return response.json();
+};
