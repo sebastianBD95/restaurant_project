@@ -36,7 +36,7 @@ const RecipePage: React.FC = () => {
   };
 
   const calculateTotalCost = (ingredients: MenuItemResponse['ingredients']) => {
-    return ingredients.reduce((total, ing) => total + (ing.price), 0);
+    return ingredients.reduce((total, ing) => total + (ing.price || 0), 0);
   };
 
   if (loading) {
@@ -75,7 +75,7 @@ const RecipePage: React.FC = () => {
                       <Text color="gray.600">{item.description}</Text>
                     </Box>
                     <Badge colorScheme="green" fontSize="md">
-                      ${item.price.toFixed(2)}
+                      ${(item.price || 0).toFixed(2)}
                     </Badge>
                   </Flex>
                 </Accordion.ItemTrigger>
@@ -99,7 +99,7 @@ const RecipePage: React.FC = () => {
                                 <Table.Cell>{ingredient.name}</Table.Cell>
                                 <Table.Cell>{ingredient.amount}</Table.Cell>
                                 <Table.Cell>{ingredient.unit}</Table.Cell>
-                                <Table.Cell textAlign="right">${ingredient.price.toFixed(2)}</Table.Cell>
+                                <Table.Cell textAlign="right">${(ingredient.price || 0).toFixed(2)}</Table.Cell>
                               </Table.Row>
                             ))}
                           </Table.Body>
