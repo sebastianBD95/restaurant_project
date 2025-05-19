@@ -101,7 +101,7 @@ func (h *MenuHandler) AddMenuItem(w http.ResponseWriter, r *http.Request) {
 func (h *MenuHandler) GetAllMenuItems(w http.ResponseWriter, r *http.Request) {
 	_ = utils.TokenVerification(r, w)
 	restaurantID := mux.Vars(r)["restaurant_id"]
-	menus, err := h.service.GetMenuItems(restaurantID)
+	menus, err := h.service.GetMenuItemsByRestaurantID(restaurantID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return

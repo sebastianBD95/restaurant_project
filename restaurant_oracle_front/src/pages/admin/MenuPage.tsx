@@ -236,7 +236,7 @@ const MenuPage: React.FC = () => {
         restaurant_id: restaurantId,
         status: 'ordered',
         items: cart.map(item => ({
-          menu_item_id: item.menu_item_id,
+          menu_item_id: item.id,
           quantity: item.quantity,
           observation: item.observation,
           price: item.price

@@ -34,8 +34,17 @@ func (repo *MenuRepositoryImpl) UpdateMenuItem(menuItem *models.MenuItem) error 
 		Updates(menuItem).Error
 }
 
-func (repo *MenuRepositoryImpl) GetMenuItems(restaurantID string) ([]models.MenuItem, error) {
+func (repo *MenuRepositoryImpl) GetMenuItemsByRestaurantID(restaurantID string) ([]models.MenuItem, error) {
 	var items []models.MenuItem
 	err := repo.db.Preload("Ingredients").Preload("Ingredients.RawIngredient").Where("restaurant_id = ?", restaurantID).Find(&items).Error
 	return items, err
+}
+
+func (repo *MenuRepositoryImpl) GetMenuItemByID(menuItemID string) (*models.MenuItem, error) {
+	var item models.MenuItem
+	err := repo.db.Preload("Ingredients").Preload("Ingredients.RawIngredient").Where("menu_item_id = ?", menuItemID).First(&item).Error
+	if err != nil {
+		return nil, err
+	}
+	return &item, nil
 }

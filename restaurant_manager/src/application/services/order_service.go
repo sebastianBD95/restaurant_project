@@ -6,24 +6,23 @@ import (
 )
 
 type OrderService struct {
-	repo         repositories.OrderRepository
-	tableService *TableService
+	repo             repositories.OrderRepository
+	tableService     *TableService
+	menuService      *MenuService
+	inventoryService *InventoryService
 }
 
-func NewOrderService(repo repositories.OrderRepository, tableService *TableService) *OrderService {
-	return &OrderService{repo, tableService}
+func NewOrderService(repo repositories.OrderRepository, tableService *TableService, menuService *MenuService, inventoryService *InventoryService) *OrderService {
+	return &OrderService{repo, tableService, menuService, inventoryService}
 }
 
 func (service *OrderService) CreateOrder(order *models.Order) (string, error) {
-	// First create the order
 	orderId, err := service.repo.CreateOrder(order)
 	if err != nil {
 		return "", err
 	}
-	// Then update table status through a dedicated method
 	err = service.tableService.UpdateTableStatus(order.TableID, "occupied")
 	if err != nil {
-		// If table update fails, we should rollback the order creation
 		_ = service.repo.DeleteOrder(orderId)
 		return "", err
 	}
@@ -63,7 +62,51 @@ func (service *OrderService) GetOrderByRestaurantID(restaurantID string) ([]mode
 }
 
 func (s *OrderService) AddOrderItem(orderItem *models.OrderItem) (string, error) {
-	return s.repo.AddOrderItem(orderItem)
+	var orderItemID string
+	err := s.repo.WithTransaction(func(txRepo repositories.OrderRepository) error {
+		id, err := s.repo.AddOrderItem(orderItem)
+		if err != nil {
+			return err
+		}
+		orderItemID = id
+		menuItem, err := s.menuService.GetMenuItemByID(orderItem.MenuItemID)
+		if err != nil {
+			return err
+		}
+		inventories := []models.Inventory{}
+		zeroInventory := false
+		for _, item := range menuItem.Ingredients {
+			inventory, err := s.inventoryService.GetInventoryByRawIngredientID(item.RawIngredientID)
+			if err != nil {
+				return err
+			}
+			inventory.Quantity -= item.Amount
+			if inventory.Quantity < 0 {
+				inventory.Quantity = 0
+			}
+			if inventory.Quantity == 0 {
+				zeroInventory = true
+			}
+			inventories = append(inventories, *inventory)
+		}
+		err = s.inventoryService.UpdateInventory(inventories)
+		if err != nil {
+			return err
+		}
+		if zeroInventory {
+			menuItem.Available = false
+			err = s.menuService.UpdateMenuItem(menuItem)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return orderItemID, nil
 }
 
 func (s *OrderService) UpdateOrderItem(orderItem *models.OrderItem) error {

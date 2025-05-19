@@ -14,4 +14,5 @@ type OrderRepository interface {
 	UpdateOrderItem(orderItem *models.OrderItem) error
 	DeleteOrderItem(orderItemID string) error
 	GetOrderItems(orderID string) ([]models.OrderItem, error)
+	WithTransaction(fn func(txRepo OrderRepository) error) error
 }

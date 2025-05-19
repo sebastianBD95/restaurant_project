@@ -21,6 +21,7 @@ type OrderItemDTO struct {
 	Name        string  `json:"name"`
 	Quantity    int     `json:"quantity"`
 	Price       float64 `json:"price"`
+	Status      string  `json:"status"`
 	Observation string  `json:"observation"`
 	Image       string  `json:"image"`
 }
@@ -57,6 +58,7 @@ func FromOrderItems(orderItems []models.OrderItem) []OrderItemDTO {
 			Name:        orderItem.MenuItem.Name,
 			Quantity:    orderItem.Quantity,
 			Price:       orderItem.Price,
+			Status:      string(orderItem.Status),
 			Observation: safeString(orderItem.Observation),
 			Image:       orderItem.MenuItem.ImageURL,
 		}
