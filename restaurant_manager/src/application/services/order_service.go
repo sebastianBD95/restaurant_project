@@ -6,12 +6,14 @@ import (
 )
 
 type OrderService struct {
-	repo         repositories.OrderRepository
-	tableService *TableService
+	repo             repositories.OrderRepository
+	tableService     *TableService
+	menuService      *MenuService
+	inventoryService *InventoryService
 }
 
-func NewOrderService(repo repositories.OrderRepository, tableService *TableService) *OrderService {
-	return &OrderService{repo, tableService}
+func NewOrderService(repo repositories.OrderRepository, tableService *TableService, menuService *MenuService, inventoryService *InventoryService) *OrderService {
+	return &OrderService{repo, tableService, menuService, inventoryService}
 }
 
 func (service *OrderService) CreateOrder(order *models.Order) (string, error) {
@@ -63,7 +65,42 @@ func (service *OrderService) GetOrderByRestaurantID(restaurantID string) ([]mode
 }
 
 func (s *OrderService) AddOrderItem(orderItem *models.OrderItem) (string, error) {
-	return s.repo.AddOrderItem(orderItem)
+	orderItemID, err := s.repo.AddOrderItem(orderItem)
+	if err != nil {
+		return "", err
+	}
+	menuItem, err := s.menuService.GetMenuItemByID(orderItem.MenuItemID)
+	if err != nil {
+		return "", err
+	}
+	inventories := []models.Inventory{}
+	zeroInventory := false
+	for _, item := range menuItem.Ingredients {
+		inventory, err := s.inventoryService.GetInventoryByRawIngredientID(item.RawIngredientID)
+		if err != nil {
+			return "", err
+		}
+		inventory.Quantity -= item.Amount
+		if inventory.Quantity < 0 {
+			inventory.Quantity = 0
+		}
+		if inventory.Quantity == 0 {
+			zeroInventory = true
+		}
+		inventories = append(inventories, *inventory)
+	}
+	err = s.inventoryService.UpdateInventory(inventories)
+	if err != nil {
+		return "", err
+	}
+	if zeroInventory {
+		menuItem.Available = false
+		err = s.menuService.UpdateMenuItem(menuItem)
+		if err != nil {
+			return "", err
+		}
+	}
+	return orderItemID, nil
 }
 
 func (s *OrderService) UpdateOrderItem(orderItem *models.OrderItem) error {

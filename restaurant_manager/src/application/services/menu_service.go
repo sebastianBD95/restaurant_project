@@ -41,8 +41,11 @@ func (s *MenuService) UpdateMenuItem(menuItem *models.MenuItem) error {
 	return s.repo.UpdateMenuItem(menuItem)
 }
 
-func (s *MenuService) GetMenuItems(menuID string) ([]models.MenuItem, error) {
-	return s.repo.GetMenuItems(menuID)
+func (s *MenuService) GetMenuItemsByRestaurantID(restaurantID string) ([]models.MenuItem, error) {
+	return s.repo.GetMenuItemsByRestaurantID(restaurantID)
+}
+func (s *MenuService) GetMenuItemByID(menuItemID string) (*models.MenuItem, error) {
+	return s.repo.GetMenuItemByID(menuItemID)
 }
 
 func (s *MenuService) UploadFile(owner string, file multipart.File) (string, error) {

@@ -64,3 +64,12 @@ func (repo *InventoryRepositoryImpl) UpdateInventory(inventories []models.Invent
 func (repo *InventoryRepositoryImpl) DeleteInventory(inventoryID string) error {
 	return repo.db.Delete(&models.Inventory{}, "inventory_id = ?", inventoryID).Error
 }
+
+func (repo *InventoryRepositoryImpl) GetInventoryByRawIngredientID(rawIngredientID string) (*models.Inventory, error) {
+	var inventory models.Inventory
+	err := repo.db.Where("raw_ingredient_id = ?", rawIngredientID).First(&inventory).Error
+	if err != nil {
+		return nil, err
+	}
+	return &inventory, nil
+}

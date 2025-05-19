@@ -4,12 +4,7 @@ export interface MenuItemRequest  {
     price: number;
     image: File;
     category: string;
-    ingredients: {
-      name: string;
-      price: number;
-      amount: number;
-      unit: string;
-    }[];
+    ingredients: Ingredient[];
   };
 
 export interface MenuItemResponse  {
