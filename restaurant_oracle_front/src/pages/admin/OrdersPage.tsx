@@ -23,7 +23,9 @@ interface OrderItem {
   name: string;
   quantity: number;
   price: number;
+  status: string;
   observation: string;
+  image?: string;
 }
 
 interface Order {
@@ -85,6 +87,16 @@ const Ordenes: React.FC = () => {
     }
   };
 
+  const voidOrderItem = (orderId: string, menuItemId: string) => {
+    // TODO: Call backend to void the item, then refresh orders
+    console.log('Void item', orderId, menuItemId);
+  };
+
+  const cancelOrderItem = (orderId: string, menuItemId: string) => {
+    // TODO: Call backend to cancel the item, then refresh orders
+    console.log('Cancel item', orderId, menuItemId);
+  };
+
   return (
     <Flex height={{ base: 'auto', md: '100vh' }} direction={{ base: 'column', md: 'row' }}>
       <Sidebar 
@@ -99,7 +111,7 @@ const Ordenes: React.FC = () => {
             Pedidos Realizados
           </Heading>
           <Grid 
-            templateColumns={{ base: '1fr', md: '1fr 2fr' }} 
+            templateColumns={{ base: '1fr', md: '1fr 1fr' }} 
             gap={{ base: 4, md: 6 }}
             alignItems="stretch"
           >
@@ -112,7 +124,8 @@ const Ordenes: React.FC = () => {
               overflowY="auto"
               minW={0}
             >
-              {orders.length === 0 ? (
+              <Heading size="md" mb={4}>Pedidos Activos</Heading>
+              {orders.filter(order => order.status !== 'paid' && order.status !== 'canceled').length === 0 ? (
                 <Text textAlign="center">No hay pedidos registrados.</Text>
               ) : (
                 <VStack align="stretch" gap={4}>
@@ -125,6 +138,8 @@ const Ordenes: React.FC = () => {
                         onDeliver={orderId => updateOrderStatus(orderId, 'delivered')}
                         onPay={orderId => updateOrderStatus(orderId, 'paid')}
                         highlight={order.status === 'delivered'}
+                        onVoidItem={voidOrderItem}
+                        onCancelItem={cancelOrderItem}
                       />
                     ))}
                 </VStack>
@@ -137,18 +152,45 @@ const Ordenes: React.FC = () => {
               borderRadius="md" 
               boxShadow="md" 
               h={{ base: 'auto', md: '550px' }} 
-              overflowX="auto" 
               overflowY="auto"
               minW={0}
             >
-              <Heading size="md" mb={4}>
-                Distribución Mesas
-              </Heading>
-              <Box minW={{ base: '320px', md: 'auto' }}>
-                <TableDistribution mesas={mesas} fetchTables={fetchTables} />
-              </Box>
+              <Heading size="md" mb={4}>Pedidos Anulados</Heading>
+              {orders.filter(order => order.status === 'canceled').length === 0 ? (
+                <Text textAlign="center">No hay pedidos anulados.</Text>
+              ) : (
+                <VStack align="stretch" gap={4}>
+                  {orders
+                    .filter(order => order.status === 'canceled')
+                    .map(order => (
+                      <OrderCard
+                        key={order.order_id}
+                        order={order}
+                        onDeliver={() => {}}
+                        onPay={() => {}}
+                        highlight={false}
+                      />
+                    ))}
+                </VStack>
+              )}
             </Box>
           </Grid>
+
+          <Box 
+            bg="white" 
+            p={{ base: 2, md: 4 }} 
+            borderRadius="md" 
+            boxShadow="md" 
+            mt={6}
+            overflowX="auto" 
+            overflowY="auto"
+            minW={0}
+          >
+            
+            
+          <TableDistribution mesas={mesas} fetchTables={fetchTables} />
+          
+          </Box>
         </Box>
       </Box>
     </Flex>

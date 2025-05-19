@@ -32,8 +32,8 @@ const TableDistribution: React.FC<TableDistributionProps> = ({ mesas, fetchTable
   const [hoveredTable, setHoveredTable] = useState<number | null>(null);
 
   // Responsive stage size
-  const stageWidth = useBreakpointValue({ base: 320, sm: 400, md: 700, lg: 800 });
-  const stageHeight = useBreakpointValue({ base: 300, sm: 350, md: 500, lg: 550 });
+  const stageWidth = useBreakpointValue({ base: 400, sm: 600, md: 900, lg: 1200 });
+  const stageHeight = useBreakpointValue({ base: 350, sm: 500, md: 700, lg: 900 });
 
   useEffect(() => {
     // Map mesas prop to layout state with positions
@@ -108,7 +108,7 @@ const TableDistribution: React.FC<TableDistributionProps> = ({ mesas, fetchTable
   };
 
   return (
-    <Box className="container" p={{ base: 2, md: 6 }}>
+    <Box className="container" p={{ base: 2, md: 6 }} width="100%" height="100%">
       <Flex direction={{ base: 'column', sm: 'row' }} justify="space-between" align={{ base: 'stretch', sm: 'center' }} mb={6} gap={2}>
         <Heading className="heading" fontSize={{ base: 'lg', md: 'xl' }}>
           📍 Distribución de Mesas
@@ -134,8 +134,8 @@ const TableDistribution: React.FC<TableDistributionProps> = ({ mesas, fetchTable
           </Button>
         </Stack>
       </Flex>
-      <Box overflowX="auto">
-        <Stage width={stageWidth} height={stageHeight} className="stage">
+      <Flex justify="center" width="100%">
+        <Stage width={stageWidth} height={stageHeight} className="stage" style={{ width: '100%' }}>
           <Layer>
             <Text 
               className="instruction-text"
@@ -183,7 +183,7 @@ const TableDistribution: React.FC<TableDistributionProps> = ({ mesas, fetchTable
             ))}
           </Layer>
         </Stage>
-      </Box>
+      </Flex>
     </Box>
   );
 };

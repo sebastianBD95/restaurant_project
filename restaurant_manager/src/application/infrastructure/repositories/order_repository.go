@@ -77,3 +77,10 @@ func (repo *OrderRepositoryImpl) GetOrderItems(orderID string) ([]models.OrderIt
 	err := repo.db.Where("order_id = ?", orderID).Find(&items).Error
 	return items, err
 }
+
+func (repo *OrderRepositoryImpl) WithTransaction(fn func(txRepo repositories.OrderRepository) error) error {
+	return repo.db.Transaction(func(tx *gorm.DB) error {
+		txRepo := &OrderRepositoryImpl{db: tx}
+		return fn(txRepo)
+	})
+}

@@ -7,7 +7,9 @@ interface OrderItem {
   name: string;
   quantity: number;
   price: number;
+  status: string;
   observation: string;
+  image?: string;
 }
 
 interface Order {
@@ -32,17 +34,39 @@ interface OrderCardProps {
   onDeliver: (orderId: string) => void;
   onPay: (orderId: string) => void;
   highlight?: boolean;
+  onVoidItem?: (orderId: string, menuItemId: string) => void;
+  onCancelItem?: (orderId: string, menuItemId: string) => void;
 }
 
-const OrderCard: React.FC<OrderCardProps> = ({ order, onDeliver, onPay, highlight }) => (
+const OrderCard: React.FC<OrderCardProps> = ({ order, onDeliver, onPay, highlight, onVoidItem, onCancelItem }) => (
   <Box bg={highlight ? 'yellow.100' : 'white'} p={4} borderRadius="md" boxShadow="md" mb={4}>
     <Heading size="md">Mesa {order.table}</Heading>
     <Text fontSize="sm" color="gray.500">Total: ${order.total_price}</Text>
     {order.items.map((item, idx) => (
-      <Text key={idx}>
-        {item.quantity}x {item.name} - ${item.price * item.quantity}
-        {item.observation && ` - ${item.observation}`}
-      </Text>
+      <Box key={idx} mb={2}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span>
+            {item.quantity}x {item.name} - ${item.price * item.quantity}
+            {item.observation && ` - ${item.observation}`}
+          </span>
+          {item.status === 'canceled' && (
+            <Text as="span" color="red.500" fontWeight="bold" ml={2}>Cancelado</Text>
+          )}
+          {item.status === 'void' && (
+            <Text as="span" color="yellow.500" fontWeight="bold" ml={2}>Anulado</Text>
+          )}
+          {item.status === 'prepared' && onVoidItem && (
+            <Button size="xs" colorPalette="yellow" onClick={() => onVoidItem(order.order_id, item.menu_item_id)}>
+              Anular
+            </Button>
+          )}
+          {(item.status === 'ordered' || item.status === 'pending') && onCancelItem && (
+            <Button size="xs" colorPalette="red" onClick={() => onCancelItem(order.order_id, item.menu_item_id)}>
+              Cancelar
+            </Button>
+          )}
+        </div>
+      </Box>
     ))}
     <Text fontSize="md" fontWeight="bold" mt={3} color="purple.600">
       Estado: <span style={{ color: '#805ad5' }}>{statusMap[order.status] || order.status}</span>

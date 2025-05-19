@@ -22,14 +22,24 @@ const (
 	Ordered   OrderStatus = "ordered"
 	Delivered OrderStatus = "delivered"
 	Paid      OrderStatus = "paid"
-	cancelled OrderStatus = "cancelled"
+	Cancelled OrderStatus = "cancelled"
 )
 
 type OrderItem struct {
-	OrderID     string   `gorm:"primaryKey;column:order_id"`
-	MenuItemID  string   `gorm:"primaryKey;column:menu_item_id"`
-	Quantity    int      `gorm:"column:quantity"`
-	Price       float64  `gorm:"column:price"`
-	Observation *string  `gorm:"column:observation"`
-	MenuItem    MenuItem `gorm:"foreignKey:MenuItemID;references:MenuItemID"`
+	OrderID     string          `gorm:"primaryKey;column:order_id"`
+	MenuItemID  string          `gorm:"primaryKey;column:menu_item_id"`
+	Quantity    int             `gorm:"column:quantity"`
+	Price       float64         `gorm:"column:price"`
+	Status      OrderItemStatus `gorm:"column:status"`
+	Observation *string         `gorm:"column:observation"`
+	MenuItem    MenuItem        `gorm:"foreignKey:MenuItemID;references:MenuItemID"`
 }
+
+type OrderItemStatus string
+
+const (
+	OrderItemPending   OrderItemStatus = "pending"
+	OrderItemCompleted OrderItemStatus = "completed"
+	OrderItemCancelled OrderItemStatus = "cancelled"
+	OrderItemVoid      OrderItemStatus = "void"
+)

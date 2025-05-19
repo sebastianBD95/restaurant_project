@@ -33,6 +33,7 @@ func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 			OrderID:     orderID,
 			MenuItemID:  item.MenuItemID,
 			Quantity:    item.Quantity,
+			Status:      "pending",
 			Price:       item.Price,
 			Observation: &item.Observation,
 		}
