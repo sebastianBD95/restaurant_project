@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Input, Button, VStack, Text } from '@chakra-ui/react';
 import { registerUser } from '../services/autheticationService';
 import { UserData } from '../interfaces/autho';
+import { toast } from 'sonner';
 
 const Register: React.FC = () => {
   const [formData, setFormData] = useState<UserData>({
@@ -31,7 +32,7 @@ const Register: React.FC = () => {
     }
     try {
       const data = await registerUser(formData);
-      alert('User registered successfully');
+      toast.success('Usuario registrado exitosamente');
       navigate('/restaurantes');
     } catch (error: any) {
       setError(error.message);
