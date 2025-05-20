@@ -29,8 +29,11 @@ const LoginForm: React.FC = () => {
     setError(null);
     try {
       const data = await loginUser(formData.username, formData.password);
-      document.cookie = `token=${data.token}; Secure; SameSite=Strict; Path=/`;
-      document.cookie = `role=${data.role}; Secure; SameSite=Strict; Path=/`;
+      // Set cookies for prod should be in a secure way
+      //document.cookie = `token=${data.token}; Secure; SameSite=Strict; Path=/`;
+      //document.cookie = `role=${data.role}; Secure; SameSite=Strict; Path=/`;
+      document.cookie = `token=${data.token};`;
+      document.cookie = `role=${data.role};`;
 
       console.log(getCookie('role'));
       console.log(getCookie('token'));

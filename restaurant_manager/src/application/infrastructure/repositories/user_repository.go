@@ -27,7 +27,7 @@ func (repo *UserRepositoryImpl) CreateUser(user *models.User) (string, error) {
 	}
 
 	user.PasswordHash = string(hashedPassword)
-
+	user.Role = "admin"
 	result := repo.db.Clauses(clause.Returning{}).Omit("user_id").Create(user)
 	if result.Error != nil {
 		return "", result.Error
