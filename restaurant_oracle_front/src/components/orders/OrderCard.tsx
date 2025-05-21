@@ -54,7 +54,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
     </Text>
     <Box borderBottom="1px solid #E2E8F0" mb={3} />
     <Box mb={3}>
-      {order.items.map((item, idx) => (
+      {order.items.map((item: OrderItem, idx: number) => (
         <Flex key={idx} align="center" mb={1}>
           <Text flex={1}>
             <b>{item.quantity}x {item.name}</b> <span style={{ color: '#718096' }}>- ${item.price * item.quantity}</span>
@@ -82,7 +82,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
       ))}
     </Box>
     <Box borderBottom="1px solid #E2E8F0" mb={3} />
-    <Stack direction="row" spacing={3}>
+    <Stack direction="row" gap={3}>
       {order.status !== 'delivered' && order.status !== 'paid' && order.status !== 'canceled' && (
         <Button colorScheme="blackAlpha" onClick={() => onDeliver(order.order_id)}>
           Marcar como Entregado
