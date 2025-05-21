@@ -6,10 +6,17 @@ import { useParams } from 'react-router-dom';
 import TableDistribution from '../../components/orders/TableComponent';
 import { Sidebar } from '../../components/ui/navegator';
 import { useSidebar } from '../../hooks/useSidebar';
-import { getOrdersByRestaurant, updateOrderStatus as updateOrderStatusService } from '../../services/orderService';
+import { getOrdersByRestaurant, updateOrderStatus as updateOrderStatusService, addItemsToOrder } from '../../services/orderService';
 import OrderCard from '../../components/orders/OrderCard';
 import { getTables } from '../../services/tableService';
 import { Table } from '../../interfaces/table';
+import { toaster } from '../../components/ui/toaster';
+import { getMenus } from '../../services/menuService';
+import { MenuItemResponse } from '../../interfaces/menuItems';
+import { DialogRoot, DialogContent, DialogHeader, DialogBody, DialogFooter } from '../../components/ui/dialog';
+import { NumberInputRoot, NumberInputField } from '../../components/ui/number-input';
+import { useDisclosure } from '@chakra-ui/react';
+import { getCookie } from '../utils/cookieManager';
 
 const statusMap: Record<string, string> = {
   'ordered': 'Pedido',
@@ -44,6 +51,12 @@ const Ordenes: React.FC = () => {
   const { restaurantId } = useParams();
   const { isSidebarOpen, toggleSidebar } = useSidebar();
   const [mesas, setMesas] = useState<Table[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItemResponse[]>([]);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedDishes, setSelectedDishes] = useState<{ [id: string]: number }>({});
+  const { open, onOpen, onClose } = useDisclosure();
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const categories = Array.from(new Set(menuItems.map(item => item.category)));
 
   const fetchOrders = async () => {
     try {
@@ -52,7 +65,12 @@ const Ordenes: React.FC = () => {
         setOrders(orders);
       }
     } catch (error) {
-      console.error('Error fetching orders:', error);
+      toaster.create({
+        title: 'Error',
+        description: 'Error cargando pedidos.',
+        type: 'error',
+        duration: 5000,
+      });
     }
   };
 
@@ -63,7 +81,23 @@ const Ordenes: React.FC = () => {
         setMesas(tables);
       }
     } catch (error) {
-      console.error('Error fetching tables:', error);
+      toaster.create({
+        title: 'Error',
+        description: 'Error cargando mesas.',
+        type: 'error',
+        duration: 5000,
+      });
+    }
+  };
+
+  const fetchMenuItems = async () => {
+    if (!restaurantId) return;
+    try {
+      const token = getCookie(document.cookie, 'token');
+      const items = await getMenus(token!, restaurantId);
+      setMenuItems(items.filter(item => item.available && !item.hidden));
+    } catch (error) {
+      setMenuItems([]);
     }
   };
 
@@ -95,6 +129,51 @@ const Ordenes: React.FC = () => {
   const cancelOrderItem = (orderId: string, menuItemId: string) => {
     // TODO: Call backend to cancel the item, then refresh orders
     console.log('Cancel item', orderId, menuItemId);
+  };
+
+  const handleAddDishesClick = (order: Order) => {
+    setSelectedOrder(order);
+    setSelectedDishes({});
+    fetchMenuItems();
+    onOpen();
+  };
+
+  const handleDishQuantityChange = (menu_item_id: string, quantity: number) => {
+    if (!quantity || isNaN(quantity)) {
+      setSelectedDishes(prev => {
+        const updated = { ...prev };
+        delete updated[menu_item_id];
+        return updated;
+      });
+    } else {
+      setSelectedDishes(prev => ({ ...prev, [menu_item_id]: quantity }));
+    }
+  };
+
+  const handleAddDishesSubmit = async () => {
+    if (!selectedOrder) return;
+    const itemsToAdd = Object.entries(selectedDishes)
+      .filter(([_, qty]) => qty > 0)
+      .map(([menu_item_id, quantity]) => ({ menu_item_id, quantity }));
+    if (itemsToAdd.length === 0) return;
+    try {
+      await addItemsToOrder(selectedOrder.order_id, itemsToAdd);
+      toaster.create({
+        title: 'Platos agregados',
+        description: 'Platos agregados al pedido.',
+        type: 'success',
+      });
+      onClose();
+      setSelectedOrder(null);
+      setSelectedDishes({});
+      fetchOrders();
+    } catch (error) {
+      toaster.create({
+        title: 'Error',
+        description: 'No se pudieron agregar los platos.',
+        type: 'error',
+      });
+    }
   };
 
   return (
@@ -132,15 +211,17 @@ const Ordenes: React.FC = () => {
                   {orders
                     .filter(order => order.status !== 'paid' && order.status !== 'canceled')
                     .map(order => (
-                      <OrderCard
-                        key={order.order_id}
-                        order={order}
-                        onDeliver={orderId => updateOrderStatus(orderId, 'delivered')}
-                        onPay={orderId => updateOrderStatus(orderId, 'paid')}
-                        highlight={order.status === 'delivered'}
-                        onVoidItem={voidOrderItem}
-                        onCancelItem={cancelOrderItem}
-                      />
+                      <Box key={order.order_id} mb={4}>
+                        <OrderCard
+                          order={order}
+                          onDeliver={orderId => updateOrderStatus(orderId, 'delivered')}
+                          onPay={orderId => updateOrderStatus(orderId, 'paid')}
+                          highlight={order.status === 'delivered'}
+                          onVoidItem={voidOrderItem}
+                          onCancelItem={cancelOrderItem}
+                          onAddDishes={() => handleAddDishesClick(order)}
+                        />
+                      </Box>
                     ))}
                 </VStack>
               )}
@@ -193,6 +274,48 @@ const Ordenes: React.FC = () => {
           </Box>
         </Box>
       </Box>
+
+      <DialogRoot open={open} onOpenChange={open => { if (!open) onClose(); }}>
+        <DialogContent>
+          <DialogHeader>Agregar Platos al Pedido</DialogHeader>
+          <DialogBody>
+            {categories.length > 0 && (
+              <Box mb={4}>
+                <Text mb={1}>Categoría</Text>
+                <select
+                  value={selectedCategory}
+                  onChange={e => setSelectedCategory(e.target.value)}
+                  style={{ width: '100%', padding: '8px', borderRadius: '4px' }}
+                >
+                  <option value="">Selecciona una categoría</option>
+                  {categories.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </Box>
+            )}
+
+            {menuItems.length === 0 ? (
+              <Text>No hay platos disponibles.</Text>
+            ) : (
+              menuItems
+                .filter(item => item.category === selectedCategory)
+                .map(item => (
+                  <Box key={item.menu_item_id} display="flex" alignItems="center" mb={2}>
+                    <Text flex={1}>{item.name} (${item.price})</Text>
+                    <NumberInputRoot min={0} max={99} width="80px" value={selectedDishes[item.menu_item_id]?.toString() || ''} onValueChange={({ value }) => handleDishQuantityChange(item.menu_item_id, Number(value))}>
+                      <NumberInputField />
+                    </NumberInputRoot>
+                  </Box>
+                ))
+            )}
+          </DialogBody>
+          <DialogFooter>
+            <Button colorScheme="blue" mr={3} onClick={handleAddDishesSubmit}>Agregar</Button>
+            <Button onClick={onClose}>Cancelar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </DialogRoot>
     </Flex>
   );
 };

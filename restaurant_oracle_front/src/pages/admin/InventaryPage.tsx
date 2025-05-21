@@ -105,7 +105,7 @@ const Inventario: React.FC = () => {
 
         setInventario(transformedInventory);
       } catch (error) {
-        console.error('Error fetching inventory:', error);
+      
         toaster.create({
           title: 'Error',
           description: 'No se pudo cargar el inventario.',
@@ -130,8 +130,12 @@ const Inventario: React.FC = () => {
         const ingredients = await getIngredients(restaurantId!);
         setSuggestedIngredients(ingredients);
       } catch (error) {
-        console.error('Error al obtener ingredientes sugeridos:', error);
-        setFetchError('Error al cargar los ingredientes sugeridos');
+        toaster.create({
+          title: 'Error',
+          description: 'Error al cargar los ingredientes sugeridos',
+          type: 'error',
+          duration: 5000,
+        });
       } finally {
         setLoadingIngredients(false);
       }
@@ -157,8 +161,12 @@ const Inventario: React.FC = () => {
         const ingredients = await getRawIngredientsByCategory(selectedCategory, token);
         setCategoryIngredients(ingredients);
       } catch (error) {
-        console.error('Error fetching ingredients:', error);
-        setFetchError('Error al cargar los ingredientes por categoría');
+        toaster.create({
+          title: 'Error',
+          description: 'Error al cargar los ingredientes por categoría',
+          type: 'error',
+          duration: 5000,
+        });
         setCategoryIngredients([]);
       } finally {
         setLoadingIngredients(false);
@@ -229,7 +237,6 @@ const Inventario: React.FC = () => {
         duration: 3000,
       });
     } catch (error) {
-      console.error('Error deleting inventory item:', error);
       toaster.create({
         title: 'Error',
         description: 'No se pudo eliminar el ingrediente.',
@@ -390,7 +397,6 @@ const Inventario: React.FC = () => {
       setInventario(transformedInventory);
 
     } catch (error) {
-      console.error('Error saving inventory:', error);
       toaster.create({
         title: 'Error al guardar',
         description: 'No se pudo guardar el inventario. Por favor, intente nuevamente.',

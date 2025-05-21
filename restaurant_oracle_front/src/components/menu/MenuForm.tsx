@@ -3,6 +3,7 @@ import { Button, Dialog, Portal, Stack, Steps, ButtonGroup, Box, Text } from '@c
 import { MenuItemResponse } from '../../interfaces/menuItems';
 import BasicInfoForm from './BasicInfoForm';
 import IngredientsForm from './IngredientsForm';
+import { toaster } from '../ui/toaster';
 
 interface Ingredient {
   raw_ingredient_id: string;
@@ -109,7 +110,12 @@ const MenuForm: React.FC<MenuFormProps> = ({
     let selectedFile = e.target.files?.[0];
     if (selectedFile) {
       if (selectedFile.size > MAX_FILE_SIZE) {
-        console.error('File size exceeds 10 MB. Please upload a smaller file.');
+        toaster.create({
+          title: 'Error',
+          description: 'El tamaño del archivo excede 10 MB. Por favor, suba un archivo más pequeño.',
+          type: 'error',
+          duration: 5000,
+        });
         setFile(null); 
         setErrors({ ...errors, image: true });
       } else {
@@ -145,7 +151,12 @@ const MenuForm: React.FC<MenuFormProps> = ({
       setIsOpen?.(false);
       setIngredients([]);
     } catch (error) {
-      console.error('Error submitting form:', error);
+      toaster.create({
+        title: 'Error',
+        description: 'Error al enviar el formulario.',
+        type: 'error',
+        duration: 5000,
+      });
     }
   };
 

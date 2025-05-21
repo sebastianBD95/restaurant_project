@@ -77,4 +77,27 @@ export const updateOrderStatus = async (orderData: OrderStatusUpdate) => {
     throw new Error('Failed to update order status');
   }
 
+};
+
+// Add items to an existing order
+export const addItemsToOrder = async (orderId: string, items: OrderItem[]) => {
+  const token = getCookie(document.cookie, 'token');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  const response = await fetch(`http://localhost:8080/orders/${orderId}/items`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ items })
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to add items to order');
+  }
+
+  return response.json();
 }; 

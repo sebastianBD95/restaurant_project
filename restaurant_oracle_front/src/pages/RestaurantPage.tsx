@@ -18,6 +18,7 @@ import Slider from 'react-slick';
 import { addRestarurant, getRestaurants } from '../services/restaurantService';
 import { ResturantDataRequest, ResturantDataResponse } from '../interfaces/restaurant';
 import { getCookie } from './utils/cookieManager';
+import { toaster } from '../components/ui/toaster';
 
 const RestaurantPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -34,15 +35,25 @@ const RestaurantPage: React.FC = () => {
   const fetchRestaurants = async () => {
     try {
       let token = getCookie(document.cookie, 'token');
+      console.log('token', token);
       if (!token) {
-        setError('No authentication token found');
+        toaster.create({
+          title: 'Error',
+          description: 'No authentication token found',
+          type: 'error',
+          duration: 5000,
+        });
         return;
       }
       const response = await getRestaurants(token);
-      console.log(response);
       setRestaurants(response);
     } catch (error) {
-      console.error('Error fetching restaurants:', error);
+      toaster.create({
+        title: 'Error',
+        description: 'Error cargando restaurantes.',
+        type: 'error',
+        duration: 5000,
+      });
     }
   };
 
@@ -75,7 +86,12 @@ const RestaurantPage: React.FC = () => {
     e.preventDefault();
 
     if (!formData.name || !formData.description || file == undefined) {
-      alert('Please complete all fields.');
+      toaster.create({
+        title: 'Error',
+        description: 'Please complete all fields.',
+        type: 'error',
+        duration: 5000,
+      });
       return;
     }
 
@@ -91,7 +107,6 @@ const RestaurantPage: React.FC = () => {
         return;
       }
       const results = addRestarurant(restaurantData, token);
-      console.log(results);
 
       // Clear form fields after adding
       setFormData({ name: '', description: '' });

@@ -6,6 +6,7 @@ import { isWaiter } from '../../pages/utils/roleUtils';
 import { getTables } from '../../services/tableService';
 import { useParams } from 'react-router-dom';
 import { Table } from '../../interfaces/table';
+import { toaster } from '../ui/toaster';
 
 interface CartItem {
   id: string;
@@ -44,9 +45,14 @@ const Cart: React.FC<CartProps> = ({
     const fetchTables = async () => {
       try {
         const fetchedTables = await getTables(restaurantId!);
-        setTables(fetchedTables);
+        setTables(fetchedTables.filter((table) => table.status === 'available'));
       } catch (error) {
-        console.error('Error fetching tables:', error);
+        toaster.create({
+          title: 'Error',
+          description: 'Error cargando mesas.',
+          type: 'error',
+          duration: 5000,
+        });
       }
     };
     fetchTables();
@@ -106,10 +112,21 @@ const Cart: React.FC<CartProps> = ({
               {item.quantity} - {item.name} - ${item.price * item.quantity} - {item.observation}
             </Text>
             {!orderPlaced && (
-              <StepperInput
-                value={item.quantity.toString()}
-                onValueChange={(e: { value: string }) => updateCartQuantity(item.id, Number(e.value))}
-              />
+              <Box display="flex" alignItems="center">
+                <Button
+                  size="sm"
+                  colorScheme="red"
+                  mr={2}
+                  onClick={() => updateCartQuantity(item.id, item.quantity - 1)}
+                  aria-label={`Eliminar uno de ${item.name}`}
+                >
+                  -
+                </Button>
+                <StepperInput
+                  value={item.quantity.toString()}
+                  onValueChange={(e: { value: string }) => updateCartQuantity(item.id, Number(e.value))}
+                />
+              </Box>
             )}
           </Box>
         ))

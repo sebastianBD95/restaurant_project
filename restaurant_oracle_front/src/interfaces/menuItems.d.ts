@@ -8,7 +8,7 @@ export interface MenuItemRequest  {
   };
 
 export interface MenuItemResponse  {
-    menu_item_id: string;
+    id: string;
     restaurant_id: string;
     name: string;
     description: string;

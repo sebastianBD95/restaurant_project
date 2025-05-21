@@ -36,9 +36,10 @@ interface OrderCardProps {
   highlight?: boolean;
   onVoidItem?: (orderId: string, menuItemId: string) => void;
   onCancelItem?: (orderId: string, menuItemId: string) => void;
+  onAddDishes?: () => void;
 }
 
-const OrderCard: React.FC<OrderCardProps> = ({ order, onDeliver, onPay, highlight, onVoidItem, onCancelItem }) => (
+const OrderCard: React.FC<OrderCardProps> = ({ order, onDeliver, onPay, highlight, onVoidItem, onCancelItem, onAddDishes }) => (
   <Box bg={highlight ? 'yellow.100' : 'white'} p={4} borderRadius="md" boxShadow="md" mb={4}>
     <Heading size="md">Mesa {order.table}</Heading>
     <Text fontSize="sm" color="gray.500">Total: ${order.total_price}</Text>
@@ -79,6 +80,11 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onDeliver, onPay, highligh
     {order.status === 'delivered' && (
       <Button mt={2} colorScheme="green" size="sm" onClick={() => onPay(order.order_id)}>
         Marcar como Pagado
+      </Button>
+    )}
+    {order.status === 'ordered' && onAddDishes && (
+      <Button size="sm" colorScheme="blue" mt={2} onClick={onAddDishes}>
+        Agregar Platos
       </Button>
     )}
   </Box>

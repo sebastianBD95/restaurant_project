@@ -3,7 +3,7 @@ package dto
 import "restaurant_manager/src/domain/models"
 
 type MenuItemResponse struct {
-	ID          string              `json:"id"`
+	ID          string              `json:"menu_item_id"`
 	Name        string              `json:"name"`
 	Description string              `json:"description"`
 	Price       float64             `json:"price"`
@@ -14,7 +14,7 @@ type MenuItemResponse struct {
 }
 
 type IngredientSummary struct {
-	ID       string  `json:"id"`
+	ID       string  `json:"ingredient_id"`
 	Name     string  `json:"name"`
 	Category string  `json:"category"`
 	Amount   float64 `json:"amount"`

@@ -107,7 +107,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onAdd, orderPlaced, disabled,
           <Button
             mt={3}
             colorScheme="blue"
-            onClick={() => handleSubmit((data) => onAdd(item, Number(data.quantity), observation))()}
+            onClick={handleSubmit((data) => onAdd(item, Number(data.quantity), observation))}
           >
             Agregar al Pedido
           </Button>

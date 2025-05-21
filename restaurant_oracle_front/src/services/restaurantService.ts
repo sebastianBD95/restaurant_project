@@ -30,7 +30,6 @@ export const getRestaurants = async (token: string): Promise<ResturantDataRespon
         Authorization: `Bearer ${token}`,
       },
     });
-    console.log('service: %s', response);
     return response.data;
   } catch (error: any) {
     throw error;
