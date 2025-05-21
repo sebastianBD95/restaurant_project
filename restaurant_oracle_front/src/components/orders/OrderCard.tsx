@@ -1,26 +1,8 @@
 import React from 'react';
 // import styles from '../../pages/styles/OrderCard.css';
-import { Button, Heading, Text, Box } from '@chakra-ui/react';
-
-interface OrderItem {
-  menu_item_id: string;
-  name: string;
-  quantity: number;
-  price: number;
-  status: string;
-  observation: string;
-  image?: string;
-}
-
-interface Order {
-  order_id: string;
-  table_id: string;
-  table: number;
-  restaurant_id: string;
-  items: OrderItem[];
-  status: string;
-  total_price: number;
-}
+import { Button, Heading, Text, Box, Flex, Badge, Stack } from '@chakra-ui/react';
+import { Order } from '../../interfaces/order'; // Create this if it doesn't exist
+import { OrderItem } from '../../interfaces/order'; // Create this if it doesn't exist
 
 const statusMap: Record<string, string> = {
   'ordered': 'Pedido',
@@ -39,54 +21,84 @@ interface OrderCardProps {
   onAddDishes?: () => void;
 }
 
-const OrderCard: React.FC<OrderCardProps> = ({ order, onDeliver, onPay, highlight, onVoidItem, onCancelItem, onAddDishes }) => (
-  <Box bg={highlight ? 'yellow.100' : 'white'} p={4} borderRadius="md" boxShadow="md" mb={4}>
-    <Heading size="md">Mesa {order.table}</Heading>
-    <Text fontSize="sm" color="gray.500">Total: ${order.total_price}</Text>
-    {order.items.map((item, idx) => (
-      <Box key={idx} mb={2}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span>
-            {item.quantity}x {item.name} - ${item.price * item.quantity}
-            {item.observation && ` - ${item.observation}`}
-          </span>
+const OrderCard: React.FC<OrderCardProps> = ({
+  order,
+  onDeliver,
+  onPay,
+  highlight,
+  onVoidItem,
+  onCancelItem,
+  onAddDishes
+}) => (
+  <Box
+    bg={highlight ? 'yellow.50' : 'white'}
+    border="1px solid"
+    borderColor={highlight ? 'yellow.200' : 'gray.200'}
+    borderRadius="lg"
+    boxShadow="sm"
+    p={5}
+    mb={6}
+    transition="box-shadow 0.2s"
+    _hover={{ boxShadow: 'md' }}
+  >
+    <Flex justify="space-between" align="center" mb={2}>
+      <Heading size="md" fontWeight="bold">
+        Mesa {order.table}
+      </Heading>
+      <Badge colorScheme="purple" fontSize="1em" px={3} py={1} borderRadius="md">
+        {statusMap[order.status] || order.status}
+      </Badge>
+    </Flex>
+    <Text fontSize="sm" color="gray.500" mb={2}>
+      Total: <b>${order.total_price}</b>
+    </Text>
+    <Box borderBottom="1px solid #E2E8F0" mb={3} />
+    <Box mb={3}>
+      {order.items.map((item, idx) => (
+        <Flex key={idx} align="center" mb={1}>
+          <Text flex={1}>
+            <b>{item.quantity}x {item.name}</b> <span style={{ color: '#718096' }}>- ${item.price * item.quantity}</span>
+            {item.observation && (
+              <Text as="span" color="gray.500" fontSize="sm"> - {item.observation}</Text>
+            )}
+          </Text>
           {item.status === 'canceled' && (
-            <Text as="span" color="red.500" fontWeight="bold" ml={2}>Cancelado</Text>
+            <Badge colorScheme="red" ml={2}>Cancelado</Badge>
           )}
           {item.status === 'void' && (
-            <Text as="span" color="yellow.500" fontWeight="bold" ml={2}>Anulado</Text>
+            <Badge colorScheme="yellow" ml={2}>Anulado</Badge>
           )}
           {item.status === 'prepared' && onVoidItem && (
-            <Button size="xs" colorPalette="yellow" onClick={() => onVoidItem(order.order_id, item.menu_item_id)}>
+            <Button size="xs" colorScheme="yellow" ml={2} onClick={() => onVoidItem(order.order_id, item.menu_item_id)}>
               Anular
             </Button>
           )}
           {(item.status === 'ordered' || item.status === 'pending') && onCancelItem && (
-            <Button size="xs" colorPalette="red" onClick={() => onCancelItem(order.order_id, item.menu_item_id)}>
+            <Button size="xs" colorScheme="red" ml={2} onClick={() => onCancelItem(order.order_id, item.menu_item_id)}>
               Cancelar
             </Button>
           )}
-        </div>
-      </Box>
-    ))}
-    <Text fontSize="md" fontWeight="bold" mt={3} color="purple.600">
-      Estado: <span style={{ color: '#805ad5' }}>{statusMap[order.status] || order.status}</span>
-    </Text>
-    {order.status !== 'delivered' && order.status !== 'paid' && order.status !== 'canceled' && (
-      <Button mt={2} colorScheme="blue" size="sm" onClick={() => onDeliver(order.order_id)}>
-        Marcar como Entregado
-      </Button>
-    )}
-    {order.status === 'delivered' && (
-      <Button mt={2} colorScheme="green" size="sm" onClick={() => onPay(order.order_id)}>
-        Marcar como Pagado
-      </Button>
-    )}
-    {order.status === 'ordered' && onAddDishes && (
-      <Button size="sm" colorScheme="blue" mt={2} onClick={onAddDishes}>
-        Agregar Platos
-      </Button>
-    )}
+        </Flex>
+      ))}
+    </Box>
+    <Box borderBottom="1px solid #E2E8F0" mb={3} />
+    <Stack direction="row" spacing={3}>
+      {order.status !== 'delivered' && order.status !== 'paid' && order.status !== 'canceled' && (
+        <Button colorScheme="blackAlpha" onClick={() => onDeliver(order.order_id)}>
+          Marcar como Entregado
+        </Button>
+      )}
+      {order.status === 'delivered' && (
+        <Button colorScheme="green" onClick={() => onPay(order.order_id)}>
+          Marcar como Pagado
+        </Button>
+      )}
+      {order.status === 'ordered' && onAddDishes && (
+        <Button colorScheme="blackAlpha" onClick={onAddDishes}>
+          Agregar Platos
+        </Button>
+      )}
+    </Stack>
   </Box>
 );
 

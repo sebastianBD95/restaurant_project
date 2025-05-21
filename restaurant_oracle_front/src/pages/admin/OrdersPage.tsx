@@ -17,6 +17,7 @@ import { DialogRoot, DialogContent, DialogHeader, DialogBody, DialogFooter } fro
 import { NumberInputRoot, NumberInputField } from '../../components/ui/number-input';
 import { useDisclosure } from '@chakra-ui/react';
 import { getCookie } from '../utils/cookieManager';
+import AddDishesDialog from '../../components/orders/AddDishesDialog';
 
 const statusMap: Record<string, string> = {
   'ordered': 'Pedido',
@@ -275,47 +276,17 @@ const Ordenes: React.FC = () => {
         </Box>
       </Box>
 
-      <DialogRoot open={open} onOpenChange={open => { if (!open) onClose(); }}>
-        <DialogContent>
-          <DialogHeader>Agregar Platos al Pedido</DialogHeader>
-          <DialogBody>
-            {categories.length > 0 && (
-              <Box mb={4}>
-                <Text mb={1}>Categoría</Text>
-                <select
-                  value={selectedCategory}
-                  onChange={e => setSelectedCategory(e.target.value)}
-                  style={{ width: '100%', padding: '8px', borderRadius: '4px' }}
-                >
-                  <option value="">Selecciona una categoría</option>
-                  {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-              </Box>
-            )}
-
-            {menuItems.length === 0 ? (
-              <Text>No hay platos disponibles.</Text>
-            ) : (
-              menuItems
-                .filter(item => item.category === selectedCategory)
-                .map(item => (
-                  <Box key={item.menu_item_id} display="flex" alignItems="center" mb={2}>
-                    <Text flex={1}>{item.name} (${item.price})</Text>
-                    <NumberInputRoot min={0} max={99} width="80px" value={selectedDishes[item.menu_item_id]?.toString() || ''} onValueChange={({ value }) => handleDishQuantityChange(item.menu_item_id, Number(value))}>
-                      <NumberInputField />
-                    </NumberInputRoot>
-                  </Box>
-                ))
-            )}
-          </DialogBody>
-          <DialogFooter>
-            <Button colorScheme="blue" mr={3} onClick={handleAddDishesSubmit}>Agregar</Button>
-            <Button onClick={onClose}>Cancelar</Button>
-          </DialogFooter>
-        </DialogContent>
-      </DialogRoot>
+      <AddDishesDialog
+        open={open}
+        onClose={onClose}
+        menuItems={menuItems}
+        categories={categories}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        selectedDishes={selectedDishes}
+        handleDishQuantityChange={handleDishQuantityChange}
+        handleAddDishesSubmit={handleAddDishesSubmit}
+      />
     </Flex>
   );
 };
