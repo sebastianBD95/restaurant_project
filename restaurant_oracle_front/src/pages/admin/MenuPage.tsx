@@ -229,11 +229,11 @@ const MenuPage: React.FC = () => {
 
   const updateCartQuantity = (id: string, newQuantity: number) => {
     if (!orderPlaced) {
-      setCart((prevCart) =>
-        prevCart
-          .map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item))
+      setCart((prevCart) => {
+        return prevCart
+          .map((item) => (item.menu_item_id === id ? { ...item, quantity: newQuantity } : item))
           .filter((item) => item.quantity > 0)
-      );
+      });
     }
   };
 
@@ -264,7 +264,7 @@ const MenuPage: React.FC = () => {
         restaurant_id: restaurantId,
         status: 'ordered',
         items: cart.map(item => ({
-          menu_item_id: item.id,
+          menu_item_id: item.menu_item_id,
           quantity: item.quantity,
           observation: item.observation,
           price: item.price

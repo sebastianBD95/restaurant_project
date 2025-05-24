@@ -18,6 +18,7 @@ import { NumberInputRoot, NumberInputField } from '../../components/ui/number-in
 import { useDisclosure } from '@chakra-ui/react';
 import { getCookie } from '../utils/cookieManager';
 import AddDishesDialog from '../../components/orders/AddDishesDialog';
+import { Order, OrderItem } from '../../interfaces/order';
 
 const statusMap: Record<string, string> = {
   'ordered': 'Pedido',
@@ -25,26 +26,6 @@ const statusMap: Record<string, string> = {
   'paid': 'Pagado',
   'canceled': 'Cancelado'
 };
-
-interface OrderItem {
-  menu_item_id: string;
-  name: string;
-  quantity: number;
-  price: number;
-  status: string;
-  observation: string;
-  image?: string;
-}
-
-interface Order {
-  order_id: string;
-  table_id: string;
-  table: number;
-  restaurant_id: string;
-  items: OrderItem[];
-  status: string;
-  total_price: number;
-}
 
 const Ordenes: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -63,6 +44,7 @@ const Ordenes: React.FC = () => {
     try {
       if (restaurantId) {
         const orders = await getOrdersByRestaurant(restaurantId);
+        console.log(orders);
         setOrders(orders);
       }
     } catch (error) {

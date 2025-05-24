@@ -9,7 +9,7 @@ import { Table } from '../../interfaces/table';
 import { toaster } from '../ui/toaster';
 
 interface CartItem {
-  id: string;
+  menu_item_id: string;
   name: string;
   price: number;
   quantity: number;
@@ -102,7 +102,7 @@ const Cart: React.FC<CartProps> = ({
       ) : (
         cart.map((item) => (
           <Box
-            key={item.id}
+            key={item.menu_item_id}
             display="flex"
             justifyContent="space-between"
             alignItems="center"
@@ -113,18 +113,11 @@ const Cart: React.FC<CartProps> = ({
             </Text>
             {!orderPlaced && (
               <Box display="flex" alignItems="center">
-                <Button
-                  size="sm"
-                  colorScheme="red"
-                  mr={2}
-                  onClick={() => updateCartQuantity(item.id, item.quantity - 1)}
-                  aria-label={`Eliminar uno de ${item.name}`}
-                >
-                  -
-                </Button>
                 <StepperInput
+                  key={item.menu_item_id}
+                  name={item.menu_item_id}
                   value={item.quantity.toString()}
-                  onValueChange={(e: { value: string }) => updateCartQuantity(item.id, Number(e.value))}
+                  onValueChange={(e: { value: string }) => updateCartQuantity(item.menu_item_id, Number(e.value))}
                 />
               </Box>
             )}
