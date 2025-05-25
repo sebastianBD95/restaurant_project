@@ -7,6 +7,7 @@ import { editMenuItem, hideMenuItem, deleteMenuItem } from '../../services/menuS
 import { getCookie } from '../../pages/utils/cookieManager';
 import { isAdmin } from '../../pages/utils/roleUtils';
 import { Ingredient } from '../../interfaces/ingredients';
+import { toaster } from '../ui/toaster';
 
 interface MenuCategoryProps {
   category: string;
@@ -79,7 +80,12 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
       await deleteMenuItem(item.menu_item_id, token!, restaurantId);
       await onMenuUpdate();
     } catch (error) {
-      console.error('Error deleting menu item:', error);
+      toaster.create({
+        title: 'Error',
+        description: 'Error eliminando plato.',
+        type: 'error',
+        duration: 5000,
+      });
     }
   };
 
@@ -88,7 +94,12 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
       await hideMenuItem(item.menu_item_id, token!, restaurantId);
       await onMenuUpdate();
     } catch (error) {
-      console.error('Error hiding menu item:', error);
+      toaster.create({
+        title: 'Error',
+        description: 'Error ocultando plato.',
+        type: 'error',
+        duration: 5000,
+      });
     }
   };
 

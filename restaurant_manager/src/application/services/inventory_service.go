@@ -53,3 +53,30 @@ func (s *InventoryService) UpdateInventoryQuantity(rawIngredientID string, amoun
 func (s *InventoryService) GetInventoryByRawIngredientID(rawIngredientID string) (*models.Inventory, error) {
 	return s.repo.GetInventoryByRawIngredientID(rawIngredientID)
 }
+
+// DeductInventoryForMenuItem deducts inventory for all ingredients in a menu item for a given quantity.
+// Returns the updated inventories and a flag indicating if any inventory reached zero.
+func (s *InventoryService) DeductInventoryForMenuItem(menuItem *models.MenuItem, quantity int) (bool, error) {
+	inventories := []models.Inventory{}
+	zeroInventory := false
+	for _, item := range menuItem.Ingredients {
+		inventory, err := s.GetInventoryByRawIngredientID(item.RawIngredientID)
+		if err != nil {
+			return false, err
+		}
+		amountToDeduct := item.Amount * float64(quantity)
+		inventory.Quantity -= amountToDeduct
+		if inventory.Quantity < 0 {
+			inventory.Quantity = 0
+		}
+		if inventory.Quantity == 0 {
+			zeroInventory = true
+		}
+		inventories = append(inventories, *inventory)
+	}
+	err := s.UpdateInventory(inventories)
+	if err != nil {
+		return false, err
+	}
+	return zeroInventory, nil
+}

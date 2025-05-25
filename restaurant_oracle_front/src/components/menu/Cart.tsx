@@ -6,9 +6,10 @@ import { isWaiter } from '../../pages/utils/roleUtils';
 import { getTables } from '../../services/tableService';
 import { useParams } from 'react-router-dom';
 import { Table } from '../../interfaces/table';
+import { toaster } from '../ui/toaster';
 
 interface CartItem {
-  id: string;
+  menu_item_id: string;
   name: string;
   price: number;
   quantity: number;
@@ -44,9 +45,14 @@ const Cart: React.FC<CartProps> = ({
     const fetchTables = async () => {
       try {
         const fetchedTables = await getTables(restaurantId!);
-        setTables(fetchedTables);
+        setTables(fetchedTables.filter((table) => table.status === 'available'));
       } catch (error) {
-        console.error('Error fetching tables:', error);
+        toaster.create({
+          title: 'Error',
+          description: 'Error cargando mesas.',
+          type: 'error',
+          duration: 5000,
+        });
       }
     };
     fetchTables();
@@ -96,7 +102,7 @@ const Cart: React.FC<CartProps> = ({
       ) : (
         cart.map((item) => (
           <Box
-            key={item.id}
+            key={item.menu_item_id}
             display="flex"
             justifyContent="space-between"
             alignItems="center"
@@ -106,10 +112,14 @@ const Cart: React.FC<CartProps> = ({
               {item.quantity} - {item.name} - ${item.price * item.quantity} - {item.observation}
             </Text>
             {!orderPlaced && (
-              <StepperInput
-                value={item.quantity.toString()}
-                onValueChange={(e: { value: string }) => updateCartQuantity(item.id, Number(e.value))}
-              />
+              <Box display="flex" alignItems="center">
+                <StepperInput
+                  key={item.menu_item_id}
+                  name={item.menu_item_id}
+                  value={item.quantity.toString()}
+                  onValueChange={(e: { value: string }) => updateCartQuantity(item.menu_item_id, Number(e.value))}
+                />
+              </Box>
             )}
           </Box>
         ))

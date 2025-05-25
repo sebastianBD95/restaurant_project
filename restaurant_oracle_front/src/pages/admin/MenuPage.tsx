@@ -102,7 +102,6 @@ const MenuPage: React.FC = () => {
       }
       
       const response = await getMenus(token, restaurantId!);
-      console.log('Menu items response:', response); // Debug log
       
       let menuItems = response as MenuItemResponse[];
       const appetizers = menuItems.filter(item => item.category === 'Appetizer');
@@ -118,7 +117,12 @@ const MenuPage: React.FC = () => {
       });
 
     } catch (error) {
-      console.error('Error fetching menu items:', error);
+      toaster.create({
+        title: 'Error',
+        description: 'Error cargando platos.',
+        type: 'error',
+        duration: 5000,
+      });
       setError('Error loading menu items. Please try again.');
     } finally {
       setIsLoading(false);
@@ -148,7 +152,12 @@ const MenuPage: React.FC = () => {
     e.preventDefault();
 
     if (!formData.name || !formData.description || (!file && !editingItem) || formData.price <= 0) {
-      alert('Please complete all fields and ensure price is greater than 0.');
+      toaster.create({
+        title: 'Error',
+        description: 'Asurece todos los campos y el precio debe ser mayor que 0.',
+        type: 'error',
+        duration: 5000,
+      });
       return;
     }
 
@@ -199,9 +208,18 @@ const MenuPage: React.FC = () => {
       setCart((prevCart) => {
         const existingItemIndex = prevCart.findIndex((cartItem) => cartItem.menu_item_id === item.menu_item_id);
         if (existingItemIndex !== -1) {
-          prevCart[existingItemIndex].quantity += quantity;
-          prevCart[existingItemIndex].observation += ` | ${observation}`;
-          return [...prevCart];
+          // Immutable update
+          return prevCart.map((cartItem, idx) =>
+            idx === existingItemIndex
+              ? {
+                  ...cartItem,
+                  quantity: cartItem.quantity + quantity,
+                  observation: cartItem.observation
+                    ? `${cartItem.observation} | ${observation}`
+                    : observation,
+                }
+              : cartItem
+          );
         } else {
           return [...prevCart, { ...item, quantity, observation }];
         }
@@ -211,22 +229,32 @@ const MenuPage: React.FC = () => {
 
   const updateCartQuantity = (id: string, newQuantity: number) => {
     if (!orderPlaced) {
-      setCart((prevCart) =>
-        prevCart
-          .map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item))
+      setCart((prevCart) => {
+        return prevCart
+          .map((item) => (item.menu_item_id === id ? { ...item, quantity: newQuantity } : item))
           .filter((item) => item.quantity > 0)
-      );
+      });
     }
   };
 
   const placeOrder = async () => {
     if (!tableNumber.trim()) {
-      alert('Por favor, selecciona un número de mesa antes de ordenar.');
+      toaster.create({
+        title: 'Error',
+        description: 'Por favor, selecciona un número de mesa antes de ordenar.',
+        type: 'error',
+        duration: 5000,
+      });
       return;
     }
 
     if (cart.length === 0) {
-      alert('No puedes hacer un pedido vacío.');
+      toaster.create({
+        title: 'Error',
+        description: 'No puedes hacer un pedido vacío.',
+        type: 'error',
+        duration: 5000,
+      });
       return;
     }
 
@@ -236,23 +264,22 @@ const MenuPage: React.FC = () => {
         restaurant_id: restaurantId,
         status: 'ordered',
         items: cart.map(item => ({
-          menu_item_id: item.id,
+          menu_item_id: item.menu_item_id,
           quantity: item.quantity,
           observation: item.observation,
           price: item.price
         })),
         total_price: totalCost
       };
-    
       await placeOrderService(orderData);
-      setCart([]);
-      setObservations('');
-      setOrderPlaced(true);
       toaster.create({
         title: 'Pedido realizado con éxito',
         description: `Pedido realizado con éxito en la mesa ${tableNumber}.`,
         type: 'success',
       });
+      setCart([]);
+      setObservations('');
+      setOrderPlaced(false);
     } catch (error) {
       console.error('Error placing order:', error);
       toaster.create({

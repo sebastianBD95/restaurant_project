@@ -30,13 +30,11 @@ const LoginForm: React.FC = () => {
     try {
       const data = await loginUser(formData.username, formData.password);
       // Set cookies for prod should be in a secure way
-      //document.cookie = `token=${data.token}; Secure; SameSite=Strict; Path=/`;
-      //document.cookie = `role=${data.role}; Secure; SameSite=Strict; Path=/`;
-      document.cookie = `token=${data.token};`;
-      document.cookie = `role=${data.role};`;
+      const isLocalhost = window.location.hostname === "localhost";
+      const cookieOptions = isLocalhost ? "Path=/; SameSite=Lax" : "Path=/; Secure; SameSite=Strict";
+      document.cookie = `token=${data.token}; ${cookieOptions}`;
+      document.cookie = `role=${data.role}; ${cookieOptions}`;
 
-      console.log(getCookie('role'));
-      console.log(getCookie('token'));
       if(data.role == "admin"){
         navigate('/restaurantes');
       }else if(data.role == "waiter"){

@@ -27,7 +27,6 @@ export const getMenus = async (token: string, restaurantId :string): Promise<Men
         Authorization: `Bearer ${token}`,
       },
     });
-    console.log('service: %s', response);
     return response.data;
   } catch (error: any) {
     throw error;

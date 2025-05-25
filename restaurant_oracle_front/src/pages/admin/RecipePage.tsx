@@ -8,7 +8,7 @@ import { useParams } from 'react-router-dom';
 import { MenuItemResponse } from '../../interfaces/menuItems';
 import { Sidebar } from '../../components/ui/navegator';
 import { useSidebar } from '../../hooks/useSidebar';
-
+import { toaster } from '../../components/ui/toaster';
 const RecipePage: React.FC = () => {
   const [menuItems, setMenuItems] = useState<MenuItemResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,13 +23,23 @@ const RecipePage: React.FC = () => {
     try {
       const token = getCookie(document.cookie, 'token');
       if (!token) {
-        console.error('No se encontró el token de autenticación');
+        toaster.create({
+          title: 'Error',
+          description: 'No se encontró el token de autenticación',
+          type: 'error',
+          duration: 5000,
+        });
         return;
       }
       const response = await getMenus(token, restaurantId!);
       setMenuItems(response as MenuItemResponse[]);
     } catch (error) {
-      console.error('Error al obtener los elementos del menú:', error);
+      toaster.create({
+        title: 'Error',
+        description: 'Error al obtener los elementos del menú:',
+        type: 'error',
+        duration: 5000,
+      });
     } finally {
       setLoading(false);
     }

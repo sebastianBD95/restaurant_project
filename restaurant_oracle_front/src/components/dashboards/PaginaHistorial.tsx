@@ -6,6 +6,7 @@ import { Box, Heading } from '@chakra-ui/react';
 import dayjs from 'dayjs';
 import { useParams } from 'react-router-dom';
 import { getOrdersByRestaurant } from '../../services/orderService';
+import { toaster } from '../ui/toaster';
 
 interface Producto {
   id: string;
@@ -42,7 +43,12 @@ const Historial: React.FC = () => {
           setHistorial(cleanedHistorial);
         }
       } catch (error) {
-        console.error('Error al cargar historial de pedidos:', error);
+        toaster.create({
+          title: 'Error',
+          description: 'Error al cargar historial de pedidos.',
+          type: 'error',
+          duration: 5000,
+        });
       }
     }
     fetchHistorial();
