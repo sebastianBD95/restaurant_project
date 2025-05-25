@@ -92,7 +92,7 @@ export const addItemsToOrder = async (orderId: string, items: OrderItem[]) => {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     },
-    body: JSON.stringify({ items })
+    body: JSON.stringify(items)
   });
 
   if (!response.ok) {

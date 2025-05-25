@@ -33,12 +33,15 @@ func (repo *OrderRepositoryImpl) UpdateOrder(order *models.Order) error {
 }
 
 func (repo *OrderRepositoryImpl) GetOrder(orderID string) (*models.Order, error) {
-	var order models.Order
-	err := repo.db.First(&order, "order_id = ?", orderID).Error
+	var orders models.Order
+	err := repo.db.Model(&models.Order{}).
+		Preload("OrderItems").Where("order_id = ?", orderID).
+		First(&orders).Error
+
 	if err != nil {
 		return nil, err
 	}
-	return &order, nil
+	return &orders, nil
 }
 
 func (repo *OrderRepositoryImpl) GetOrderByRestaurantID(restaurantID string) ([]models.Order, error) {

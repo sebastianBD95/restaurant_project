@@ -106,14 +106,24 @@ func (h *OrderHandler) GetOrderByRestaurantID(w http.ResponseWriter, r *http.Req
 }
 
 func (h *OrderHandler) AddOrderItem(w http.ResponseWriter, r *http.Request) {
-	var orderItem models.OrderItem
+	var orderItemsID []string
+	orderID := mux.Vars(r)["order_id"]
+	var orderItem []dto.OrderItemDTO
 	json.NewDecoder(r.Body).Decode(&orderItem)
-	orderItemID, err := h.service.AddOrderItem(&orderItem)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	for _, item := range orderItem {
+		orderItemModel := models.OrderItem{
+			OrderID:    orderID,
+			MenuItemID: item.MenuItemID,
+			Quantity:   item.Quantity,
+		}
+		orderItemID, err := h.service.AddOrderItem(&orderItemModel)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		orderItemsID = append(orderItemsID, orderItemID)
 	}
-	json.NewEncoder(w).Encode(map[string]string{"order_id": orderItemID})
+	json.NewEncoder(w).Encode(orderItemsID)
 }
 
 // Update an order item

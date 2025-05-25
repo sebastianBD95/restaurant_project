@@ -134,6 +134,8 @@ const Ordenes: React.FC = () => {
   };
 
   const handleAddDishesSubmit = async () => {
+    console.log('selectedOrder', selectedOrder);
+    console.log('selectedDishes', selectedDishes);
     if (!selectedOrder) return;
     const itemsToAdd = Object.entries(selectedDishes)
       .filter(([_, qty]) => qty > 0)

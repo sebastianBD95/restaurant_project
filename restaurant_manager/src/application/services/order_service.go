@@ -63,50 +63,81 @@ func (service *OrderService) GetOrderByRestaurantID(restaurantID string) ([]mode
 
 func (s *OrderService) AddOrderItem(orderItem *models.OrderItem) (string, error) {
 	var orderItemID string
+
 	err := s.repo.WithTransaction(func(txRepo repositories.OrderRepository) error {
-		id, err := s.repo.AddOrderItem(orderItem)
-		if err != nil {
-			return err
-		}
-		orderItemID = id
-		menuItem, err := s.menuService.GetMenuItemByID(orderItem.MenuItemID)
-		if err != nil {
-			return err
-		}
-		inventories := []models.Inventory{}
-		zeroInventory := false
-		for _, item := range menuItem.Ingredients {
-			inventory, err := s.inventoryService.GetInventoryByRawIngredientID(item.RawIngredientID)
+		order, err := s.repo.GetOrder(orderItem.OrderID)
+		if order != nil {
+			// Existing order: add or update order item
+			itemExists := false
+			for _, item := range order.OrderItems {
+				if item.MenuItemID == orderItem.MenuItemID {
+					itemExists = true
+					orderItem.Quantity += item.Quantity
+					break
+				}
+			}
+			if itemExists {
+				err = s.repo.UpdateOrderItem(orderItem)
+				if err != nil {
+					return err
+				}
+			} else {
+				menuItem, err := s.menuService.GetMenuItemByID(orderItem.MenuItemID)
+				if err != nil {
+					return err
+				}
+				orderItem.Price = menuItem.Price
+				orderItem.Status = models.OrderItemStatus("pending")
+				id, err := s.repo.AddOrderItem(orderItem)
+				if err != nil {
+					return err
+				}
+				orderItemID = id
+			}
+			return s.handleInventoryAndMenu(orderItem.MenuItemID, orderItem.Quantity)
+		} else {
+			// New order: add order item (assume order is being created elsewhere)
+
+			id, err := s.repo.AddOrderItem(orderItem)
 			if err != nil {
 				return err
 			}
-			inventory.Quantity -= item.Amount
-			if inventory.Quantity < 0 {
-				inventory.Quantity = 0
-			}
-			if inventory.Quantity == 0 {
-				zeroInventory = true
-			}
-			inventories = append(inventories, *inventory)
+			orderItemID = id
+			return s.handleInventoryAndMenu(orderItem.MenuItemID, orderItem.Quantity)
 		}
-		err = s.inventoryService.UpdateInventory(inventories)
-		if err != nil {
-			return err
-		}
-		if zeroInventory {
-			menuItem.Available = false
-			err = s.menuService.UpdateMenuItem(menuItem)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
 	})
 	if err != nil {
 		return "", err
 	}
 
 	return orderItemID, nil
+}
+
+func (s *OrderService) handleInventoryAndMenu(menuItemID string, quantity int) error {
+	menuItem, err := s.menuService.GetMenuItemByID(menuItemID)
+	if err != nil {
+		return err
+	}
+	zeroInventory, err := s.inventoryService.DeductInventoryForMenuItem(menuItem, quantity)
+	if err != nil {
+		return err
+	}
+	shouldReturn, err1 := zeroInventoryCheck(zeroInventory, menuItem, err, s)
+	if shouldReturn {
+		return err1
+	}
+	return nil
+}
+
+func zeroInventoryCheck(zeroInventory bool, menuItem *models.MenuItem, err error, s *OrderService) (bool, error) {
+	if zeroInventory {
+		menuItem.Available = false
+		err = s.menuService.UpdateMenuItem(menuItem)
+		if err != nil {
+			return true, err
+		}
+	}
+	return false, nil
 }
 
 func (s *OrderService) UpdateOrderItem(orderItem *models.OrderItem) error {
