@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"restaurant_manager/src/domain/models"
 	"restaurant_manager/src/domain/repositories"
 )
@@ -35,24 +34,8 @@ func (s *InventoryService) DeleteInventory(inventoryID string) error {
 	return s.repo.DeleteInventory(inventoryID)
 }
 
-func (s *InventoryService) UpdateInventoryQuantity(rawIngredientID string, amountUsed float64) error {
-	inventory, err := s.repo.GetInventoryByRawIngredientID(rawIngredientID)
-	if err != nil {
-		return err
-	}
-	if inventory == nil {
-		return fmt.Errorf("inventory not found for raw ingredient: %s", rawIngredientID)
-	}
-	inventory.Quantity -= amountUsed
-	if inventory.Quantity < 0 {
-		inventory.Quantity = 0
-	}
-	// This method is not used in the batch update flow, so we can leave the update out or implement a single update if needed.
-	return nil
-}
-
-func (s *InventoryService) GetInventoryByRawIngredientID(rawIngredientID string) (*models.Inventory, error) {
-	return s.repo.GetInventoryByRawIngredientID(rawIngredientID)
+func (s *InventoryService) GetInventoryByRawIngredientIDAndRestaurantID(rawIngredientID string, restaurantID string) (*models.Inventory, error) {
+	return s.repo.GetInventoryByRawIngredientIDAndRestaurantID(rawIngredientID, restaurantID)
 }
 
 // DeductInventoryForMenuItem deducts inventory for all ingredients in a menu item for a given quantity.
@@ -61,7 +44,7 @@ func (s *InventoryService) DeductInventoryForMenuItem(menuItem *models.MenuItem,
 	inventories := []models.Inventory{}
 	zeroInventory := false
 	for _, item := range menuItem.Ingredients {
-		inventory, err := s.GetInventoryByRawIngredientID(item.RawIngredientID)
+		inventory, err := s.GetInventoryByRawIngredientIDAndRestaurantID(item.RawIngredientID, menuItem.RestaurantID)
 		if err != nil {
 			return false, err
 		}
@@ -85,7 +68,7 @@ func (s *InventoryService) DeductInventoryForMenuItem(menuItem *models.MenuItem,
 func (s *InventoryService) AddInventoryForMenuItem(menuItem *models.MenuItem, quantity int) error {
 	inventories := []models.Inventory{}
 	for _, item := range menuItem.Ingredients {
-		inventory, err := s.GetInventoryByRawIngredientID(item.RawIngredientID)
+		inventory, err := s.GetInventoryByRawIngredientIDAndRestaurantID(item.RawIngredientID, menuItem.RestaurantID)
 		if err != nil {
 			return err
 		}

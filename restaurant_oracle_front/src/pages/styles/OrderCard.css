@@ -1,9 +1,23 @@
 .card {
-  margin-bottom: 1rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgba(16, 24, 40, 0.05);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
   transition: box-shadow 0.2s;
 }
 .card:hover {
-  box-shadow: 0 0 0 2px #38a169;
+  box-shadow: 0 0 0 2px #805ad5;
+}
+.card-highlight {
+  background: #fefcbf;
+  border-color: #faf089;
 }
 .status {
   color: #805ad5;

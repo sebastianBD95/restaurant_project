@@ -17,6 +17,7 @@ import { useDisclosure } from '@chakra-ui/react';
 import { getCookie } from '../utils/cookieManager';
 import AddDishesDialog from '../../components/orders/AddDishesDialog';
 import { Order, OrderItem } from '../../interfaces/order';
+import { useTables } from '../../hooks/useTables';
 
 const statusMap: Record<string, string> = {
   'ordered': 'Pedido',
@@ -30,7 +31,7 @@ const Ordenes: React.FC = () => {
   const [checkedState, setCheckedState] = useState<boolean[]>([]);
   const { restaurantId } = useParams();
   const { isSidebarOpen, toggleSidebar } = useSidebar();
-  const [mesas, setMesas] = useState<Table[]>([]);
+  const { tables: mesas, loading: tablesLoading, error: tablesError, fetchTables } = useTables(restaurantId);
   const [menuItems, setMenuItems] = useState<MenuItemResponse[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [selectedDishes, setSelectedDishes] = useState<{ [id: string]: number }>({});
@@ -48,22 +49,6 @@ const Ordenes: React.FC = () => {
       toaster.create({
         title: 'Error',
         description: 'Error cargando pedidos.',
-        type: 'error',
-        duration: 5000,
-      });
-    }
-  };
-
-  const fetchTables = async () => {
-    try {
-      if (restaurantId) {
-        const tables = await getTables(restaurantId);
-        setMesas(tables);
-      }
-    } catch (error) {
-      toaster.create({
-        title: 'Error',
-        description: 'Error cargando mesas.',
         type: 'error',
         duration: 5000,
       });

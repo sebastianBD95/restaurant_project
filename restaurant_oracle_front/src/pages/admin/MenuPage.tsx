@@ -38,6 +38,7 @@ import MenuCategory from '../../components/menu/MenuCategory';
 import Cart from '../../components/menu/Cart';
 import { placeOrder as placeOrderService } from '../../services/orderService';
 import { Toaster, toaster } from "../../components/ui/toaster"
+import { useTables } from '../../hooks/useTables';
 
 const formSchema = z.object({
   quantity: z.string({ message: 'Debe seleccionar una cantidad válida.' }),
@@ -82,14 +83,13 @@ const MenuPage: React.FC = () => {
 
   const navigate = useNavigate();
 
+  // Use the useTables hook at the top level
+  const { tables, loading: tablesLoading, error: tablesError, fetchTables } = useTables(restaurantId);
+
   useEffect(() => {
     fetchMenuItems();
-    const storedRecetas = localStorage.getItem('recetasPlatos');
-    const storedInventario = localStorage.getItem('alimentosGuardados');
-
-    if (storedRecetas) setRecetas(JSON.parse(storedRecetas));
-    if (storedInventario) setInventario(JSON.parse(storedInventario));
-  }, []);
+    fetchTables(); // Fetch tables on mount and when restaurantId changes
+  }, [restaurantId]);
 
   const fetchMenuItems = async () => {
     setIsLoading(true);
@@ -280,6 +280,8 @@ const MenuPage: React.FC = () => {
       setCart([]);
       setObservations('');
       setOrderPlaced(false);
+      fetchTables();
+
     } catch (error) {
       console.error('Error placing order:', error);
       toaster.create({

@@ -8,5 +8,5 @@ type InventoryRepository interface {
 	GetInventoryByRestaurantID(restaurantID string) ([]models.Inventory, error)
 	UpdateInventory(inventory []models.Inventory) error
 	DeleteInventory(inventoryID string) error
-	GetInventoryByRawIngredientID(rawIngredientID string) (*models.Inventory, error)
+	GetInventoryByRawIngredientIDAndRestaurantID(rawIngredientID string, restaurantID string) (*models.Inventory, error)
 }
