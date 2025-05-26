@@ -7,11 +7,12 @@ import (
 )
 
 type InventoryService struct {
-	repo repositories.InventoryRepository
+	repo        repositories.InventoryRepository
+	menuService *MenuService
 }
 
-func NewInventoryService(repo repositories.InventoryRepository) *InventoryService {
-	return &InventoryService{repo: repo}
+func NewInventoryService(repo repositories.InventoryRepository, menuService *MenuService) *InventoryService {
+	return &InventoryService{repo: repo, menuService: menuService}
 }
 
 func (s *InventoryService) CreateInventory(inventories []models.Inventory) ([]string, error) {
@@ -79,4 +80,18 @@ func (s *InventoryService) DeductInventoryForMenuItem(menuItem *models.MenuItem,
 		return false, err
 	}
 	return zeroInventory, nil
+}
+
+func (s *InventoryService) AddInventoryForMenuItem(menuItem *models.MenuItem, quantity int) error {
+	inventories := []models.Inventory{}
+	for _, item := range menuItem.Ingredients {
+		inventory, err := s.GetInventoryByRawIngredientID(item.RawIngredientID)
+		if err != nil {
+			return err
+		}
+		amountToAdd := item.Amount * float64(quantity)
+		inventory.Quantity += amountToAdd
+		inventories = append(inventories, *inventory)
+	}
+	return s.UpdateInventory(inventories)
 }

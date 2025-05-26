@@ -33,7 +33,7 @@ func main() {
 	restaurantService := services.NewRestaurantService(restaurantRepo, &aws3)
 	menuService := services.NewMenuService(menuRepo, &aws3, ingredientService)
 	tableService := services.NewTableService(tableRepo)
-	inventoryService := services.NewInventoryService(inventoryRepo)
+	inventoryService := services.NewInventoryService(inventoryRepo, menuService)
 	orderService := services.NewOrderService(orderRepo, tableService, menuService, inventoryService)
 	rawIngredientService := services.NewRawIngredientsService(rawIngredientRepo)
 

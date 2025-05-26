@@ -6,15 +6,13 @@ import { useParams } from 'react-router-dom';
 import TableDistribution from '../../components/orders/TableComponent';
 import { Sidebar } from '../../components/ui/navegator';
 import { useSidebar } from '../../hooks/useSidebar';
-import { getOrdersByRestaurant, updateOrderStatus as updateOrderStatusService, addItemsToOrder } from '../../services/orderService';
+import { getOrdersByRestaurant, updateOrderStatus as updateOrderStatusService, addItemsToOrder, cancelOrderItem } from '../../services/orderService';
 import OrderCard from '../../components/orders/OrderCard';
 import { getTables } from '../../services/tableService';
 import { Table } from '../../interfaces/table';
 import { toaster } from '../../components/ui/toaster';
 import { getMenus } from '../../services/menuService';
 import { MenuItemResponse } from '../../interfaces/menuItems';
-import { DialogRoot, DialogContent, DialogHeader, DialogBody, DialogFooter } from '../../components/ui/dialog';
-import { NumberInputRoot, NumberInputField } from '../../components/ui/number-input';
 import { useDisclosure } from '@chakra-ui/react';
 import { getCookie } from '../utils/cookieManager';
 import AddDishesDialog from '../../components/orders/AddDishesDialog';
@@ -43,8 +41,7 @@ const Ordenes: React.FC = () => {
   const fetchOrders = async () => {
     try {
       if (restaurantId) {
-        const orders = await getOrdersByRestaurant(restaurantId);
-        console.log(orders);
+        const orders = await getOrdersByRestaurant(restaurantId,"ordered");
         setOrders(orders);
       }
     } catch (error) {
@@ -109,9 +106,25 @@ const Ordenes: React.FC = () => {
     console.log('Void item', orderId, menuItemId);
   };
 
-  const cancelOrderItem = (orderId: string, menuItemId: string) => {
-    // TODO: Call backend to cancel the item, then refresh orders
+  const cancelOrderItemAction = async (orderId: string, menuItemId: string) => {
     console.log('Cancel item', orderId, menuItemId);
+    try {
+      await cancelOrderItem(orderId,menuItemId);
+      await fetchOrders();
+      await fetchTables();
+      toaster.create({
+        title: 'Plato anulado',
+        description: 'Plato anulado correctamente.',
+        type: 'success',
+      });
+    } catch (error) {
+      toaster.create({
+        title: 'Error',
+        description: 'No se pudo anular el plato.',
+        type: 'error',
+      });
+      console.error('Error canceling order item:', error);
+    }
   };
 
   const handleAddDishesClick = (order: Order) => {
@@ -203,7 +216,7 @@ const Ordenes: React.FC = () => {
                           onPay={orderId => updateOrderStatus(orderId, 'paid')}
                           highlight={order.status === 'delivered'}
                           onVoidItem={voidOrderItem}
-                          onCancelItem={cancelOrderItem}
+                          onCancelItem={cancelOrderItemAction}
                           onAddDishes={() => handleAddDishesClick(order)}
                         />
                       </Box>

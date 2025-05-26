@@ -35,45 +35,50 @@ const OrderCard: React.FC<OrderCardProps> = ({
       borderColor={highlight ? 'yellow.200' : 'gray.200'}
       borderRadius="lg"
       boxShadow="sm"
-      p={5}
-      mb={6}
+      p={{ base: 3, md: 5 }}
+      mb={{ base: 4, md: 6 }}
+      w="100%"
+      minW={0}
+      maxW="100%"
+      boxSizing="border-box"
+      overflow="hidden"
       transition="box-shadow 0.2s"
       _hover={{ boxShadow: 'md' }}
     >
-      <Flex justify="space-between" align="center" mb={2}>
-        <Heading size="md" fontWeight="bold">
+      <Flex direction={{ base: 'column', sm: 'row' }} justify="space-between" align={{ base: 'flex-start', sm: 'center' }} mb={2} gap={2}>
+        <Heading size={{ base: 'sm', md: 'md' }} fontWeight="bold">
           Mesa {order.table}
         </Heading>
-        <Badge colorScheme="purple" fontSize="1em" px={3} py={1} borderRadius="md">
+        <Badge colorScheme="purple" fontSize={{ base: '0.9em', md: '1em' }} px={3} py={1} borderRadius="md">
           {statusMap[order.status] || order.status}
         </Badge>
       </Flex>
-      <Text fontSize="sm" color="gray.500" mb={2}>
+      <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.500" mb={2}>
         Total: <b>${order.total_price}</b>
       </Text>
       <Box borderBottom="1px solid #E2E8F0" mb={3} />
       <Box mb={3}>
         {order.items.map((item: OrderItem, idx: number) => (
-          <Flex key={idx} align="center" mb={1}>
-            <Text flex={1}>
+          <Flex key={idx} align="center" mb={1} direction={{ base: 'column', sm: 'row' }} gap={1}>
+            <Text flex={1} fontSize={{ base: 'sm', md: 'md' }}>
               <b>{item.quantity}x {item.name}</b> <span style={{ color: '#718096' }}>- ${item.price * item.quantity}</span>
               {item.observation && (
                 <Text as="span" color="gray.500" fontSize="sm"> - {item.observation}</Text>
               )}
             </Text>
             {item.status === 'canceled' && (
-              <Badge colorScheme="red" ml={2}>Cancelado</Badge>
+              <Badge colorScheme="red" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }}>Cancelado</Badge>
             )}
             {item.status === 'void' && (
-              <Badge colorScheme="yellow" ml={2}>Anulado</Badge>
+              <Badge colorScheme="yellow" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }}>Anulado</Badge>
             )}
             {item.status === 'prepared' && onVoidItem && (
-              <Button size="xs" colorScheme="yellow" ml={2} onClick={() => onVoidItem(order.order_id, item.menu_item_id)}>
+              <Button size="xs" colorScheme="yellow" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onVoidItem(order.order_id, item.menu_item_id)}>
                 Anular
               </Button>
             )}
             {(item.status === 'ordered' || item.status === 'pending') && onCancelItem && (
-              <Button size="xs" colorScheme="red" ml={2} onClick={() => onCancelItem(order.order_id, item.menu_item_id)}>
+              <Button size="xs" colorScheme="red" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onCancelItem(order.order_id, item.menu_item_id)}>
                 Cancelar
               </Button>
             )}
@@ -81,19 +86,52 @@ const OrderCard: React.FC<OrderCardProps> = ({
         ))}
       </Box>
       <Box borderBottom="1px solid #E2E8F0" mb={3} />
-      <Stack direction="row" gap={3}>
+      <Stack 
+        direction="column" 
+        gap={3} 
+        w="100%" 
+        minW={0} 
+        overflowX="auto"
+      >
         {order.status !== 'delivered' && order.status !== 'paid' && order.status !== 'canceled' && (
-          <Button colorScheme="blackAlpha" onClick={() => onDeliver(order.order_id)}>
+          <Button 
+            colorScheme="blackAlpha" 
+            onClick={() => onDeliver(order.order_id)} 
+            w="100%"
+            fontSize={{ base: 'sm', md: 'md' }}
+            px={{ base: 2, md: 4 }}
+            py={{ base: 2, md: 3 }}
+            whiteSpace="nowrap"
+            minW={0}
+          >
             Marcar como Entregado
           </Button>
         )}
         {order.status === 'delivered' && (
-          <Button colorScheme="green" onClick={() => onPay(order.order_id)}>
+          <Button 
+            colorScheme="green" 
+            onClick={() => onPay(order.order_id)} 
+            w="100%"
+            fontSize={{ base: 'sm', md: 'md' }}
+            px={{ base: 2, md: 4 }}
+            py={{ base: 2, md: 3 }}
+            whiteSpace="nowrap"
+            minW={0}
+          >
             Marcar como Pagado
           </Button>
         )}
         {order.status === 'ordered' && onAddDishes && (
-          <Button colorScheme="blackAlpha" onClick={onAddDishes}>
+          <Button 
+            colorScheme="blackAlpha" 
+            onClick={onAddDishes} 
+            w="100%"
+            fontSize={{ base: 'sm', md: 'md' }}
+            px={{ base: 2, md: 4 }}
+            py={{ base: 2, md: 3 }}
+            whiteSpace="nowrap"
+            minW={0}
+          >
             Agregar Platos
           </Button>
         )}

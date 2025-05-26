@@ -96,7 +96,8 @@ func (h *OrderHandler) GetOrder(w http.ResponseWriter, r *http.Request) {
 func (h *OrderHandler) GetOrderByRestaurantID(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
 	restaurantID := queryParams.Get("restaurant_id")
-	orders, err := h.service.GetOrderByRestaurantID(restaurantID)
+	status := queryParams.Get("status")
+	orders, err := h.service.GetOrderByRestaurantID(restaurantID, status)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -140,8 +141,9 @@ func (h *OrderHandler) UpdateOrderItem(w http.ResponseWriter, r *http.Request) {
 
 // Delete an order item
 func (h *OrderHandler) DeleteOrderItem(w http.ResponseWriter, r *http.Request) {
-	orderItemID := mux.Vars(r)["order_id"]
-	err := h.service.DeleteOrderItem(orderItemID)
+	orderID := mux.Vars(r)["order_id"]
+	menuItemID := mux.Vars(r)["menu_item_id"]
+	err := h.service.DeleteOrderItem(orderID, menuItemID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
