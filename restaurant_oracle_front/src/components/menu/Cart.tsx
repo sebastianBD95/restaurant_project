@@ -7,6 +7,7 @@ import { getTables } from '../../services/tableService';
 import { useParams } from 'react-router-dom';
 import { Table } from '../../interfaces/table';
 import { toaster } from '../ui/toaster';
+import { useTables } from '../../hooks/useTables';
 
 interface CartItem {
   menu_item_id: string;
@@ -37,25 +38,11 @@ const Cart: React.FC<CartProps> = ({
   updateCartQuantity,
   placeOrder,
 }) => {
-  const [tables, setTables] = useState<Table[]>([]);
   const { restaurantId } = useParams();
+  const { tables, loading: tablesLoading, error: tablesError, fetchTables } = useTables(restaurantId);
   const totalCost = cart.reduce((total, item) => total + item.price * item.quantity, 0);
-
   useEffect(() => {
-    const fetchTables = async () => {
-      try {
-        const fetchedTables = await getTables(restaurantId!);
-        setTables(fetchedTables.filter((table) => table.status === 'available'));
-      } catch (error) {
-        toaster.create({
-          title: 'Error',
-          description: 'Error cargando mesas.',
-          type: 'error',
-          duration: 5000,
-        });
-      }
-    };
-    fetchTables();
+    fetchTables(); // Fetch tables on mount and when restaurantId changes
   }, [restaurantId]);
 
   if (!isWaiter()) {
@@ -78,7 +65,7 @@ const Cart: React.FC<CartProps> = ({
           value={tableNumber}
           onChange={(e) => setTableNumber(e.target.value)}
         >
-          {tables.map((table) => (
+          {tables.filter((table) => table.status === 'available').map((table) => (
             <option key={table.table_id} value={table.table_id}>
               {table.table_number}
             </option>

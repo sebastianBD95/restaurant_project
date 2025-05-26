@@ -30,26 +30,13 @@ const OrderCard: React.FC<OrderCardProps> = ({
 }) => {
   return (
     <Box
-      bg={highlight ? 'yellow.50' : 'white'}
-      border="1px solid"
-      borderColor={highlight ? 'yellow.200' : 'gray.200'}
-      borderRadius="lg"
-      boxShadow="sm"
-      p={{ base: 3, md: 5 }}
-      mb={{ base: 4, md: 6 }}
-      w="100%"
-      minW={0}
-      maxW="100%"
-      boxSizing="border-box"
-      overflow="hidden"
-      transition="box-shadow 0.2s"
-      _hover={{ boxShadow: 'md' }}
+      className={`card${highlight ? ' card-highlight' : ''}`}
     >
       <Flex direction={{ base: 'column', sm: 'row' }} justify="space-between" align={{ base: 'flex-start', sm: 'center' }} mb={2} gap={2}>
         <Heading size={{ base: 'sm', md: 'md' }} fontWeight="bold">
           Mesa {order.table}
         </Heading>
-        <Badge colorScheme="purple" fontSize={{ base: '0.9em', md: '1em' }} px={3} py={1} borderRadius="md">
+        <Badge className="status" colorScheme="purple" fontSize={{ base: '0.9em', md: '1em' }} px={3} py={1} borderRadius="md">
           {statusMap[order.status] || order.status}
         </Badge>
       </Flex>
@@ -58,32 +45,31 @@ const OrderCard: React.FC<OrderCardProps> = ({
       </Text>
       <Box borderBottom="1px solid #E2E8F0" mb={3} />
       <Box mb={3}>
-        {order.items.map((item: OrderItem, idx: number) => (
-          <Flex key={idx} align="center" mb={1} direction={{ base: 'column', sm: 'row' }} gap={1}>
-            <Text flex={1} fontSize={{ base: 'sm', md: 'md' }}>
-              <b>{item.quantity}x {item.name}</b> <span style={{ color: '#718096' }}>- ${item.price * item.quantity}</span>
-              {item.observation && (
-                <Text as="span" color="gray.500" fontSize="sm"> - {item.observation}</Text>
+        {order.items
+          .filter((item: OrderItem) => item.status !== 'cancelled')
+          .map((item: OrderItem, idx: number) => (
+            <Flex key={idx} align="center" mb={1} direction={{ base: 'column', sm: 'row' }} gap={1}>
+              <Text flex={1} fontSize={{ base: 'sm', md: 'md' }}>
+                <b>{item.quantity}x {item.name}</b> <span style={{ color: '#718096' }}>- ${item.price * item.quantity}</span>
+                {item.observation && (
+                  <Text as="span" color="gray.500" fontSize="sm"> - {item.observation}</Text>
+                )}
+              </Text>
+              {item.status === 'void' && (
+                <Badge colorScheme="yellow" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }}>Anulado</Badge>
               )}
-            </Text>
-            {item.status === 'canceled' && (
-              <Badge colorScheme="red" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }}>Cancelado</Badge>
-            )}
-            {item.status === 'void' && (
-              <Badge colorScheme="yellow" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }}>Anulado</Badge>
-            )}
-            {item.status === 'prepared' && onVoidItem && (
-              <Button size="xs" colorScheme="yellow" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onVoidItem(order.order_id, item.menu_item_id)}>
-                Anular
-              </Button>
-            )}
-            {(item.status === 'ordered' || item.status === 'pending') && onCancelItem && (
-              <Button size="xs" colorScheme="red" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onCancelItem(order.order_id, item.menu_item_id)}>
-                Cancelar
-              </Button>
-            )}
-          </Flex>
-        ))}
+              {item.status === 'prepared' && onVoidItem && (
+                <Button size="xs" colorScheme="yellow" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onVoidItem(order.order_id, item.menu_item_id)}>
+                  Anular
+                </Button>
+              )}
+              {(item.status === 'ordered' || item.status === 'pending') && onCancelItem && (
+                <Button size="xs" colorScheme="red" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onCancelItem(order.order_id, item.menu_item_id)}>
+                  Cancelar
+                </Button>
+              )}
+            </Flex>
+          ))}
       </Box>
       <Box borderBottom="1px solid #E2E8F0" mb={3} />
       <Stack 
