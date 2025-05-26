@@ -57,8 +57,8 @@ func (service *OrderService) GetOrder(orderID string) (*models.Order, error) {
 	return service.repo.GetOrder(orderID)
 }
 
-func (service *OrderService) GetOrderByRestaurantID(restaurantID string) ([]models.Order, error) {
-	return service.repo.GetOrderByRestaurantID(restaurantID)
+func (service *OrderService) GetOrderByRestaurantID(restaurantID string, status string) ([]models.Order, error) {
+	return service.repo.GetOrderByRestaurantID(restaurantID, status)
 }
 
 func (s *OrderService) AddOrderItem(orderItem *models.OrderItem) (string, error) {
@@ -70,7 +70,7 @@ func (s *OrderService) AddOrderItem(orderItem *models.OrderItem) (string, error)
 			// Existing order: add or update order item
 			itemExists := false
 			for _, item := range order.OrderItems {
-				if item.MenuItemID == orderItem.MenuItemID {
+				if item.MenuItemID == orderItem.MenuItemID && item.Status == models.OrderItemStatus("pending") {
 					itemExists = true
 					orderItem.Quantity += item.Quantity
 					break
@@ -144,8 +144,61 @@ func (s *OrderService) UpdateOrderItem(orderItem *models.OrderItem) error {
 	return s.repo.UpdateOrderItem(orderItem)
 }
 
-func (s *OrderService) DeleteOrderItem(orderItemID string) error {
-	return s.repo.DeleteOrderItem(orderItemID)
+func (s *OrderService) DeleteOrderItem(orderID string, menuItemID string) error {
+	return s.repo.WithTransaction(func(txRepo repositories.OrderRepository) error {
+		orderItem, err := txRepo.GetOrderItem(orderID, menuItemID)
+		if err != nil {
+			return err
+		}
+
+		if orderItem.Quantity > 1 {
+			orderItem.Quantity--
+		} else {
+			orderItem.Status = models.OrderItemStatus("cancelled")
+		}
+
+		if err := txRepo.UpdateOrderItem(orderItem); err != nil {
+			return err
+		}
+
+		menuItem, err := s.menuService.GetMenuItemByID(orderItem.MenuItemID)
+		if err != nil {
+			return err
+		}
+		if err := s.inventoryService.AddInventoryForMenuItem(menuItem, orderItem.Quantity); err != nil {
+			return err
+		}
+
+		order, err := txRepo.GetOrder(orderID)
+		if err != nil {
+			return err
+		}
+		shouldReturn, err := CancelOrder(order, txRepo, s)
+		if shouldReturn {
+			return err
+		}
+		return nil
+	})
+}
+
+func CancelOrder(order *models.Order, txRepo repositories.OrderRepository, s *OrderService) (bool, error) {
+	orderCancelled := true
+	for _, item := range order.OrderItems {
+		if item.Status != models.OrderItemStatus("cancelled") {
+			orderCancelled = false
+			break
+		}
+	}
+	if orderCancelled {
+		order.Status = models.OrderStatus("cancelled")
+		if err := txRepo.UpdateOrder(order); err != nil {
+			return true, err
+		}
+		if err := s.tableService.UpdateTableStatus(order.TableID, string(models.TableStatusAvailable)); err != nil {
+			return true, err
+		}
+	}
+	return false, nil
 }
 
 func (s *OrderService) GetOrderItems(orderID string) ([]models.OrderItem, error) {

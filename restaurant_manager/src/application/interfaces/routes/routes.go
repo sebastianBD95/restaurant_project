@@ -75,7 +75,7 @@ func SetupRoutes(userHandler *handlers.UserHandler,
 	r.HandleFunc("/orders/{orders_id}", orderHandler.DeleteOrder).Methods("DELETE", "OPTIONS")
 	r.HandleFunc("/orders/{order_id}/items", orderHandler.AddOrderItem).Methods("POST", "OPTIONS")
 	r.HandleFunc("/order-items", orderHandler.UpdateOrderItem).Methods("PUT", "OPTIONS")
-	r.HandleFunc("/order-items", orderHandler.DeleteOrderItem).Methods("DELETE", "OPTIONS")
+	r.HandleFunc("/orders/{order_id}/items/{menu_item_id}", orderHandler.DeleteOrderItem).Methods("DELETE", "OPTIONS")
 	r.HandleFunc("/orders/{order_id}/items", orderHandler.GetOrderItems).Methods("GET", "OPTIONS")
 	r.HandleFunc("/tables", tableHandler.CreateTable).Methods("POST", "OPTIONS")
 	r.HandleFunc("/tables/{table_id}", tableHandler.GetTable).Methods("GET", "OPTIONS")

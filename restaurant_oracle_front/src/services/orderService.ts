@@ -38,13 +38,13 @@ export const placeOrder = async (orderData: OrderRequest) => {
   return response.json();
 };
 
-export const getOrdersByRestaurant = async (restaurantId: string) => {
+export const getOrdersByRestaurant = async (restaurantId: string, status: string) => {
   const token = getCookie(document.cookie, 'token');
   if (!token) {
     throw new Error('No authentication token found');
   }
 
-  const response = await fetch(`http://localhost:8080/orders?restaurant_id=${restaurantId}`, {
+  const response = await fetch(`http://localhost:8080/orders?restaurant_id=${restaurantId}&status=${status}`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`
@@ -101,3 +101,22 @@ export const addItemsToOrder = async (orderId: string, items: OrderItem[]) => {
 
   return response.json();
 }; 
+
+export const cancelOrderItem = async (orderId: string, menuItemId: string) => {
+  const token = getCookie(document.cookie, 'token');
+
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  const response = await fetch(`http://localhost:8080/orders/${orderId}/items/${menuItemId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to cancel order item');
+  }
+};

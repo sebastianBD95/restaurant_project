@@ -35,7 +35,9 @@ func (repo *OrderRepositoryImpl) UpdateOrder(order *models.Order) error {
 func (repo *OrderRepositoryImpl) GetOrder(orderID string) (*models.Order, error) {
 	var orders models.Order
 	err := repo.db.Model(&models.Order{}).
-		Preload("OrderItems").Where("order_id = ?", orderID).
+		Preload("OrderItems").Preload("OrderItems.MenuItem").
+		Preload("Table").
+		Where("order_id = ?", orderID).
 		First(&orders).Error
 
 	if err != nil {
@@ -44,11 +46,11 @@ func (repo *OrderRepositoryImpl) GetOrder(orderID string) (*models.Order, error)
 	return &orders, nil
 }
 
-func (repo *OrderRepositoryImpl) GetOrderByRestaurantID(restaurantID string) ([]models.Order, error) {
+func (repo *OrderRepositoryImpl) GetOrderByRestaurantID(restaurantID string, status string) ([]models.Order, error) {
 	var orders []models.Order
 	err := repo.db.Model(&models.Order{}).
 		Preload("OrderItems").Preload("OrderItems.MenuItem").
-		Preload("Table").Where("restaurant_id = ?", restaurantID).
+		Preload("Table").Where("restaurant_id = ? AND status = ?", restaurantID, status).
 		Find(&orders).Error
 
 	if err != nil {
@@ -71,14 +73,23 @@ func (repo *OrderRepositoryImpl) UpdateOrderItem(orderItem *models.OrderItem) er
 		Updates(orderItem).Error
 }
 
-func (repo *OrderRepositoryImpl) DeleteOrderItem(orderItemID string) error {
-	return repo.db.Delete(&models.OrderItem{}, "order_id = ?", orderItemID).Error
+func (repo *OrderRepositoryImpl) DeleteOrderItem(orderID string, menuItemID string) error {
+	return repo.db.Delete(&models.OrderItem{}, "order_id = ? AND menu_item_id = ?", orderID, menuItemID).Error
 }
 
 func (repo *OrderRepositoryImpl) GetOrderItems(orderID string) ([]models.OrderItem, error) {
 	var items []models.OrderItem
 	err := repo.db.Where("order_id = ?", orderID).Find(&items).Error
 	return items, err
+}
+
+func (repo *OrderRepositoryImpl) GetOrderItem(orderID string, menuItemID string) (*models.OrderItem, error) {
+	var item models.OrderItem
+	err := repo.db.Where("order_id = ? AND menu_item_id = ?", orderID, menuItemID).First(&item).Error
+	if err != nil {
+		return nil, err
+	}
+	return &item, nil
 }
 
 func (repo *OrderRepositoryImpl) WithTransaction(fn func(txRepo repositories.OrderRepository) error) error {

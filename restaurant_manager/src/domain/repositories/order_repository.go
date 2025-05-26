@@ -9,10 +9,11 @@ type OrderRepository interface {
 	DeleteOrder(orderID string) error
 	UpdateOrder(order *models.Order) error
 	GetOrder(orderID string) (*models.Order, error)
-	GetOrderByRestaurantID(restaurantID string) ([]models.Order, error)
+	GetOrderByRestaurantID(restaurantID string, status string) ([]models.Order, error)
 	AddOrderItem(orderItem *models.OrderItem) (string, error)
 	UpdateOrderItem(orderItem *models.OrderItem) error
-	DeleteOrderItem(orderItemID string) error
+	DeleteOrderItem(orderID string, menuItemID string) error
 	GetOrderItems(orderID string) ([]models.OrderItem, error)
+	GetOrderItem(orderID string, menuItemID string) (*models.OrderItem, error)
 	WithTransaction(fn func(txRepo OrderRepository) error) error
 }
