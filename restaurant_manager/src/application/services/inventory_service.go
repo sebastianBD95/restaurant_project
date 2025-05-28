@@ -38,8 +38,6 @@ func (s *InventoryService) GetInventoryByRawIngredientIDAndRestaurantID(rawIngre
 	return s.repo.GetInventoryByRawIngredientIDAndRestaurantID(rawIngredientID, restaurantID)
 }
 
-// DeductInventoryForMenuItem deducts inventory for all ingredients in a menu item for a given quantity.
-// Returns the updated inventories and a flag indicating if any inventory reached zero.
 func (s *InventoryService) DeductInventoryForMenuItem(menuItem *models.MenuItem, quantity int) (bool, error) {
 	inventories := []models.Inventory{}
 	zeroInventory := false

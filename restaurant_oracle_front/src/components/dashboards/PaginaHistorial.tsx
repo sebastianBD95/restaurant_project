@@ -33,7 +33,7 @@ const Historial: React.FC = () => {
     async function fetchHistorial() {
       try {
         if (!restaurantId) return;
-        const pedidos = await getOrdersByRestaurant(restaurantId);
+        const pedidos = await getOrdersByRestaurant(restaurantId, 'paid');
         if (Array.isArray(pedidos)) {
           const cleanedHistorial = pedidos.map((pedido) => ({
             ...pedido,

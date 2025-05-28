@@ -27,6 +27,7 @@ export interface InventoryResponse {
   minimum_quantity: number;
   last_restock_date: string;
   price: number;
+  merma: number;
   created_at: string;
   updated_at: string;
   raw_ingredient: RawIngredient;
