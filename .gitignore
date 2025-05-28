@@ -34,3 +34,12 @@ bin/
 
 # Ignore any other local files
 *.swp
+
+
+#ignore debug files
+*.debug
+*.debug.*
+*.debug.*.*
+*.debug.*.*.*
+*.debug.*.*.*.*
+*.debug.*.*.*.*.*
