@@ -22,20 +22,7 @@ import { AddIngredientDialog } from '../../components/inventory/AddIngredientDia
 import { InventoryTable } from '../../components/inventory/InventoryTable';
 import { getIngredients, getRawIngredientsByCategory, Ingredient } from '../../services/ingredientService';
 import { deleteInventoryItem, getInventory, InventoryResponse, createInventoryItems, updateInventoryItems } from '../../services/inventoryService';
-
-interface Alimento {
-  id: string;  // maps to inventory_id
-  raw_ingredient_id: string;
-  nombre: string;  // derived from raw_ingredient
-  categoria: string;  // derived from raw_ingredient
-  cantidad: number;  // maps to quantity
-  unidad: 'g' | 'ml' | 'kg' | 'l' | 'un';  // maps to unit with strict types
-  cantidad_minima: number;  // maps to minimum_quantity
-  precio: number;  // maps to price
-  ultima_reposicion?: Date;  // maps to last_restock_date
-  isModified?: boolean;  // track if item has been modified
-  isNew?: boolean;  // track if item is newly added
-}
+import type { Inventory } from '../../types/inventory';
 
 interface CustomIngredient {
   nombre: string;
@@ -66,7 +53,7 @@ const CATEGORIAS = [
 const UNIDADES: UnidadMedida[] = ['g', 'ml', 'kg', 'l', 'un'];
 
 const Inventario: React.FC = () => {
-  const [inventario, setInventario] = useState<Alimento[]>([]);
+  const [inventario, setInventario] = useState<Inventory[]>([]);
   const [modoEdicion, setModoEdicion] = useState<{ [id: string]: boolean }>({});
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [suggestedIngredients, setSuggestedIngredients] = useState<Ingredient[]>([]);
@@ -91,7 +78,7 @@ const Inventario: React.FC = () => {
         const inventoryData = await getInventory(restaurantId!);
         
         // Transform inventory data to match our local format
-        const transformedInventory: Alimento[] = inventoryData.map(item => ({
+        const transformedInventory: Inventory[] = inventoryData.map(item => ({
           id: item.inventory_id,
           raw_ingredient_id: item.raw_ingredient_id,
           nombre: item.raw_ingredient.name,
@@ -100,6 +87,7 @@ const Inventario: React.FC = () => {
           unidad: item.unit,
           cantidad_minima: item.minimum_quantity,
           precio: item.price,
+          merma: item.merma,
           ultima_reposicion: item.last_restock_date ? new Date(item.last_restock_date) : undefined
         }));
 
@@ -208,7 +196,7 @@ const Inventario: React.FC = () => {
       return;
     }
 
-    const nuevo: Alimento = {
+    const nuevo: Inventory = {
       id: crypto.randomUUID(),
       raw_ingredient_id: ingredientDetails.raw_ingredient_id,
       nombre: ingredientDetails.name,
@@ -217,6 +205,7 @@ const Inventario: React.FC = () => {
       unidad: 'g',
       cantidad_minima: 0,
       precio: 0,
+      merma: 0,
       ultima_reposicion: new Date(),
       isNew: true
     };
@@ -246,7 +235,7 @@ const Inventario: React.FC = () => {
     }
   };
 
-  const handleChange = (id: string, field: keyof Alimento, value: string | number) => {
+  const handleChange = (id: string, field: keyof Inventory, value: string | number) => {
     setInventario((prev) =>
       prev.map((item) => 
         item.id === id 
@@ -383,7 +372,7 @@ const Inventario: React.FC = () => {
 
       // Refresh the inventory to get the updated data from the server
       const updatedInventory = await getInventory(restaurantId!);
-      const transformedInventory: Alimento[] = updatedInventory.map(item => ({
+      const transformedInventory: Inventory[] = updatedInventory.map(item => ({
         id: item.inventory_id,
         raw_ingredient_id: item.raw_ingredient_id,
         nombre: item.raw_ingredient.name,
@@ -392,6 +381,7 @@ const Inventario: React.FC = () => {
         unidad: item.unit,
         cantidad_minima: item.minimum_quantity,
         precio: item.price,
+        merma: item.merma,
         ultima_reposicion: item.last_restock_date ? new Date(item.last_restock_date) : undefined
       }));
       setInventario(transformedInventory);

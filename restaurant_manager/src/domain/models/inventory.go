@@ -11,6 +11,7 @@ type Inventory struct {
 	MinimumQuantity float64   `gorm:"column:minimum_quantity" json:"minimum_quantity"`
 	LastRestockDate time.Time `gorm:"column:last_restock_date" json:"last_restock_date"`
 	Price           float64   `gorm:"column:price" json:"price"`
+	Merma           float64   `gorm:"column:merma" json:"merma"`
 	CreatedAt       time.Time `gorm:"column:created_at;autoCreateTime" json:"created_at"`
 	UpdatedAt       time.Time `gorm:"column:updated_at;autoUpdateTime" json:"updated_at"`
 

@@ -12,25 +12,14 @@ import {
   Icon,
 } from '@chakra-ui/react';
 import { MdDeleteForever } from 'react-icons/md';
-
-interface Alimento {
-  id: string;
-  raw_ingredient_id: string;
-  nombre: string;
-  categoria: string;
-  cantidad: number;
-  unidad: 'g' | 'ml' | 'kg' | 'l' | 'un';
-  cantidad_minima: number;
-  precio: number;
-  ultima_reposicion?: Date;
-}
+import type { Inventory } from '../../types/inventory';
 
 interface InventoryTableProps {
-  inventario: Alimento[];
+  inventario: Inventory[];
   modoEdicion: { [id: string]: boolean };
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
-  handleChange: (id: string, field: keyof Alimento, value: any) => void;
+  handleChange: (id: string, field: keyof Inventory, value: any) => void;
   isLoading: boolean;
 }
 
@@ -59,6 +48,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
             <Table.ColumnHeader display={{ base: 'none', md: 'table-cell' }}>Unidad</Table.ColumnHeader>
             <Table.ColumnHeader display={{ base: 'none', lg: 'table-cell' }}>Cantidad Mínima</Table.ColumnHeader>
             <Table.ColumnHeader>Precio</Table.ColumnHeader>
+            <Table.ColumnHeader>Merma</Table.ColumnHeader>
             <Table.ColumnHeader display={{ base: 'none', lg: 'table-cell' }}>Última Reposición</Table.ColumnHeader>
             <Table.ColumnHeader textAlign="center">Acciones</Table.ColumnHeader>
           </Table.Row>
@@ -149,6 +139,9 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                   </Table.Cell>
                   <Table.Cell>
                     <Text>${item.precio.toFixed(2)}</Text>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Text>{item.merma}</Text>
                   </Table.Cell>
                   <Table.Cell display={{ base: 'none', lg: 'table-cell' }}>
                     <Text>

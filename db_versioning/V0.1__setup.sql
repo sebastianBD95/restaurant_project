@@ -110,6 +110,7 @@ CREATE TABLE servu.inventories (
     minimum_quantity DECIMAL(10,2) NOT NULL,
     last_restock_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     price DECIMAL(10,2) NOT NULL,
+    merma DECIMAL(10,2) DEFAULT 0.0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(restaurant_id, raw_ingredient_id)
