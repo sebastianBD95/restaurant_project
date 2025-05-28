@@ -32,7 +32,7 @@ const DashboardDO: React.FC = () => {
   useEffect(() => {
     async function fetchOrders() {
       if (!restaurantId) return;
-      const orders = await getOrdersByRestaurant(restaurantId);
+      const orders = await getOrdersByRestaurant(restaurantId, 'ordered');
       const ordersPerDay: { [key: string]: number } = {};
       orders.forEach((order: any) => {
         const date = dayjs(order.created_at).format('YYYY-MM-DD');

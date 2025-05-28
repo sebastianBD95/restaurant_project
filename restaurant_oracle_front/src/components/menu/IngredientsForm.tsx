@@ -148,8 +148,7 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
               width="100%"
               multiple={false}
             >
-              <ChakraSelect.HiddenSelect />
-              <ChakraSelect.Label>Ingrediente</ChakraSelect.Label>
+              <ChakraSelect.HiddenSelect /> 
               <ChakraSelect.Control>
                 <ChakraSelect.Trigger>
                   <ChakraSelect.ValueText placeholder={selectedCategory ? "Selecciona un ingrediente" : "Primero selecciona una categoría"} />

@@ -26,7 +26,7 @@ const TrendingMenu: React.FC = () => {
   useEffect(() => {
     async function fetchTrending() {
       if (!restaurantId) return;
-      const orders = await getOrdersByRestaurant(restaurantId);
+      const orders = await getOrdersByRestaurant(restaurantId, 'paid');
 
       // 📌 Contar cuántas veces se ha ordenado cada plato
       const dishCount: { [key: string]: { name: string; image: string; orderCount: number } } = {};
