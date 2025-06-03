@@ -67,7 +67,7 @@ func (repo *InventoryRepositoryImpl) DeleteInventory(inventoryID string) error {
 
 func (repo *InventoryRepositoryImpl) GetInventoryByRawIngredientIDAndRestaurantID(rawIngredientID string, restaurantID string) (*models.Inventory, error) {
 	var inventory models.Inventory
-	err := repo.db.Where("raw_ingredient_id = ? AND restaurant_id = ?", rawIngredientID, restaurantID).Error
+	err := repo.db.Where("raw_ingredient_id = ? AND restaurant_id = ?", rawIngredientID, restaurantID).First(&inventory).Error
 	if err != nil {
 		return nil, err
 	}

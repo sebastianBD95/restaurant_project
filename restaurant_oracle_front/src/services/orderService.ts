@@ -120,3 +120,41 @@ export const cancelOrderItem = async (orderId: string, menuItemId: string) => {
     throw new Error('Failed to cancel order item');
   }
 };
+
+export const createVoidOrderItem = async (orderId: string, menuItemId: string, restaurantId: string) => {
+  const token = getCookie(document.cookie, 'token');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+  
+  const response = await fetch(`http://localhost:8080/orders/${orderId}/items/${menuItemId}/void`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ restaurantId })
+  });
+};
+
+export const getVoidOrders = async (restaurantId: string) => {
+  const token = getCookie(document.cookie, 'token');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  const response = await fetch(`http://localhost:8080/restaurants/${restaurantId}/order-items/void`, {
+    method: 'GET',  
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch void orders');
+  }
+
+  return response.json();
+}
+

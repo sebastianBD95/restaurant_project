@@ -41,5 +41,23 @@ const (
 	OrderItemPending   OrderItemStatus = "pending"
 	OrderItemCompleted OrderItemStatus = "completed"
 	OrderItemCancelled OrderItemStatus = "cancelled"
-	OrderItemVoid      OrderItemStatus = "void"
+)
+
+type VoidOrderItem struct {
+	VoidOrderItemID string              `gorm:"primaryKey;column:void_order_item_id"`
+	RestaurantID    string              `gorm:"column:restaurant_id"`
+	MenuItemID      string              `gorm:"column:menu_item_id"`
+	Quantity        int                 `gorm:"column:quantity"`
+	Price           float64             `gorm:"column:price"`
+	MenuItem        MenuItem            `gorm:"foreignKey:MenuItemID;references:MenuItemID"`
+	VoidReason      string              `gorm:"column:void_reason"`
+	Status          VoidOrderItemStatus `gorm:"column:status"`
+	CreatedAt       time.Time           `gorm:"column:created_at"`
+}
+
+type VoidOrderItemStatus string
+
+const (
+	VoidOrderItemRecovered VoidOrderItemStatus = "recovered"
+	VoidOrderItemVoided    VoidOrderItemStatus = "voided"
 )

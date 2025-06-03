@@ -65,3 +65,19 @@ func FromOrderItems(orderItems []models.OrderItem) []OrderItemDTO {
 	}
 	return orderItemDTOs
 }
+
+func FromVoidOrderItems(voidOrderItems []models.VoidOrderItem) []OrderItemDTO {
+	orderItemDTOs := make([]OrderItemDTO, len(voidOrderItems))
+	for i, voidOrderItem := range voidOrderItems {
+		orderItemDTOs[i] = OrderItemDTO{
+			MenuItemID:  voidOrderItem.MenuItemID,
+			Name:        voidOrderItem.MenuItem.Name,
+			Quantity:    voidOrderItem.Quantity,
+			Price:       voidOrderItem.Price,
+			Status:      string(voidOrderItem.Status),
+			Observation: safeString(&voidOrderItem.VoidReason),
+			Image:       voidOrderItem.MenuItem.ImageURL,
+		}
+	}
+	return orderItemDTOs
+}

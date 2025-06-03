@@ -98,3 +98,15 @@ func (repo *OrderRepositoryImpl) WithTransaction(fn func(txRepo repositories.Ord
 		return fn(txRepo)
 	})
 }
+
+func (repo *OrderRepositoryImpl) AddVoidOrderItem(voidOrderItem *models.VoidOrderItem) error {
+	return repo.db.Clauses(clause.Returning{}).Omit("void_order_item_id").Create(voidOrderItem).Error
+}
+
+func (repo *OrderRepositoryImpl) GetVoidOrderItems(restaurantID string) ([]models.VoidOrderItem, error) {
+	var items []models.VoidOrderItem
+	err := repo.db.Preload("MenuItem").
+		Where("restaurant_id = ?", restaurantID).
+		Find(&items).Error
+	return items, err
+}

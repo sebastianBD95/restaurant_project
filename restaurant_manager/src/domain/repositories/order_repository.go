@@ -16,4 +16,6 @@ type OrderRepository interface {
 	GetOrderItems(orderID string) ([]models.OrderItem, error)
 	GetOrderItem(orderID string, menuItemID string) (*models.OrderItem, error)
 	WithTransaction(fn func(txRepo OrderRepository) error) error
+	AddVoidOrderItem(voidOrderItem *models.VoidOrderItem) error
+	GetVoidOrderItems(restaurantID string) ([]models.VoidOrderItem, error)
 }
