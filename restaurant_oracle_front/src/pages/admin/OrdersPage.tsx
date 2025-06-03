@@ -6,18 +6,17 @@ import { useParams } from 'react-router-dom';
 import TableDistribution from '../../components/orders/TableComponent';
 import { Sidebar } from '../../components/ui/navegator';
 import { useSidebar } from '../../hooks/useSidebar';
-import { getOrdersByRestaurant, updateOrderStatus as updateOrderStatusService, addItemsToOrder, cancelOrderItem } from '../../services/orderService';
+import { getOrdersByRestaurant, updateOrderStatus as updateOrderStatusService, addItemsToOrder, cancelOrderItem, createVoidOrderItem, getVoidOrders } from '../../services/orderService';
 import OrderCard from '../../components/orders/OrderCard';
-import { getTables } from '../../services/tableService';
-import { Table } from '../../interfaces/table';
 import { toaster } from '../../components/ui/toaster';
 import { getMenus } from '../../services/menuService';
 import { MenuItemResponse } from '../../interfaces/menuItems';
 import { useDisclosure } from '@chakra-ui/react';
 import { getCookie } from '../utils/cookieManager';
 import AddDishesDialog from '../../components/orders/AddDishesDialog';
-import { Order, OrderItem } from '../../interfaces/order';
+import { Order, OrderItem, VoidOrderItem } from '../../interfaces/order';
 import { useTables } from '../../hooks/useTables';
+import VoidOrderItemCard from '../../components/orders/VoidOrderItemCard';
 
 const statusMap: Record<string, string> = {
   'ordered': 'Pedido',
@@ -28,7 +27,7 @@ const statusMap: Record<string, string> = {
 
 const Ordenes: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [checkedState, setCheckedState] = useState<boolean[]>([]);
+  const [voidOrders, setVoidOrders] = useState<VoidOrderItem[]>([]);
   const { restaurantId } = useParams();
   const { isSidebarOpen, toggleSidebar } = useSidebar();
   const { tables: mesas, loading: tablesLoading, error: tablesError, fetchTables } = useTables(restaurantId);
@@ -55,6 +54,12 @@ const Ordenes: React.FC = () => {
     }
   };
 
+  const fetchVoidOrders = async () => {
+    if (!restaurantId) return;
+    const voidOrders = await getVoidOrders(restaurantId);
+    setVoidOrders(voidOrders as VoidOrderItem[]);
+  };
+
   const fetchMenuItems = async () => {
     if (!restaurantId) return;
     try {
@@ -69,6 +74,7 @@ const Ordenes: React.FC = () => {
   useEffect(() => {
     fetchOrders();
     fetchTables();
+    fetchVoidOrders();
   }, [restaurantId]);
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
@@ -86,9 +92,22 @@ const Ordenes: React.FC = () => {
     }
   };
 
-  const voidOrderItem = (orderId: string, menuItemId: string) => {
+  const voidOrderItem = async (orderId: string, menuItemId: string) => {
     // TODO: Call backend to void the item, then refresh orders
     console.log('Void item', orderId, menuItemId);
+    try {
+      await createVoidOrderItem(orderId, menuItemId, restaurantId!);
+      await fetchOrders();
+      await fetchTables();
+      await fetchVoidOrders();
+      toaster.create({
+        title: 'Plato anulado',
+        description: 'Plato anulado correctamente.',
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('Error voiding order item:', error);
+    }
   };
 
   const cancelOrderItemAction = async (orderId: string, menuItemId: string) => {
@@ -159,6 +178,16 @@ const Ordenes: React.FC = () => {
     }
   };
 
+  // Map voidOrders to include name and image from menuItems
+  const voidOrdersWithDetails = voidOrders.map(item => {
+    const menuItem = menuItems.find(m => m.menu_item_id === item.menu_item_id);
+    return {
+      ...item,
+      name: menuItem?.name || 'Desconocido',
+      image: menuItem?.image_url || undefined,
+    };
+  });
+
   return (
     <Flex height={{ base: 'auto', md: '100vh' }} direction={{ base: 'column', md: 'row' }}>
       <Sidebar 
@@ -220,19 +249,14 @@ const Ordenes: React.FC = () => {
               minW={0}
             >
               <Heading size="md" mb={4}>Pedidos Anulados</Heading>
-              {orders.filter(order => order.status === 'canceled').length === 0 ? (
+              {voidOrders.length === 0 ? (
                 <Text textAlign="center">No hay pedidos anulados.</Text>
               ) : (
                 <VStack align="stretch" gap={4}>
-                  {orders
-                    .filter(order => order.status === 'canceled')
-                    .map(order => (
-                      <OrderCard
-                        key={order.order_id}
-                        order={order}
-                        onDeliver={() => {}}
-                        onPay={() => {}}
-                        highlight={false}
+                    {voidOrdersWithDetails.map(item => (
+                      <VoidOrderItemCard
+                        key={item.menu_item_id + (item.created_at || '')}
+                        item={item}
                       />
                     ))}
                 </VStack>

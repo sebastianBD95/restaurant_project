@@ -16,4 +16,13 @@ export interface Order {
   items: OrderItem[];
   status: string;
   total_price: number;
+}
+
+export interface VoidOrderItem {
+  menu_item_id: string;
+  quantity: number;
+  price: number;
+  void_reason: string;
+  status: string;
+  created_at?: string;
 } 

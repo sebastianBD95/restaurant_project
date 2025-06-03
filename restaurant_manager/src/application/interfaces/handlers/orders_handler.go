@@ -161,3 +161,34 @@ func (h *OrderHandler) GetOrderItems(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(items)
 }
+
+func (h *OrderHandler) CreateVoidOrderItem(w http.ResponseWriter, r *http.Request) {
+	orderID := mux.Vars(r)["order_id"]
+	menuItemID := mux.Vars(r)["menu_item_id"]
+
+	var body struct {
+		RestaurantID string `json:"restaurantId"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	err := h.service.CreateVoidOrderItem(orderID, menuItemID, body.RestaurantID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *OrderHandler) GetVoidOrderItems(w http.ResponseWriter, r *http.Request) {
+	restaurantID := mux.Vars(r)["restaurant_id"]
+	items, err := h.service.GetVoidOrderItems(restaurantID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	orderItemDTOs := dto.FromVoidOrderItems(items)
+	json.NewEncoder(w).Encode(orderItemDTOs)
+}

@@ -63,11 +63,11 @@ VALUES
   ('fffffff3-ffff-ffff-ffff-fffffffffff3', 'bbbbbbb1-bbbb-bbbb-bbbb-bbbbbbbbbbb1', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'paid', 25000, 'Sin observaciones', CURRENT_TIMESTAMP);
 
 -- ORDER ITEMS
-INSERT INTO servu.order_items (order_id, menu_item_id, quantity, price, observation, status, void_reason)
+INSERT INTO servu.order_items (order_id, menu_item_id, quantity, price, observation, status)
 VALUES
-  ('fffffff1-ffff-ffff-ffff-fffffffffff1', 'ccccccc1-cccc-cccc-cccc-ccccccccccc1', 1, 50000, '', 'pending', NULL),
-  ('fffffff2-ffff-ffff-ffff-fffffffffff2', 'ccccccc1-cccc-cccc-cccc-ccccccccccc1', 1, 50000, '', 'completed', NULL),
-  ('fffffff3-ffff-ffff-ffff-fffffffffff3', 'ccccccc2-cccc-cccc-cccc-ccccccccccc2', 1, 25000, '', 'completed', NULL);
+  ('fffffff1-ffff-ffff-ffff-fffffffffff1', 'ccccccc1-cccc-cccc-cccc-ccccccccccc1', 1, 50000, '', 'pending'),
+  ('fffffff2-ffff-ffff-ffff-fffffffffff2', 'ccccccc1-cccc-cccc-cccc-ccccccccccc1', 1, 50000, '', 'completed'),
+  ('fffffff3-ffff-ffff-ffff-fffffffffff3', 'ccccccc2-cccc-cccc-cccc-ccccccccccc2', 1, 25000, '', 'completed');
 
 -- PAYMENTS
 INSERT INTO servu.payments (payment_id, order_id, restaurant_id, amount, status, payment_method, transaction_id, created_at)

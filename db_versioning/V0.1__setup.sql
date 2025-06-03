@@ -61,7 +61,7 @@ CREATE INDEX idx_tables_qr_code ON servu.tables(qr_code);
 CREATE TABLE servu.raw_ingredients (
     raw_ingredient_id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    category VARCHAR(20) CHECK (category IN ('Verdura', 'Fruta', 'Pollo', 'Res', 'Cerdo', 'Cereal', 'Legumbre', 'Lácteo', 'Grasa', 'Condimento', 'Harina', 'Grano', 'Marisco', 'Pescado', 'Hongo')) NOT NULL
+    category VARCHAR(20) CHECK (category IN ('Verdura', 'Fruta', 'Pollo', 'Res', 'Cerdo', 'Cereal', 'Legumbre', 'Lácteo', 'Grasa', 'Condimento', 'Harina', 'Grano', 'Marisco', 'Pescado', 'Hongo', 'Liquido')) NOT NULL
 );
 
 CREATE INDEX idx_raw_ingredients_category ON servu.raw_ingredients(category);
@@ -151,13 +151,25 @@ CREATE TABLE servu.order_items (
                                    quantity INT CHECK (quantity > 0),
                                    price DECIMAL(10,2) NOT NULL, -- Price at the time of order
                                    observation TEXT,
-                                   status VARCHAR(20) CHECK (status IN ('pending', 'completed', 'cancelled','void')) DEFAULT 'pending',
-                                   void_reason TEXT,
+                                   status VARCHAR(20) CHECK (status IN ('pending', 'completed', 'cancelled')) DEFAULT 'pending',
                                    PRIMARY KEY (order_id, menu_item_id)
 );
 
 -- Indexes for order_items table
 CREATE INDEX idx_order_items_menu_item_id ON servu.order_items(menu_item_id);
+
+CREATE TABLE servu.void_order_items (
+    void_order_item_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    restaurant_id UUID REFERENCES servu.restaurants(restaurant_id) ON DELETE CASCADE,
+    menu_item_id UUID REFERENCES servu.menu_items(menu_item_id) ON DELETE CASCADE,
+    quantity INT CHECK (quantity > 0),
+    price DECIMAL(10,2) NOT NULL,
+    void_reason TEXT,
+    status VARCHAR(20) CHECK (status IN ('recovered', 'voided')) DEFAULT 'recovered',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_void_order_items_menu_item_id ON servu.void_order_items(menu_item_id);
 
 CREATE TABLE servu.payments (
                                 payment_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

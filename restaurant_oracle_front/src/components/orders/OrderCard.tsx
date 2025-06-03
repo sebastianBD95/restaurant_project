@@ -60,7 +60,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
               )}
               {item.status === 'prepared' && onVoidItem && (
                 <Button size="xs" colorScheme="yellow" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onVoidItem(order.order_id, item.menu_item_id)}>
-                  Anular
+                  Void
                 </Button>
               )}
               {(item.status === 'ordered' || item.status === 'pending') && onCancelItem && (

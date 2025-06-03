@@ -179,3 +179,5 @@ INSERT INTO raw_ingredients (name, category) VALUES ('Orégano seco', 'Condiment
 INSERT INTO raw_ingredients (name, category) VALUES ('Tomillo', 'Condimento');
 INSERT INTO raw_ingredients (name, category) VALUES ('Laurel seco', 'Condimento');
 INSERT INTO raw_ingredients (name, category) VALUES ('Clavo de olor', 'Condimento');
+INSERT INTO raw_ingredients (name, category) VALUES ('Café', 'Grano');
+INSERT INTO raw_ingredients (name, category) VALUES ('Agua', 'Liquido');

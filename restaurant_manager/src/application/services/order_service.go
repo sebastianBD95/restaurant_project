@@ -204,3 +204,45 @@ func CancelOrder(order *models.Order, txRepo repositories.OrderRepository, s *Or
 func (s *OrderService) GetOrderItems(orderID string) ([]models.OrderItem, error) {
 	return s.repo.GetOrderItems(orderID)
 }
+
+func (s *OrderService) CreateVoidOrderItem(orderID string, menuItemID string, restaurantID string) error {
+	return s.repo.WithTransaction(func(txRepo repositories.OrderRepository) error {
+		orderItem, err := txRepo.GetOrderItem(orderID, menuItemID)
+		if err != nil {
+			return err
+		}
+		orderItem.Quantity = orderItem.Quantity - 1
+		if orderItem.Quantity == 1 {
+			err = s.DeleteOrderItem(orderID, menuItemID)
+			if err != nil {
+				return err
+			}
+		} else {
+			err = txRepo.UpdateOrderItem(orderItem)
+			if err != nil {
+				return err
+			}
+			err = s.inventoryService.AddInventoryForMenuItem(&orderItem.MenuItem, 1)
+			if err != nil {
+				return err
+			}
+		}
+		voidOrderItem := &models.VoidOrderItem{
+			RestaurantID: restaurantID,
+			MenuItemID:   menuItemID,
+			Quantity:     orderItem.Quantity + 1,
+			Price:        orderItem.Price,
+			VoidReason:   "void",
+			Status:       models.VoidOrderItemVoided,
+		}
+		err = txRepo.AddVoidOrderItem(voidOrderItem)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func (s *OrderService) GetVoidOrderItems(restaurantID string) ([]models.VoidOrderItem, error) {
+	return s.repo.GetVoidOrderItems(restaurantID)
+}
