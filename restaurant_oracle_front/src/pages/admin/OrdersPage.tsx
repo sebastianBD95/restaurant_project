@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 import TableDistribution from '../../components/orders/TableComponent';
 import { Sidebar } from '../../components/ui/navegator';
 import { useSidebar } from '../../hooks/useSidebar';
-import { getOrdersByRestaurant, updateOrderStatus as updateOrderStatusService, addItemsToOrder, cancelOrderItem, createVoidOrderItem, getVoidOrders } from '../../services/orderService';
+import { getOrdersByRestaurant, updateOrderStatus as updateOrderStatusService, addItemsToOrder, cancelOrderItem, createVoidOrderItem, getVoidOrders, updateOrderItem } from '../../services/orderService';
 import OrderCard from '../../components/orders/OrderCard';
 import { toaster } from '../../components/ui/toaster';
 import { getMenus } from '../../services/menuService';
@@ -92,11 +92,11 @@ const Ordenes: React.FC = () => {
     }
   };
 
-  const voidOrderItem = async (orderId: string, menuItemId: string) => {
+  const voidOrderItem = async (orderId: string, menuItemId: string, observation: string) => {
     // TODO: Call backend to void the item, then refresh orders
     console.log('Void item', orderId, menuItemId);
     try {
-      await createVoidOrderItem(orderId, menuItemId, restaurantId!);
+      await createVoidOrderItem(orderId, menuItemId, restaurantId!, observation);
       await fetchOrders();
       await fetchTables();
       await fetchVoidOrders();
@@ -110,10 +110,10 @@ const Ordenes: React.FC = () => {
     }
   };
 
-  const cancelOrderItemAction = async (orderId: string, menuItemId: string) => {
-    console.log('Cancel item', orderId, menuItemId);
+  const cancelOrderItemAction = async (orderId: string, menuItemId: string, observation: string) => {
+    console.log('Cancel item', orderId, menuItemId, observation);
     try {
-      await cancelOrderItem(orderId,menuItemId);
+      await cancelOrderItem(orderId,menuItemId, observation);
       await fetchOrders();
       await fetchTables();
       toaster.create({
@@ -128,6 +128,22 @@ const Ordenes: React.FC = () => {
         type: 'error',
       });
       console.error('Error canceling order item:', error);
+    }
+  };
+
+  const updateOrderItemAction = async (orderId: string, menuItemId: string, observation: string, status: string) => {
+    console.log('Update item', orderId, menuItemId, observation, status);
+    try {
+      await updateOrderItem(orderId, menuItemId, observation, status);
+      await fetchOrders();
+      await fetchTables();
+      toaster.create({
+        title: 'Plato preparado',
+        description: 'Plato preparado correctamente.',
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('Error updating order item:', error);
     }
   };
 
@@ -178,16 +194,6 @@ const Ordenes: React.FC = () => {
     }
   };
 
-  // Map voidOrders to include name and image from menuItems
-  const voidOrdersWithDetails = voidOrders.map(item => {
-    const menuItem = menuItems.find(m => m.menu_item_id === item.menu_item_id);
-    return {
-      ...item,
-      name: menuItem?.name || 'Desconocido',
-      image: menuItem?.image_url || undefined,
-    };
-  });
-
   return (
     <Flex height={{ base: 'auto', md: '100vh' }} direction={{ base: 'column', md: 'row' }}>
       <Sidebar 
@@ -231,6 +237,7 @@ const Ordenes: React.FC = () => {
                           highlight={order.status === 'delivered'}
                           onVoidItem={voidOrderItem}
                           onCancelItem={cancelOrderItemAction}
+                          onUpdateOrderItem={updateOrderItemAction}
                           onAddDishes={() => handleAddDishesClick(order)}
                         />
                       </Box>
@@ -253,7 +260,7 @@ const Ordenes: React.FC = () => {
                 <Text textAlign="center">No hay pedidos anulados.</Text>
               ) : (
                 <VStack align="stretch" gap={4}>
-                    {voidOrdersWithDetails.map(item => (
+                    {voidOrders.map(item => (
                       <VoidOrderItemCard
                         key={item.menu_item_id + (item.created_at || '')}
                         item={item}

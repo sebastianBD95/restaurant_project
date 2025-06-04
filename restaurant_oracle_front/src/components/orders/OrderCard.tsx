@@ -14,8 +14,9 @@ interface OrderCardProps {
   onDeliver: (orderId: string) => void;
   onPay: (orderId: string) => void;
   highlight?: boolean;
-  onVoidItem?: (orderId: string, menuItemId: string) => void;
-  onCancelItem?: (orderId: string, menuItemId: string) => void;
+  onVoidItem: (orderId: string, menuItemId: string, observation: string) => void;
+  onCancelItem: (orderId: string, menuItemId: string, observation: string) => void;
+  onUpdateOrderItem: (orderId: string, menuItemId: string, observation: string, status: string) => void;
   onAddDishes?: () => void;
 }
 
@@ -26,7 +27,8 @@ const OrderCard: React.FC<OrderCardProps> = ({
   highlight,
   onVoidItem,
   onCancelItem,
-  onAddDishes
+  onUpdateOrderItem,
+  onAddDishes,
 }) => {
   return (
     <Box
@@ -58,15 +60,28 @@ const OrderCard: React.FC<OrderCardProps> = ({
               {item.status === 'void' && (
                 <Badge colorScheme="yellow" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }}>Anulado</Badge>
               )}
-              {item.status === 'prepared' && onVoidItem && (
-                <Button size="xs" colorScheme="yellow" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onVoidItem(order.order_id, item.menu_item_id)}>
-                  Void
-                </Button>
+              {item.status === 'prepared' && (
+                <>
+                  <Button size="xs" colorPalette="green" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onUpdateOrderItem(order.order_id, item.menu_item_id, item.observation, 'completed')}>
+                    Entregado
+                  </Button>
+                  <Button size="xs" colorPalette="yellow" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onVoidItem(order.order_id, item.menu_item_id, item.observation)}>
+                    Anular
+                  </Button>
+                  <Button size="xs" colorPalette="blue" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onUpdateOrderItem(order.order_id, item.menu_item_id, item.observation, 'pending')}>
+                    Pendiente
+                  </Button>
+                </>
               )}
-              {(item.status === 'ordered' || item.status === 'pending') && onCancelItem && (
-                <Button size="xs" colorScheme="red" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onCancelItem(order.order_id, item.menu_item_id)}>
-                  Cancelar
-                </Button>
+              {(item.status === 'ordered' || item.status === 'pending') && (
+                <>
+                  <Button size="xs" colorPalette="blue" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onUpdateOrderItem(order.order_id, item.menu_item_id, item.observation, 'prepared')}>
+                    Preparado
+                  </Button>
+                  <Button size="xs" colorPalette="red" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onCancelItem(order.order_id, item.menu_item_id, item.observation)}>
+                    Cancelar
+                  </Button>
+                </>
               )}
             </Flex>
           ))}

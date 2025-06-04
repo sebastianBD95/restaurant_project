@@ -204,24 +204,25 @@ const MenuPage: React.FC = () => {
   };
 
   const addToCart = (item: MenuItemResponse, quantity: number, observation: string) => {
+    const obs = observation.trim() === '' ? 'No observation' : observation.trim();
     if (quantity > 0) {
       setCart((prevCart) => {
-        const existingItemIndex = prevCart.findIndex((cartItem) => cartItem.menu_item_id === item.menu_item_id);
+        // Find if an item with the same menu_item_id and observation exists
+        const existingItemIndex = prevCart.findIndex(
+          (cartItem) =>
+            cartItem.menu_item_id === item.menu_item_id &&
+            cartItem.observation.trim() === obs
+        );
         if (existingItemIndex !== -1) {
-          // Immutable update
+          // Increment quantity for the matching item
           return prevCart.map((cartItem, idx) =>
             idx === existingItemIndex
-              ? {
-                  ...cartItem,
-                  quantity: cartItem.quantity + quantity,
-                  observation: cartItem.observation
-                    ? `${cartItem.observation} | ${observation}`
-                    : observation,
-                }
+              ? { ...cartItem, quantity: cartItem.quantity + quantity }
               : cartItem
           );
         } else {
-          return [...prevCart, { ...item, quantity, observation }];
+          // Add new item
+          return [...prevCart, { ...item, quantity, observation: obs }];
         }
       });
     }

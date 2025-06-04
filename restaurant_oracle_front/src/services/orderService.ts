@@ -102,7 +102,23 @@ export const addItemsToOrder = async (orderId: string, items: OrderItem[]) => {
   return response.json();
 }; 
 
-export const cancelOrderItem = async (orderId: string, menuItemId: string) => {
+export const updateOrderItem = async (orderId: string, menuItemId: string, observation: string, status: string) => {
+  const token = getCookie(document.cookie, 'token');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+  
+  const response = await fetch(`http://localhost:8080/orders/${orderId}/items/${menuItemId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ observation, status })
+  });
+}
+
+export const cancelOrderItem = async (orderId: string, menuItemId: string, observation: string) => {
   const token = getCookie(document.cookie, 'token');
 
   if (!token) {
@@ -113,7 +129,8 @@ export const cancelOrderItem = async (orderId: string, menuItemId: string) => {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}`
-    }
+    },
+    body: JSON.stringify({ observation })
   });
 
   if (!response.ok) {
@@ -121,7 +138,7 @@ export const cancelOrderItem = async (orderId: string, menuItemId: string) => {
   }
 };
 
-export const createVoidOrderItem = async (orderId: string, menuItemId: string, restaurantId: string) => {
+export const createVoidOrderItem = async (orderId: string, menuItemId: string, restaurantId: string, observation: string) => {
   const token = getCookie(document.cookie, 'token');
   if (!token) {
     throw new Error('No authentication token found');
@@ -133,7 +150,7 @@ export const createVoidOrderItem = async (orderId: string, menuItemId: string, r
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     },
-    body: JSON.stringify({ restaurantId })
+    body: JSON.stringify({ restaurantId, observation })
   });
 };
 

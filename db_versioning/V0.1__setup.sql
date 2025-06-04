@@ -150,13 +150,14 @@ CREATE TABLE servu.order_items (
                                    menu_item_id UUID REFERENCES servu.menu_items(menu_item_id) ON DELETE CASCADE,
                                    quantity INT CHECK (quantity > 0),
                                    price DECIMAL(10,2) NOT NULL, -- Price at the time of order
-                                   observation TEXT,
-                                   status VARCHAR(20) CHECK (status IN ('pending', 'completed', 'cancelled')) DEFAULT 'pending',
-                                   PRIMARY KEY (order_id, menu_item_id)
+                                   observation TEXT NOT NULL DEFAULT 'Sin observaciones',
+                                   status VARCHAR(20) CHECK (status IN ('pending', 'completed', 'cancelled', 'prepared')) DEFAULT 'pending',
+                                   PRIMARY KEY (order_id, menu_item_id, observation)
 );
 
 -- Indexes for order_items table
 CREATE INDEX idx_order_items_menu_item_id ON servu.order_items(menu_item_id);
+CREATE INDEX idx_order_items_order_id ON servu.order_items(order_id);
 
 CREATE TABLE servu.void_order_items (
     void_order_item_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -164,6 +165,7 @@ CREATE TABLE servu.void_order_items (
     menu_item_id UUID REFERENCES servu.menu_items(menu_item_id) ON DELETE CASCADE,
     quantity INT CHECK (quantity > 0),
     price DECIMAL(10,2) NOT NULL,
+    observation TEXT NOT NULL DEFAULT 'Sin observaciones',
     void_reason TEXT,
     status VARCHAR(20) CHECK (status IN ('recovered', 'voided')) DEFAULT 'recovered',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
