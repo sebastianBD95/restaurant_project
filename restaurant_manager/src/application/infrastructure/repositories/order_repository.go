@@ -69,7 +69,7 @@ func (repo *OrderRepositoryImpl) AddOrderItem(orderItem *models.OrderItem) (stri
 
 func (repo *OrderRepositoryImpl) UpdateOrderItem(orderItem *models.OrderItem) error {
 	return repo.db.Model(&models.OrderItem{}).
-		Where("order_id = ? AND menu_item_id = ?", orderItem.OrderID, orderItem.MenuItemID).
+		Where("order_id = ? AND menu_item_id = ? AND observation = ?", orderItem.OrderID, orderItem.MenuItemID, orderItem.Observation).
 		Updates(orderItem).Error
 }
 
@@ -83,9 +83,9 @@ func (repo *OrderRepositoryImpl) GetOrderItems(orderID string) ([]models.OrderIt
 	return items, err
 }
 
-func (repo *OrderRepositoryImpl) GetOrderItem(orderID string, menuItemID string) (*models.OrderItem, error) {
+func (repo *OrderRepositoryImpl) GetOrderItem(orderID string, menuItemID string, observation string) (*models.OrderItem, error) {
 	var item models.OrderItem
-	err := repo.db.Where("order_id = ? AND menu_item_id = ?", orderID, menuItemID).First(&item).Error
+	err := repo.db.Where("order_id = ? AND menu_item_id = ? AND observation = ?", orderID, menuItemID, observation).First(&item).Error
 	if err != nil {
 		return nil, err
 	}
