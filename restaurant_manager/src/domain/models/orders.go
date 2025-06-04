@@ -31,7 +31,7 @@ type OrderItem struct {
 	Quantity    int             `gorm:"column:quantity"`
 	Price       float64         `gorm:"column:price"`
 	Status      OrderItemStatus `gorm:"column:status"`
-	Observation *string         `gorm:"column:observation"`
+	Observation *string         `gorm:"primaryKey;column:observation"`
 	MenuItem    MenuItem        `gorm:"foreignKey:MenuItemID;references:MenuItemID"`
 }
 
@@ -49,6 +49,7 @@ type VoidOrderItem struct {
 	MenuItemID      string              `gorm:"column:menu_item_id"`
 	Quantity        int                 `gorm:"column:quantity"`
 	Price           float64             `gorm:"column:price"`
+	Observation     string              `gorm:"column:observation"`
 	MenuItem        MenuItem            `gorm:"foreignKey:MenuItemID;references:MenuItemID"`
 	VoidReason      string              `gorm:"column:void_reason"`
 	Status          VoidOrderItemStatus `gorm:"column:status"`

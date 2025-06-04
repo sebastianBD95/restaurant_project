@@ -140,13 +140,23 @@ func zeroInventoryCheck(zeroInventory bool, menuItem *models.MenuItem, err error
 	return false, nil
 }
 
-func (s *OrderService) UpdateOrderItem(orderItem *models.OrderItem) error {
-	return s.repo.UpdateOrderItem(orderItem)
+func (s *OrderService) UpdateOrderItem(orderID string, menuItemID string, observation string, status string) error {
+	return s.repo.WithTransaction(func(txRepo repositories.OrderRepository) error {
+		orderItem, err := txRepo.GetOrderItem(orderID, menuItemID, observation)
+		if err != nil {
+			return err
+		}
+		orderItem.Status = models.OrderItemStatus(status)
+		if err := txRepo.UpdateOrderItem(orderItem); err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
-func (s *OrderService) DeleteOrderItem(orderID string, menuItemID string) error {
+func (s *OrderService) DeleteOrderItem(orderID string, menuItemID string, observation string) error {
 	return s.repo.WithTransaction(func(txRepo repositories.OrderRepository) error {
-		orderItem, err := txRepo.GetOrderItem(orderID, menuItemID)
+		orderItem, err := txRepo.GetOrderItem(orderID, menuItemID, observation)
 		if err != nil {
 			return err
 		}
@@ -205,15 +215,15 @@ func (s *OrderService) GetOrderItems(orderID string) ([]models.OrderItem, error)
 	return s.repo.GetOrderItems(orderID)
 }
 
-func (s *OrderService) CreateVoidOrderItem(orderID string, menuItemID string, restaurantID string) error {
+func (s *OrderService) CreateVoidOrderItem(orderID string, menuItemID string, restaurantID string, observation string) error {
 	return s.repo.WithTransaction(func(txRepo repositories.OrderRepository) error {
-		orderItem, err := txRepo.GetOrderItem(orderID, menuItemID)
+		orderItem, err := txRepo.GetOrderItem(orderID, menuItemID, observation)
 		if err != nil {
 			return err
 		}
 		orderItem.Quantity = orderItem.Quantity - 1
-		if orderItem.Quantity == 1 {
-			err = s.DeleteOrderItem(orderID, menuItemID)
+		if orderItem.Quantity == 0 {
+			err = s.DeleteOrderItem(orderID, menuItemID, observation)
 			if err != nil {
 				return err
 			}
@@ -232,6 +242,7 @@ func (s *OrderService) CreateVoidOrderItem(orderID string, menuItemID string, re
 			MenuItemID:   menuItemID,
 			Quantity:     orderItem.Quantity + 1,
 			Price:        orderItem.Price,
+			Observation:  observation,
 			VoidReason:   "void",
 			Status:       models.VoidOrderItemVoided,
 		}

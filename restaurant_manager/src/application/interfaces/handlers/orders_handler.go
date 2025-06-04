@@ -129,12 +129,19 @@ func (h *OrderHandler) AddOrderItem(w http.ResponseWriter, r *http.Request) {
 
 // Update an order item
 func (h *OrderHandler) UpdateOrderItem(w http.ResponseWriter, r *http.Request) {
-	var orderItem models.OrderItem
-	json.NewDecoder(r.Body).Decode(&orderItem)
-	err := h.service.UpdateOrderItem(&orderItem)
+	orderID := mux.Vars(r)["order_id"]
+	menuItemID := mux.Vars(r)["menu_item_id"]
+	var body struct {
+		Observation string `json:"observation"`
+		Status      string `json:"status"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	err := h.service.UpdateOrderItem(orderID, menuItemID, body.Observation, body.Status)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
 	}
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -143,7 +150,14 @@ func (h *OrderHandler) UpdateOrderItem(w http.ResponseWriter, r *http.Request) {
 func (h *OrderHandler) DeleteOrderItem(w http.ResponseWriter, r *http.Request) {
 	orderID := mux.Vars(r)["order_id"]
 	menuItemID := mux.Vars(r)["menu_item_id"]
-	err := h.service.DeleteOrderItem(orderID, menuItemID)
+	var body struct {
+		Observation string `json:"observation"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	err := h.service.DeleteOrderItem(orderID, menuItemID, body.Observation)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -168,13 +182,14 @@ func (h *OrderHandler) CreateVoidOrderItem(w http.ResponseWriter, r *http.Reques
 
 	var body struct {
 		RestaurantID string `json:"restaurantId"`
+		Observation  string `json:"observation"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	err := h.service.CreateVoidOrderItem(orderID, menuItemID, body.RestaurantID)
+	err := h.service.CreateVoidOrderItem(orderID, menuItemID, body.RestaurantID, body.Observation)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
