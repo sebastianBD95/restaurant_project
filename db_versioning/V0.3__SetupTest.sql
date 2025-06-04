@@ -39,7 +39,7 @@ VALUES
 INSERT INTO servu.ingredients (ingredient_id, menu_item_id, raw_ingredient_id, price, amount, unit)
 VALUES
   ('ddddddd1-dddd-dddd-dddd-ddddddddddd1', 'ccccccc1-cccc-cccc-cccc-ccccccccccc1', 35, 12000, 200, 'g'),
-  ('ddddddd2-dddd-dddd-dddd-ddddddddddd2', 'ccccccc1-cccc-cccc-cccc-ccccccccccc1', 63, 4000, 10, 'g'),
+  ('ddddddd2-dddd-dddd-dddd-ddddddddddd2', 'ccccccc1-cccc-cccc-cccc-ccccccccccc1', 62, 4000, 10, 'g'),
   ('ddddddd3-dddd-dddd-dddd-ddddddddddd3', 'ccccccc1-cccc-cccc-cccc-ccccccccccc1', 60, 3200, 3, 'g'),
   ('ddddddd4-dddd-dddd-dddd-ddddddddddd4', 'ccccccc2-cccc-cccc-cccc-ccccccccccc2', 53, 4000, 200, 'g'),
   ('ddddddd5-dddd-dddd-dddd-ddddddddddd5', 'ccccccc2-cccc-cccc-cccc-ccccccccccc2',94, 4000, 100, 'g'),
@@ -49,7 +49,7 @@ VALUES
 INSERT INTO servu.inventories (inventory_id, restaurant_id, raw_ingredient_id, quantity, unit, minimum_quantity, last_restock_date, price, merma, created_at, updated_at)
 VALUES
   ('eeeeeee1-eeee-eeee-eeee-eeeeeeeeeee1', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 35, 1000, 'g', 200, CURRENT_TIMESTAMP, 1600, 0.0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-  ('eeeeeee2-eeee-eeee-eeee-eeeeeeeeeee2', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 63, 500, 'g', 100, CURRENT_TIMESTAMP, 8000, 0.0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+  ('eeeeeee2-eeee-eeee-eeee-eeeeeeeeeee2', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 62, 500, 'g', 100, CURRENT_TIMESTAMP, 8000, 0.0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
   ('eeeeeee3-eeee-eeee-eeee-eeeeeeeeeee3', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 60, 2000, 'g', 500, CURRENT_TIMESTAMP, 1200, 0.0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
   ('eeeeeee4-eeee-eeee-eeee-eeeeeeeeeee4', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 53, 1000, 'g', 200, CURRENT_TIMESTAMP, 1600, 0.0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
   ('eeeeeee5-eeee-eeee-eeee-eeeeeeeeeee5', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 94, 500, 'g', 100, CURRENT_TIMESTAMP, 8000, 0.0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
@@ -65,9 +65,11 @@ VALUES
 -- ORDER ITEMS
 INSERT INTO servu.order_items (order_id, menu_item_id, quantity, price, observation, status)
 VALUES
-  ('fffffff1-ffff-ffff-ffff-fffffffffff1', 'ccccccc1-cccc-cccc-cccc-ccccccccccc1', 1, 50000, '', 'pending'),
-  ('fffffff2-ffff-ffff-ffff-fffffffffff2', 'ccccccc1-cccc-cccc-cccc-ccccccccccc1', 1, 50000, '', 'completed'),
-  ('fffffff3-ffff-ffff-ffff-fffffffffff3', 'ccccccc2-cccc-cccc-cccc-ccccccccccc2', 1, 25000, '', 'completed');
+  ('fffffff1-ffff-ffff-ffff-fffffffffff1', 'ccccccc1-cccc-cccc-cccc-ccccccccccc1', 1, 50000, 'Sin observaciones', 'pending'),
+  ('fffffff1-ffff-ffff-ffff-fffffffffff1', 'ccccccc1-cccc-cccc-cccc-ccccccccccc1', 1, 50000, 'Sin cebolla', 'pending'),
+  ('fffffff1-ffff-ffff-ffff-fffffffffff1', 'ccccccc1-cccc-cccc-cccc-ccccccccccc1', 1, 50000, 'Extra queso', 'pending'),
+  ('fffffff2-ffff-ffff-ffff-fffffffffff2', 'ccccccc1-cccc-cccc-cccc-ccccccccccc1', 1, 50000, 'Sin observaciones', 'completed'),
+  ('fffffff3-ffff-ffff-ffff-fffffffffff3', 'ccccccc2-cccc-cccc-cccc-ccccccccccc2', 1, 25000, 'Sin observaciones', 'completed');
 
 -- PAYMENTS
 INSERT INTO servu.payments (payment_id, order_id, restaurant_id, amount, status, payment_method, transaction_id, created_at)

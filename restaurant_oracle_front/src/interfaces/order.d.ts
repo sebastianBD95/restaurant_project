@@ -20,6 +20,8 @@ export interface Order {
 
 export interface VoidOrderItem {
   menu_item_id: string;
+  name: string;
+  image?: string;
   quantity: number;
   price: number;
   void_reason: string;
