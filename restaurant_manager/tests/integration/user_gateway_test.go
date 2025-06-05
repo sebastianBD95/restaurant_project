@@ -7,15 +7,21 @@ import (
 	"restaurant_manager/tests/integration/utils"
 	"testing"
 
-	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
 func TestRegistryUser(t *testing.T) {
 	postgresContainer, _ := utils.SetUp()
-	testDB, err := sqlx.Connect("postgres", "postgres://postgres:postgres@localhost:5434/servu?sslmode=disable")
+	testDB, err := gorm.Open(postgres.Open("postgres://postgres:postgres@localhost:5434/servu?sslmode=disable"), &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix: "servu.",
+		},
+	})
 	mock := utils.NewMock(testDB)
 	if err != nil {
 		log.Err(err)
@@ -52,17 +58,21 @@ func TestRegistryUser(t *testing.T) {
 }
 
 func TestLoginUser(t *testing.T) {
-	postgres, _ := utils.SetUp()
-	testDB, err := sqlx.Connect("postgres", "postgres://postgres:postgres@localhost:5434/servu?sslmode=disable")
+	postgresContainer, _ := utils.SetUp()
+	testDB, err := gorm.Open(postgres.Open("postgres://postgres:postgres@localhost:5434/servu?sslmode=disable"), &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix: "servu.",
+		},
+	})
 	mock := utils.NewMock(testDB)
 	if err != nil {
 		log.Err(err)
 	}
 	router := mock.SetRoutes()
 
-	_, err = testDB.Exec(`INSERT INTO servu.users (name, email, password_hash, role)
-		VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin')`)
-	assert.Nil(t, err)
+	result := testDB.Exec(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+		VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin', '1234567890')`)
+	assert.Nil(t, result.Error)
 
 	loginData := map[string]string{
 		"email":    "john@example.com",
@@ -88,5 +98,5 @@ func TestLoginUser(t *testing.T) {
 
 	// Check if login message is correct
 	assert.Equal(t, "Login successful", responseBody["message"])
-	utils.CleanUp(postgres)
+	utils.CleanUp(postgresContainer)
 }
