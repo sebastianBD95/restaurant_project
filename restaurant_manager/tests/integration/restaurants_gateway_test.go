@@ -4,17 +4,19 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/jmoiron/sqlx"
-	"github.com/rs/zerolog/log"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"restaurant_manager/tests/integration/utils"
 	"testing"
+
+	"github.com/rs/zerolog/log"
+	"github.com/stretchr/testify/assert"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func TestAddRestaurant(t *testing.T) {
 	postgresContainer, _ := utils.SetUp()
-	testDB, err := sqlx.Connect("postgres", "postgres://postgres:postgres@localhost:5434/servu?sslmode=disable")
+	testDB, err := gorm.Open(postgres.Open("postgres://postgres:postgres@localhost:5434/servu?sslmode=disable"))
 	mock := utils.NewMock(testDB)
 	if err != nil {
 		log.Err(err)
@@ -23,12 +25,11 @@ func TestAddRestaurant(t *testing.T) {
 
 	var userID string
 
-	err = testDB.QueryRow(`INSERT INTO servu.users (name, email, password_hash, role)
-	VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin') 
-	RETURNING user_id`).Scan(&userID)
-
-	if err != nil {
-		log.Err(err)
+	result := testDB.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+		VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin', '1234567890')
+		RETURNING user_id`).Scan(&userID)
+	if result.Error != nil {
+		log.Err(result.Error)
 	}
 
 	restaurantData := map[string]string{
@@ -54,7 +55,7 @@ func TestAddRestaurant(t *testing.T) {
 
 func TestDeleteRestaurant(t *testing.T) {
 	postgresContainer, _ := utils.SetUp()
-	testDB, err := sqlx.Connect("postgres", "postgres://postgres:postgres@localhost:5434/servu?sslmode=disable")
+	testDB, err := gorm.Open(postgres.Open("postgres://postgres:postgres@localhost:5434/servu?sslmode=disable"))
 	mock := utils.NewMock(testDB)
 	if err != nil {
 		log.Err(err)
@@ -63,20 +64,18 @@ func TestDeleteRestaurant(t *testing.T) {
 
 	var userID, restaurantID string
 
-	err = testDB.QueryRow(`INSERT INTO servu.users (name, email, password_hash, role)
-	VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin') 
-	RETURNING user_id`).Scan(&userID)
-
-	if err != nil {
-		log.Err(err)
+	result := testDB.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+		VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin', '1234567890')
+		RETURNING user_id`).Scan(&userID)
+	if result.Error != nil {
+		log.Err(result.Error)
 	}
 
-	err = testDB.QueryRow(`INSERT INTO servu.restaurants (name, owner_id, address)
-	VALUES ('Test Restaurant', $1, '123 Main St') 
-	RETURNING restaurant_id`, userID).Scan(&restaurantID)
-
-	if err != nil {
-		log.Err(err)
+	result = testDB.Raw(`INSERT INTO servu.restaurants (name, owner_id)
+		VALUES ('Test Restaurant', ?) 
+		RETURNING restaurant_id`, userID).Scan(&restaurantID)
+	if result.Error != nil {
+		log.Err(result.Error)
 	}
 
 	constStr := fmt.Sprintf("/restaurants/%s", restaurantID)
@@ -92,7 +91,7 @@ func TestDeleteRestaurant(t *testing.T) {
 
 func TestGetRestaurant(t *testing.T) {
 	postgresContainer, _ := utils.SetUp()
-	testDB, err := sqlx.Connect("postgres", "postgres://postgres:postgres@localhost:5434/servu?sslmode=disable")
+	testDB, err := gorm.Open(postgres.Open("postgres://postgres:postgres@localhost:5434/servu?sslmode=disable"))
 	mock := utils.NewMock(testDB)
 	if err != nil {
 		log.Err(err)
@@ -101,20 +100,18 @@ func TestGetRestaurant(t *testing.T) {
 
 	var userID, restaurantID string
 
-	err = testDB.QueryRow(`INSERT INTO servu.users (name, email, password_hash, role)
-	VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin') 
-	RETURNING user_id`).Scan(&userID)
-
-	if err != nil {
-		log.Err(err)
+	result := testDB.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+		VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin', '1234567890')
+		RETURNING user_id`).Scan(&userID)
+	if result.Error != nil {
+		log.Err(result.Error)
 	}
 
-	err = testDB.QueryRow(`INSERT INTO servu.restaurants (name, owner_id, address)
-	VALUES ('Test Restaurant', $1, '123 Main St') 
-	RETURNING restaurant_id`, userID).Scan(&restaurantID)
-
-	if err != nil {
-		log.Err(err)
+	result = testDB.Raw(`INSERT INTO servu.restaurants (name, owner_id)
+		VALUES ('Test Restaurant', ?) 
+		RETURNING restaurant_id`, userID).Scan(&restaurantID)
+	if result.Error != nil {
+		log.Err(result.Error)
 	}
 
 	constStr := fmt.Sprintf("/restaurants/%s", restaurantID)
@@ -133,7 +130,7 @@ func TestGetRestaurant(t *testing.T) {
 
 func TestUpdateRestaurant(t *testing.T) {
 	postgresContainer, _ := utils.SetUp()
-	testDB, err := sqlx.Connect("postgres", "postgres://postgres:postgres@localhost:5434/servu?sslmode=disable")
+	testDB, err := gorm.Open(postgres.Open("postgres://postgres:postgres@localhost:5434/servu?sslmode=disable"))
 	mock := utils.NewMock(testDB)
 	if err != nil {
 		log.Err(err)
@@ -142,20 +139,18 @@ func TestUpdateRestaurant(t *testing.T) {
 
 	var userID, restaurantID string
 
-	err = testDB.QueryRow(`INSERT INTO servu.users (name, email, password_hash, role)
-	VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin') 
-	RETURNING user_id`).Scan(&userID)
-
-	if err != nil {
-		log.Err(err)
+	result := testDB.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+		VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin', '1234567890')
+		RETURNING user_id`).Scan(&userID)
+	if result.Error != nil {
+		log.Err(result.Error)
 	}
 
-	err = testDB.QueryRow(`INSERT INTO servu.restaurants (name, owner_id, address)
-	VALUES ('Test Restaurant', $1, '123 Main St') 
-	RETURNING restaurant_id`, userID).Scan(&restaurantID)
-
-	if err != nil {
-		log.Err(err)
+	result = testDB.Raw(`INSERT INTO servu.restaurants (name, owner_id)
+		VALUES ('Test Restaurant', ?) 
+		RETURNING restaurant_id`, userID).Scan(&restaurantID)
+	if result.Error != nil {
+		log.Err(result.Error)
 	}
 
 	constStr := fmt.Sprintf("/restaurants/%s", restaurantID)

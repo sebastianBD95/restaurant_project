@@ -3,11 +3,12 @@ package utils
 import (
 	"context"
 	"fmt"
+	"path/filepath"
+
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-	"path/filepath"
 )
 
 func PostgresContainer() (testcontainers.Container, string, error) {

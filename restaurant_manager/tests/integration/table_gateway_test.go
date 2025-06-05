@@ -4,17 +4,19 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/jmoiron/sqlx"
-	"github.com/rs/zerolog/log"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"restaurant_manager/tests/integration/utils"
 	"testing"
+
+	"github.com/rs/zerolog/log"
+	"github.com/stretchr/testify/assert"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func TestAddTable(t *testing.T) {
 	postgresContainer, _ := utils.SetUp()
-	testDB, err := sqlx.Connect("postgres", "postgres://postgres:postgres@localhost:5434/servu?sslmode=disable")
+	testDB, err := gorm.Open(postgres.Open("postgres://postgres:postgres@localhost:5434/servu?sslmode=disable"))
 	mock := utils.NewMock(testDB)
 	if err != nil {
 		log.Err(err)
@@ -23,20 +25,18 @@ func TestAddTable(t *testing.T) {
 
 	var userID, restaurantID string
 
-	err = testDB.QueryRow(`INSERT INTO servu.users (name, email, password_hash, role)
-	VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin') 
-	RETURNING user_id`).Scan(&userID)
-
-	if err != nil {
-		log.Err(err)
+	result := testDB.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+		VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin', '1234567890')
+		RETURNING user_id`).Scan(&userID)
+	if result.Error != nil {
+		log.Err(result.Error)
 	}
 
-	err = testDB.QueryRow(`INSERT INTO servu.restaurants (name, owner_id, address)
-	VALUES ('Test Restaurant', $1, '123 Main St') 
-	RETURNING restaurant_id`, userID).Scan(&restaurantID)
-
-	if err != nil {
-		log.Err(err)
+	result = testDB.Raw(`INSERT INTO servu.restaurants (name, owner_id)
+		VALUES ('Test Restaurant', ?) 
+		RETURNING restaurant_id`, userID).Scan(&restaurantID)
+	if result.Error != nil {
+		log.Err(result.Error)
 	}
 
 	TableData := map[string]string{"restaurant_id": restaurantID, "table_number": "2", "qr_code": "QR_CODE_URL_2"}
@@ -58,7 +58,7 @@ func TestAddTable(t *testing.T) {
 
 func TestDeleteTable(t *testing.T) {
 	postgresContainer, _ := utils.SetUp()
-	testDB, err := sqlx.Connect("postgres", "postgres://postgres:postgres@localhost:5434/servu?sslmode=disable")
+	testDB, err := gorm.Open(postgres.Open("postgres://postgres:postgres@localhost:5434/servu?sslmode=disable"))
 	mock := utils.NewMock(testDB)
 	if err != nil {
 		log.Err(err)
@@ -67,28 +67,25 @@ func TestDeleteTable(t *testing.T) {
 
 	var userID, restaurantID, tableID string
 
-	err = testDB.QueryRow(`INSERT INTO servu.users (name, email, password_hash, role)
-	VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin') 
-	RETURNING user_id`).Scan(&userID)
-
-	if err != nil {
-		log.Err(err)
+	result := testDB.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+		VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin', '1234567890')
+		RETURNING user_id`).Scan(&userID)
+	if result.Error != nil {
+		log.Err(result.Error)
 	}
 
-	err = testDB.QueryRow(`INSERT INTO servu.restaurants (name, owner_id, address)
-	VALUES ('Test Restaurant', $1, '123 Main St') 
-	RETURNING restaurant_id`, userID).Scan(&restaurantID)
-
-	if err != nil {
-		log.Err(err)
+	result = testDB.Raw(`INSERT INTO servu.restaurants (name, owner_id)
+		VALUES ('Test Restaurant', ?) 
+		RETURNING restaurant_id`, userID).Scan(&restaurantID)
+	if result.Error != nil {
+		log.Err(result.Error)
 	}
 
-	err = testDB.QueryRow(`INSERT INTO servu.restaurant_tables (restaurant_id, table_number,qr_code)
-	VALUES ($1, 2, 'QR_CODE') 
-	RETURNING table_id`, restaurantID).Scan(&tableID)
-
-	if err != nil {
-		log.Err(err)
+	result = testDB.Raw(`INSERT INTO servu.tables (restaurant_id, table_number, qr_code)
+		VALUES (?, 2, 'QR_CODE') 
+		RETURNING table_id`, restaurantID).Scan(&tableID)
+	if result.Error != nil {
+		log.Err(result.Error)
 	}
 	connStr := fmt.Sprintf("/tables/%s", tableID)
 	req, _ := http.NewRequest("DELETE", connStr, nil)
@@ -101,7 +98,7 @@ func TestDeleteTable(t *testing.T) {
 
 func TestGetTable(t *testing.T) {
 	postgresContainer, _ := utils.SetUp()
-	testDB, err := sqlx.Connect("postgres", "postgres://postgres:postgres@localhost:5434/servu?sslmode=disable")
+	testDB, err := gorm.Open(postgres.Open("postgres://postgres:postgres@localhost:5434/servu?sslmode=disable"))
 	mock := utils.NewMock(testDB)
 	if err != nil {
 		log.Err(err)
@@ -110,28 +107,25 @@ func TestGetTable(t *testing.T) {
 
 	var userID, restaurantID, tableID string
 
-	err = testDB.QueryRow(`INSERT INTO servu.users (name, email, password_hash, role)
-	VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin') 
-	RETURNING user_id`).Scan(&userID)
-
-	if err != nil {
-		log.Err(err)
+	result := testDB.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+		VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin', '1234567890')
+		RETURNING user_id`).Scan(&userID)
+	if result.Error != nil {
+		log.Err(result.Error)
 	}
 
-	err = testDB.QueryRow(`INSERT INTO servu.restaurants (name, owner_id, address)
-	VALUES ('Test Restaurant', $1, '123 Main St') 
-	RETURNING restaurant_id`, userID).Scan(&restaurantID)
-
-	if err != nil {
-		log.Err(err)
+	result = testDB.Raw(`INSERT INTO servu.restaurants (name, owner_id)
+		VALUES ('Test Restaurant', ?) 
+		RETURNING restaurant_id`, userID).Scan(&restaurantID)
+	if result.Error != nil {
+		log.Err(result.Error)
 	}
 
-	err = testDB.QueryRow(`INSERT INTO servu.restaurant_tables (restaurant_id, table_number,qr_code)
-	VALUES ($1, 2, 'QR_CODE') 
-	RETURNING table_id`, restaurantID).Scan(&tableID)
-
-	if err != nil {
-		log.Err(err)
+	result = testDB.Raw(`INSERT INTO servu.tables (restaurant_id, table_number, qr_code)
+		VALUES (?, 2, 'QR_CODE') 
+		RETURNING table_id`, restaurantID).Scan(&tableID)
+	if result.Error != nil {
+		log.Err(result.Error)
 	}
 	connStr := fmt.Sprintf("/tables/%s", tableID)
 	req, _ := http.NewRequest("GET", connStr, nil)
@@ -148,7 +142,7 @@ func TestGetTable(t *testing.T) {
 
 func TestUpdateTable(t *testing.T) {
 	postgresContainer, _ := utils.SetUp()
-	testDB, err := sqlx.Connect("postgres", "postgres://postgres:postgres@localhost:5434/servu?sslmode=disable")
+	testDB, err := gorm.Open(postgres.Open("postgres://postgres:postgres@localhost:5434/servu?sslmode=disable"))
 	mock := utils.NewMock(testDB)
 	if err != nil {
 		log.Err(err)
@@ -157,28 +151,25 @@ func TestUpdateTable(t *testing.T) {
 
 	var userID, restaurantID, tableID string
 
-	err = testDB.QueryRow(`INSERT INTO servu.users (name, email, password_hash, role)
-	VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin') 
-	RETURNING user_id`).Scan(&userID)
-
-	if err != nil {
-		log.Err(err)
+	result := testDB.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+		VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin', '1234567890')
+		RETURNING user_id`).Scan(&userID)
+	if result.Error != nil {
+		log.Err(result.Error)
 	}
 
-	err = testDB.QueryRow(`INSERT INTO servu.restaurants (name, owner_id, address)
-	VALUES ('Test Restaurant', $1, '123 Main St') 
-	RETURNING restaurant_id`, userID).Scan(&restaurantID)
-
-	if err != nil {
-		log.Err(err)
+	result = testDB.Raw(`INSERT INTO servu.restaurants (name, owner_id)
+		VALUES ('Test Restaurant', ?) 
+		RETURNING restaurant_id`, userID).Scan(&restaurantID)
+	if result.Error != nil {
+		log.Err(result.Error)
 	}
 
-	err = testDB.QueryRow(`INSERT INTO servu.restaurant_tables (restaurant_id, table_number,qr_code)
-	VALUES ($1, 2, 'QR_CODE') 
-	RETURNING table_id`, restaurantID).Scan(&tableID)
-
-	if err != nil {
-		log.Err(err)
+	result = testDB.Raw(`INSERT INTO servu.tables (restaurant_id, table_number, qr_code)
+		VALUES (?, 2, 'QR_CODE') 
+		RETURNING table_id`, restaurantID).Scan(&tableID)
+	if result.Error != nil {
+		log.Err(result.Error)
 	}
 
 	connStr := fmt.Sprintf("/tables/%s", tableID)
