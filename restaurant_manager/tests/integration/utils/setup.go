@@ -18,28 +18,29 @@ import (
 )
 
 type mockImpl struct {
-	db *gorm.DB
+	Db *gorm.DB
 }
 
-func NewMock(db *gorm.DB) *mockImpl {
-	return &mockImpl{db: db}
-}
-
-func (m mockImpl) SetRoutes() *mux.Router {
+func NewMock() *mockImpl {
 	os.Setenv("APP_ENV", "test")
 	// Load config
 	cfg := config.LoadConfig()
 	config.ConnectDB(cfg)
 	utils.SetJWT(cfg)
+	return &mockImpl{Db: config.DB}
+}
+
+func (m mockImpl) SetRoutes() *mux.Router {
+
 	// Repositories
-	userRepo := repositories.NewUserRepository(m.db)
-	restaurantRepo := repositories.NewRestaurantRepository(m.db)
-	menuRepo := repositories.NewMenuRepository(m.db)
-	orderRepo := repositories.NewOrderRepository(m.db)
-	tableRepo := repositories.NewTableRepository(m.db)
-	inventoryRepo := repositories.NewInventoryRepository(m.db)
-	ingredientRepo := repositories.NewIngredientRepository(m.db)
-	rawIngredientRepo := repositories.NewRawIngredientsRepository(m.db)
+	userRepo := repositories.NewUserRepository(config.DB)
+	restaurantRepo := repositories.NewRestaurantRepository(config.DB)
+	menuRepo := repositories.NewMenuRepository(config.DB)
+	orderRepo := repositories.NewOrderRepository(config.DB)
+	tableRepo := repositories.NewTableRepository(config.DB)
+	inventoryRepo := repositories.NewInventoryRepository(config.DB)
+	ingredientRepo := repositories.NewIngredientRepository(config.DB)
+	rawIngredientRepo := repositories.NewRawIngredientsRepository(config.DB)
 
 	// Use LocalStack S3 manager
 	s3Manager := infraports.InitLocalstackS3()

@@ -8,24 +8,12 @@ import (
 	"testing"
 
 	_ "github.com/lib/pq"
-	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
 )
 
 func TestRegistryUser(t *testing.T) {
 	postgresContainer, _ := utils.SetUp()
-	testDB, err := gorm.Open(postgres.Open("postgres://postgres:postgres@localhost:5434/servu?sslmode=disable"), &gorm.Config{
-		NamingStrategy: schema.NamingStrategy{
-			TablePrefix: "servu.",
-		},
-	})
-	mock := utils.NewMock(testDB)
-	if err != nil {
-		log.Err(err)
-	}
+	mock := utils.NewMock()
 	router := mock.SetRoutes()
 
 	// Mock user data
@@ -59,18 +47,10 @@ func TestRegistryUser(t *testing.T) {
 
 func TestLoginUser(t *testing.T) {
 	postgresContainer, _ := utils.SetUp()
-	testDB, err := gorm.Open(postgres.Open("postgres://postgres:postgres@localhost:5434/servu?sslmode=disable"), &gorm.Config{
-		NamingStrategy: schema.NamingStrategy{
-			TablePrefix: "servu.",
-		},
-	})
-	mock := utils.NewMock(testDB)
-	if err != nil {
-		log.Err(err)
-	}
+	mock := utils.NewMock()
 	router := mock.SetRoutes()
 
-	result := testDB.Exec(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+	result := mock.Db.Exec(`INSERT INTO servu.users (name, email, password_hash, role, phone)
 		VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin', '1234567890')`)
 	assert.Nil(t, result.Error)
 
