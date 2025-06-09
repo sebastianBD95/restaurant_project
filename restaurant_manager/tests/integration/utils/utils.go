@@ -89,8 +89,12 @@ func SetUp() (testcontainers.Container, testcontainers.Container) {
 
 	return postgresContainer, flyContainer
 }
-func CleanUp(container testcontainers.Container) {
+func CleanUp(container []testcontainers.Container) {
 	ctx := context.Background()
-	container.Terminate(ctx)
+	for _, c := range container {
+		if c != nil {
+			c.Terminate(ctx)
+		}
+	}
 
 }

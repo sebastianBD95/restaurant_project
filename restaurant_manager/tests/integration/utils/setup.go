@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -87,4 +89,27 @@ func (m mockImpl) ExecuteRequest(req *http.Request, router http.Handler) *httpte
 
 func (s mockImpl) TestMain(m *testing.M) {
 	m.Run()
+}
+
+// LoginAndGetToken logs in and returns the JWT token for the given credentials.
+func LoginAndGetToken(t *testing.T, router http.Handler, email, password string) string {
+	loginData := map[string]string{
+		"email":    email,
+		"password": password,
+	}
+	loginJSON, _ := json.Marshal(loginData)
+	req, _ := http.NewRequest("POST", "/login", bytes.NewBuffer(loginJSON))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("Login failed: expected 200, got %d", rr.Code)
+	}
+	var resp map[string]interface{}
+	json.Unmarshal(rr.Body.Bytes(), &resp)
+	token, ok := resp["token"].(string)
+	if !ok {
+		t.Fatalf("No token in login response")
+	}
+	return token
 }

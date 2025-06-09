@@ -4,50 +4,50 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"mime/multipart"
 	"net/http"
 	"restaurant_manager/tests/integration/utils"
 	"testing"
 
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"github.com/testcontainers/testcontainers-go"
 )
 
 func TestAddMenu(t *testing.T) {
-	postgresContainer, _ := utils.SetUp()
-	testDB, err := gorm.Open(postgres.Open("postgres://postgres:postgres@localhost:5434/servu?sslmode=disable"))
-	mock := utils.NewMock(testDB)
-	if err != nil {
-		log.Err(err)
-	}
+	postgresContainer, flyContainer := utils.SetUp()
+	mock := utils.NewMock()
 	router := mock.SetRoutes()
 
 	var userID, restaurantID string
 
-	result := testDB.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
-		VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin', '1234567890')
+	result := mock.Db.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+		VALUES ('John Doe', 'john@example.com', '$2a$10$OadQYtj4KxIpkjOQ/zw62euZ00cLJDUmUGMJ5bdGU2TE1.6GwKsoa', 'admin', '1234567890')
 		RETURNING user_id`).Scan(&userID)
 	if result.Error != nil {
 		log.Err(result.Error)
 	}
 
-	result = testDB.Raw(`INSERT INTO servu.restaurants (name, owner_id)
+	result = mock.Db.Raw(`INSERT INTO servu.restaurants (name, owner_id)
 		VALUES ('Test Restaurant', ?) 
 		RETURNING restaurant_id`, userID).Scan(&restaurantID)
 	if result.Error != nil {
 		log.Err(result.Error)
 	}
 
-	menuData := map[string]string{
-		"restaurant_id": restaurantID,
-		"name":          "Lunch menu",
-	}
+	// Create form data for menu item
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	writer.WriteField("name", "Burger")
+	writer.WriteField("description", "Juicy beef burger")
+	writer.WriteField("price", "10.99")
+	writer.WriteField("category", "Main")
+	writer.WriteField("available", "true")
+	writer.Close()
 
-	menuJSON, _ := json.Marshal(menuData)
-
-	req, _ := http.NewRequest("POST", "/menus", bytes.NewBuffer(menuJSON))
-	req.Header.Set("Content-Type", "application/json")
+	// Create request with the correct path
+	req, _ := http.NewRequest("POST", fmt.Sprintf("/menus/%s/items", restaurantID), body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	response := mock.ExecuteRequest(req, router)
 	assert.Equal(t, http.StatusOK, response.Code)
@@ -55,76 +55,71 @@ func TestAddMenu(t *testing.T) {
 	var responseBody map[string]string
 	json.Unmarshal(response.Body.Bytes(), &responseBody)
 
-	assert.NotEmpty(t, responseBody["menu_id"])
-	utils.CleanUp(postgresContainer)
+	assert.NotEmpty(t, responseBody["menu_item_id"])
+	utils.CleanUp([]testcontainers.Container{postgresContainer, flyContainer})
 }
 
 func TestDeleteMenu(t *testing.T) {
-	postgresContainer, _ := utils.SetUp()
-	testDB, err := gorm.Open(postgres.Open("postgres://postgres:postgres@localhost:5434/servu?sslmode=disable"))
-	mock := utils.NewMock(testDB)
-	if err != nil {
-		log.Err(err)
-	}
+	postgresContainer, flyContainer := utils.SetUp()
+	mock := utils.NewMock()
 	router := mock.SetRoutes()
 
-	var userID, restaurantID, menuID string
+	var userID, restaurantID, menuItemID string
 
-	result := testDB.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
-		VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin', '1234567890')
+	result := mock.Db.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+		VALUES ('John Doe', 'john@example.com', '$2a$10$OadQYtj4KxIpkjOQ/zw62euZ00cLJDUmUGMJ5bdGU2TE1.6GwKsoa', 'admin', '1234567890')
 		RETURNING user_id`).Scan(&userID)
 	if result.Error != nil {
 		log.Err(result.Error)
 	}
 
-	result = testDB.Raw(`INSERT INTO servu.restaurants (name, owner_id)
+	result = mock.Db.Raw(`INSERT INTO servu.restaurants (name, owner_id)
 		VALUES ('Test Restaurant', ?) 
 		RETURNING restaurant_id`, userID).Scan(&restaurantID)
 	if result.Error != nil {
 		log.Err(result.Error)
 	}
 
-	result = testDB.Raw(`INSERT INTO servu.menus (restaurant_id, name)
-		VALUES (?, 'Lunch menu') 
-		RETURNING restaurant_id`, restaurantID).Scan(&menuID)
+	result = mock.Db.Raw(`INSERT INTO servu.menu_items (restaurant_id, name, description, price, available, category, image_url)
+		VALUES (?, 'Burger', 'Juicy beef burger', 10.99, true, 'Main', 'https://www.google.com') 
+		RETURNING menu_item_id`, restaurantID).Scan(&menuItemID)
 	if result.Error != nil {
 		log.Err(result.Error)
 	}
-	connStr := fmt.Sprintf("/menus/%s", menuID)
+
+	// Use the correct endpoint for deleting a menu item
+	connStr := fmt.Sprintf("/menus/%s/items/%s", restaurantID, menuItemID)
 	req, _ := http.NewRequest("DELETE", connStr, nil)
+	req.Header.Set("Content-Type", "application/json")
 
 	response := mock.ExecuteRequest(req, router)
 	assert.Equal(t, http.StatusNoContent, response.Code)
 
-	utils.CleanUp(postgresContainer)
+	utils.CleanUp([]testcontainers.Container{postgresContainer, flyContainer})
 }
 
 func TestAddMenuItem(t *testing.T) {
-	postgresContainer, _ := utils.SetUp()
-	testDB, err := gorm.Open(postgres.Open("postgres://postgres:postgres@localhost:5434/servu?sslmode=disable"))
-	mock := utils.NewMock(testDB)
-	if err != nil {
-		log.Err(err)
-	}
+	postgresContainer, flyContainer := utils.SetUp()
+	mock := utils.NewMock()
 	router := mock.SetRoutes()
 
 	var userID, restaurantID, menuID string
 
-	result := testDB.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
-		VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin', '1234567890')
+	result := mock.Db.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+		VALUES ('John Doe', 'john@example.com', '$2a$10$OadQYtj4KxIpkjOQ/zw62euZ00cLJDUmUGMJ5bdGU2TE1.6GwKsoa', 'admin', '1234567890')
 		RETURNING user_id`).Scan(&userID)
 	if result.Error != nil {
 		log.Err(result.Error)
 	}
 
-	result = testDB.Raw(`INSERT INTO servu.restaurants (name, owner_id)
+	result = mock.Db.Raw(`INSERT INTO servu.restaurants (name, owner_id)
 		VALUES ('Test Restaurant', ?) 
 		RETURNING restaurant_id`, userID).Scan(&restaurantID)
 	if result.Error != nil {
 		log.Err(result.Error)
 	}
 
-	result = testDB.Raw(`INSERT INTO servu.menus (restaurant_id, name)
+	result = mock.Db.Raw(`INSERT INTO servu.menus (restaurant_id, name)
 		VALUES (?, 'Lunch menu') 
 		RETURNING menu_id`, restaurantID).Scan(&menuID)
 	if result.Error != nil {
@@ -148,53 +143,44 @@ func TestAddMenuItem(t *testing.T) {
 	json.Unmarshal(response.Body.Bytes(), &responseBody)
 
 	assert.NotEmpty(t, responseBody["menu_item_id"])
-	utils.CleanUp(postgresContainer)
+	utils.CleanUp([]testcontainers.Container{postgresContainer, flyContainer})
 }
 
 func TestDeleteMenuItem(t *testing.T) {
-	postgresContainer, _ := utils.SetUp()
-	testDB, err := gorm.Open(postgres.Open("postgres://postgres:postgres@localhost:5434/servu?sslmode=disable"))
-	mock := utils.NewMock(testDB)
-	if err != nil {
-		log.Err(err)
-	}
+	postgresContainer, flyContainer := utils.SetUp()
+	mock := utils.NewMock()
 	router := mock.SetRoutes()
 
-	var userID, restaurantID, menuID, menuItemID string
+	var userID, restaurantID, menuItemID string
 
-	result := testDB.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
-		VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin', '1234567890')
+	result := mock.Db.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+		VALUES ('John Doe', 'john@example.com', '$2a$10$OadQYtj4KxIpkjOQ/zw62euZ00cLJDUmUGMJ5bdGU2TE1.6GwKsoa', 'admin', '1234567890')
 		RETURNING user_id`).Scan(&userID)
 	if result.Error != nil {
 		log.Err(result.Error)
 	}
 
-	result = testDB.Raw(`INSERT INTO servu.restaurants (name, owner_id)
+	result = mock.Db.Raw(`INSERT INTO servu.restaurants (name, owner_id)
 		VALUES ('Test Restaurant', ?) 
 		RETURNING restaurant_id`, userID).Scan(&restaurantID)
 	if result.Error != nil {
 		log.Err(result.Error)
 	}
 
-	result = testDB.Raw(`INSERT INTO servu.menus (restaurant_id, name)
-		VALUES (?, 'Lunch menu') 
-		RETURNING menu_id`, restaurantID).Scan(&menuID)
+	result = mock.Db.Raw(`INSERT INTO servu.menu_items (restaurant_id, name, description, price, available, category, image_url)
+		VALUES (?, 'Burger', 'Juicy beef burger', 10.99, true, 'Main', 'https://www.google.com') 
+		RETURNING menu_item_id`, restaurantID).Scan(&menuItemID)
 	if result.Error != nil {
 		log.Err(result.Error)
 	}
 
-	result = testDB.Raw(`INSERT INTO servu.menu_items (menu_id, name,description,price,available,category,image_url)
-		VALUES (?, 'Burger','Juicy beef burger',10.99,true,'Main','https://www.google.com') 
-		RETURNING menu_item_id`, menuID).Scan(&menuItemID)
-	if result.Error != nil {
-		log.Err(result.Error)
-	}
-
-	connStr := fmt.Sprintf("/menu-items/%s", menuItemID)
+	// Use the correct endpoint for deleting a menu item
+	connStr := fmt.Sprintf("/menus/%s/items/%s", restaurantID, menuItemID)
 	req, _ := http.NewRequest("DELETE", connStr, nil)
 	req.Header.Set("Content-Type", "application/json")
 
 	response := mock.ExecuteRequest(req, router)
 	assert.Equal(t, http.StatusNoContent, response.Code)
-	utils.CleanUp(postgresContainer)
+
+	utils.CleanUp([]testcontainers.Container{postgresContainer, flyContainer})
 }

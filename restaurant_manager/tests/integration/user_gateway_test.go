@@ -9,10 +9,11 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
+	"github.com/testcontainers/testcontainers-go"
 )
 
 func TestRegistryUser(t *testing.T) {
-	postgresContainer, _ := utils.SetUp()
+	postgresContainer, flyContainer := utils.SetUp()
 	mock := utils.NewMock()
 	router := mock.SetRoutes()
 
@@ -42,7 +43,7 @@ func TestRegistryUser(t *testing.T) {
 
 	// Check if user_id is returned
 	assert.NotEmpty(t, responseBody["user_id"])
-	utils.CleanUp(postgresContainer)
+	utils.CleanUp([]testcontainers.Container{postgresContainer, flyContainer})
 }
 
 func TestLoginUser(t *testing.T) {
@@ -77,6 +78,6 @@ func TestLoginUser(t *testing.T) {
 	json.Unmarshal(response.Body.Bytes(), &responseBody)
 
 	// Check if login message is correct
-	assert.Equal(t, "Login successful", responseBody["message"])
-	utils.CleanUp(postgresContainer)
+	assert.NotEmpty(t, responseBody["token"])
+	utils.CleanUp([]testcontainers.Container{postgresContainer})
 }

@@ -9,17 +9,18 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
+	"github.com/testcontainers/testcontainers-go"
 )
 
 func TestCreateOrder(t *testing.T) {
-	postgresContainer, _ := utils.SetUp()
+	postgresContainer, flyContainer := utils.SetUp()
 	mock := utils.NewMock()
 	router := mock.SetRoutes()
 
 	var userID, restaurantID, tableID, menuItemID string
 
 	result := mock.Db.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
-		VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin', '1234567890')
+		VALUES ('John Doe', 'john@example.com', '$2a$10$OadQYtj4KxIpkjOQ/zw62euZ00cLJDUmUGMJ5bdGU2TE1.6GwKsoa', 'admin', '1234567890')
 		RETURNING user_id`).Scan(&userID)
 	if result.Error != nil {
 		log.Err(result.Error)
@@ -67,18 +68,18 @@ func TestCreateOrder(t *testing.T) {
 	json.Unmarshal(response.Body.Bytes(), &responseBody)
 
 	assert.NotEmpty(t, responseBody["order_id"])
-	utils.CleanUp(postgresContainer)
+	utils.CleanUp([]testcontainers.Container{postgresContainer, flyContainer})
 }
 
 func TestDeleteOrder(t *testing.T) {
-	postgresContainer, _ := utils.SetUp()
+	postgresContainer, flyContainer := utils.SetUp()
 	mock := utils.NewMock()
 	router := mock.SetRoutes()
 
 	var userID, restaurantID, tableID, menuItemID string
 
 	result := mock.Db.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
-		VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin', '1234567890')
+		VALUES ('John Doe', 'john@example.com', '$2a$10$OadQYtj4KxIpkjOQ/zw62euZ00cLJDUmUGMJ5bdGU2TE1.6GwKsoa', 'admin', '1234567890')
 		RETURNING user_id`).Scan(&userID)
 	if result.Error != nil {
 		log.Err(result.Error)
@@ -125,6 +126,13 @@ func TestDeleteOrder(t *testing.T) {
 	var responseBody map[string]string
 	json.Unmarshal(response.Body.Bytes(), &responseBody)
 
-	assert.NotEmpty(t, responseBody["order_id"])
-	utils.CleanUp(postgresContainer)
+	orderID := responseBody["order_id"]
+	assert.NotEmpty(t, orderID)
+
+	// Delete the order
+	deleteReq, _ := http.NewRequest("DELETE", "/orders/"+orderID, nil)
+	deleteResponse := mock.ExecuteRequest(deleteReq, router)
+	assert.Equal(t, http.StatusNoContent, deleteResponse.Code)
+
+	utils.CleanUp([]testcontainers.Container{postgresContainer, flyContainer})
 }
