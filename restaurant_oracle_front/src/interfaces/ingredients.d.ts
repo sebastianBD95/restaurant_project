@@ -4,4 +4,5 @@ export interface Ingredient {
   quantity: number;
   unit: string;
   price: number;
+  merma: number;
 }

@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -18,28 +20,29 @@ import (
 )
 
 type mockImpl struct {
-	db *gorm.DB
+	Db *gorm.DB
 }
 
-func NewMock(db *gorm.DB) *mockImpl {
-	return &mockImpl{db: db}
-}
-
-func (m mockImpl) SetRoutes() *mux.Router {
+func NewMock() *mockImpl {
 	os.Setenv("APP_ENV", "test")
 	// Load config
 	cfg := config.LoadConfig()
 	config.ConnectDB(cfg)
 	utils.SetJWT(cfg)
+	return &mockImpl{Db: config.DB}
+}
+
+func (m mockImpl) SetRoutes() *mux.Router {
+
 	// Repositories
-	userRepo := repositories.NewUserRepository(m.db)
-	restaurantRepo := repositories.NewRestaurantRepository(m.db)
-	menuRepo := repositories.NewMenuRepository(m.db)
-	orderRepo := repositories.NewOrderRepository(m.db)
-	tableRepo := repositories.NewTableRepository(m.db)
-	inventoryRepo := repositories.NewInventoryRepository(m.db)
-	ingredientRepo := repositories.NewIngredientRepository(m.db)
-	rawIngredientRepo := repositories.NewRawIngredientsRepository(m.db)
+	userRepo := repositories.NewUserRepository(config.DB)
+	restaurantRepo := repositories.NewRestaurantRepository(config.DB)
+	menuRepo := repositories.NewMenuRepository(config.DB)
+	orderRepo := repositories.NewOrderRepository(config.DB)
+	tableRepo := repositories.NewTableRepository(config.DB)
+	inventoryRepo := repositories.NewInventoryRepository(config.DB)
+	ingredientRepo := repositories.NewIngredientRepository(config.DB)
+	rawIngredientRepo := repositories.NewRawIngredientsRepository(config.DB)
 
 	// Use LocalStack S3 manager
 	s3Manager := infraports.InitLocalstackS3()
@@ -86,4 +89,27 @@ func (m mockImpl) ExecuteRequest(req *http.Request, router http.Handler) *httpte
 
 func (s mockImpl) TestMain(m *testing.M) {
 	m.Run()
+}
+
+// LoginAndGetToken logs in and returns the JWT token for the given credentials.
+func LoginAndGetToken(t *testing.T, router http.Handler, email, password string) string {
+	loginData := map[string]string{
+		"email":    email,
+		"password": password,
+	}
+	loginJSON, _ := json.Marshal(loginData)
+	req, _ := http.NewRequest("POST", "/login", bytes.NewBuffer(loginJSON))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("Login failed: expected 200, got %d", rr.Code)
+	}
+	var resp map[string]interface{}
+	json.Unmarshal(rr.Body.Bytes(), &resp)
+	token, ok := resp["token"].(string)
+	if !ok {
+		t.Fatalf("No token in login response")
+	}
+	return token
 }

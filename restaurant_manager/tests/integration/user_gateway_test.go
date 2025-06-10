@@ -8,24 +8,13 @@ import (
 	"testing"
 
 	_ "github.com/lib/pq"
-	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
+	"github.com/testcontainers/testcontainers-go"
 )
 
 func TestRegistryUser(t *testing.T) {
-	postgresContainer, _ := utils.SetUp()
-	testDB, err := gorm.Open(postgres.Open("postgres://postgres:postgres@localhost:5434/servu?sslmode=disable"), &gorm.Config{
-		NamingStrategy: schema.NamingStrategy{
-			TablePrefix: "servu.",
-		},
-	})
-	mock := utils.NewMock(testDB)
-	if err != nil {
-		log.Err(err)
-	}
+	postgresContainer, flyContainer := utils.SetUp()
+	mock := utils.NewMock()
 	router := mock.SetRoutes()
 
 	// Mock user data
@@ -54,23 +43,15 @@ func TestRegistryUser(t *testing.T) {
 
 	// Check if user_id is returned
 	assert.NotEmpty(t, responseBody["user_id"])
-	utils.CleanUp(postgresContainer)
+	utils.CleanUp([]testcontainers.Container{postgresContainer, flyContainer})
 }
 
 func TestLoginUser(t *testing.T) {
 	postgresContainer, _ := utils.SetUp()
-	testDB, err := gorm.Open(postgres.Open("postgres://postgres:postgres@localhost:5434/servu?sslmode=disable"), &gorm.Config{
-		NamingStrategy: schema.NamingStrategy{
-			TablePrefix: "servu.",
-		},
-	})
-	mock := utils.NewMock(testDB)
-	if err != nil {
-		log.Err(err)
-	}
+	mock := utils.NewMock()
 	router := mock.SetRoutes()
 
-	result := testDB.Exec(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+	result := mock.Db.Exec(`INSERT INTO servu.users (name, email, password_hash, role, phone)
 		VALUES ('John Doe', 'john@example.com', '$2a$10$fkLipV6Vn8KKo2uXK9JC8eA6dQFjW2RiHRJvmJP5LS3mNv1byZnqm', 'admin', '1234567890')`)
 	assert.Nil(t, result.Error)
 
@@ -97,6 +78,6 @@ func TestLoginUser(t *testing.T) {
 	json.Unmarshal(response.Body.Bytes(), &responseBody)
 
 	// Check if login message is correct
-	assert.Equal(t, "Login successful", responseBody["message"])
-	utils.CleanUp(postgresContainer)
+	assert.NotEmpty(t, responseBody["token"])
+	utils.CleanUp([]testcontainers.Container{postgresContainer})
 }
