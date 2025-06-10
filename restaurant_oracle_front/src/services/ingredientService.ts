@@ -27,12 +27,3 @@ export const getIngredients = async (restaurantId: string): Promise<Ingredient[]
   return response.json();
 }; 
 
-export const getRawIngredientsByCategory = async (category: string, token: string) => {
-  const response = await fetch(
-    `${API_BASE_URL}/raw-ingredients?category=${encodeURIComponent(category)}`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
-  return response.json();
-};

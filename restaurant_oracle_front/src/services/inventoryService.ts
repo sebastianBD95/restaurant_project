@@ -1,38 +1,9 @@
 import { getCookie } from '../pages/utils/cookieManager';
+import { InventoryItem, InventoryResponse } from '../interfaces/inventory';  
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
-export interface InventoryItem {
-  inventory_id?: string;  // Optional for new items
-  raw_ingredient_id: string;
-  quantity: number;
-  unit: 'g' | 'ml' | 'kg' | 'l' | 'un';
-  minimum_quantity: number;
-  last_restock_date: string;
-  price: number;
-}
 
-export interface RawIngredient {
-  raw_ingredient_id: string;
-  category: string;
-  name: string;
-  merma: number;
-}
-
-export interface InventoryResponse {
-  inventory_id: string;
-  restaurant_id: string;
-  raw_ingredient_id: string;
-  quantity: number;
-  unit: 'g' | 'ml' | 'kg' | 'l' | 'un';
-  minimum_quantity: number;
-  last_restock_date: string;
-  price: number;
-  merma: number;
-  created_at: string;
-  updated_at: string;
-  raw_ingredient: RawIngredient;
-}
 
 export const createInventoryItems = async (restaurantId: string, items: InventoryItem[], token: string): Promise<void> => {
   const response = await fetch(`${API_BASE_URL}/inventory?restaurant_id=${restaurantId}`, {

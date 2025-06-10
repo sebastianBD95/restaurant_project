@@ -4,14 +4,7 @@ import { MenuItemResponse } from '../../interfaces/menuItems';
 import BasicInfoForm from './BasicInfoForm';
 import IngredientsForm from './IngredientsForm';
 import { toaster } from '../ui/toaster';
-
-interface Ingredient {
-  raw_ingredient_id: string;
-  name: string;
-  quantity: number;
-  unit: string;
-  price: number;
-}
+import { Ingredient } from '../../interfaces/ingredients';
 
 interface MenuFormProps {
   category: string;

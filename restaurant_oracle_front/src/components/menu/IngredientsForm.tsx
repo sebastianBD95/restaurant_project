@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Stack, Input, Box, Button, Grid, GridItem, Spinner, Text, Select as ChakraSelect, Portal, createListCollection } from '@chakra-ui/react';
 import { CustomField } from '../ui/field';
 import { Ingredient } from '../../interfaces/ingredients';
-import { getRawIngredientsByCategory } from '../../services/ingredientService';
+import { getRawIngredientsByCategory } from '../../services/rawIngredientService';
 import { getCookie } from '../../pages/utils/cookieManager';
 
 const categories = [
