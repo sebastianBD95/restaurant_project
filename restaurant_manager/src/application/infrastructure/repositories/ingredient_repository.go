@@ -36,11 +36,9 @@ func (repo *IngredientRepository) GetIngredients() ([]*models.Ingredient, error)
 func (repo *IngredientRepository) GetIngredientsByRestaurantID(restaurantID string) ([]models.RawIngredient, error) {
 	var rawIngredients []models.RawIngredient
 	result := repo.db.Distinct().
-		Select("raw_ingredients.*").
-		Table("servu.menu_items").
-		Joins("JOIN servu.ingredients ON ingredients.menu_item_id = menu_items.menu_item_id").
-		Joins("JOIN servu.raw_ingredients ON ingredients.raw_ingredient_id = raw_ingredients.raw_ingredient_id").
-		Where("menu_items.restaurant_id = ?", restaurantID).
+		Select("*").
+		Table("servu.raw_ingredients").
+		Where("restaurant_id = ?", restaurantID).
 		Find(&rawIngredients)
 
 	return rawIngredients, result.Error

@@ -36,7 +36,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
   if (isLoading) {
     return <Text>Cargando inventario...</Text>;
   }
-
+  console.log(inventario);
   return (
     <Box overflowX="auto">
       <Table.Root size="sm">
@@ -141,7 +141,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                     <Text>${item.precio.toFixed(2)}</Text>
                   </Table.Cell>
                   <Table.Cell>
-                    <Text>{item.merma}</Text>
+                  <Text>{(item.merma * 100).toFixed(0)}%</Text>
                   </Table.Cell>
                   <Table.Cell display={{ base: 'none', lg: 'table-cell' }}>
                     <Text>

@@ -60,13 +60,16 @@ CREATE INDEX idx_tables_qr_code ON servu.tables(qr_code);
 
 CREATE TABLE servu.raw_ingredients (
     raw_ingredient_id SERIAL PRIMARY KEY,
+    restaurant_id UUID REFERENCES servu.restaurants(restaurant_id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
-    category VARCHAR(20) CHECK (category IN ('Verdura', 'Fruta', 'Pollo', 'Res', 'Cerdo', 'Cereal', 'Legumbre', 'Lácteo', 'Grasa', 'Condimento', 'Harina', 'Grano', 'Marisco', 'Pescado', 'Hongo', 'Liquido')) NOT NULL
+    category VARCHAR(20) CHECK (category IN ('Verdura', 'Fruta', 'Pollo', 'Res', 'Cerdo', 'Cereal', 'Legumbre', 'Lácteo', 'Grasa', 'Condimento', 'Harina', 'Grano', 'Marisco', 'Pescado', 'Hongo', 'Liquido')) NOT NULL,
+    merma DECIMAL(10,2) DEFAULT 0.0,
+    UNIQUE(restaurant_id, name)
 );
 
 CREATE INDEX idx_raw_ingredients_category ON servu.raw_ingredients(category);
 CREATE INDEX idx_raw_ingredients_name ON servu.raw_ingredients(name);
-
+CREATE INDEX idx_restaurant_id ON servu.raw_ingredients(restaurant_id);
 
 CREATE TABLE servu.menu_items (
                                   menu_item_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

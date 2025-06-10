@@ -24,7 +24,8 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
     name: '',
     quantity: 0,
     unit: 'g',
-    price: 0
+    price: 0,
+    merma: 0
   });
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [ingredientOptions, setIngredientOptions] = useState<{ raw_ingredient_id: string; name: string }[]>([]);
@@ -103,7 +104,8 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
         name: '',
         quantity: 0,
         unit: 'g',
-        price: 0
+        price: 0,
+        merma: 0
       });
       setErrors({ name: false, quantity: false, price: false });
     }
@@ -237,8 +239,10 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
             <Box borderWidth={1} borderRadius="md" overflow="hidden">
               <Grid templateColumns="2fr 1fr 1fr 1fr 1fr" gap={4} p={4} bg="gray.50" fontWeight="bold">
                 <GridItem>Ingrediente</GridItem>
-                <GridItem textAlign="right">Cantidad</GridItem>
+                <GridItem textAlign="right">Cantidad Bruta</GridItem>
                 <GridItem>Unidad</GridItem>
+                <GridItem>Merma</GridItem>
+                <GridItem>Cantidad Neta</GridItem>
                 <GridItem textAlign="right">Precio</GridItem>
                 <GridItem>Acciones</GridItem>
               </Grid>

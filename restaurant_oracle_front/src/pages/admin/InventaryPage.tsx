@@ -87,7 +87,7 @@ const Inventario: React.FC = () => {
           unidad: item.unit,
           cantidad_minima: item.minimum_quantity,
           precio: item.price,
-          merma: item.merma,
+          merma: item.raw_ingredient.merma,
           ultima_reposicion: item.last_restock_date ? new Date(item.last_restock_date) : undefined
         }));
 
@@ -116,6 +116,7 @@ const Inventario: React.FC = () => {
       try {
         setLoadingIngredients(true);
         const ingredients = await getIngredients(restaurantId!);
+        console.log(ingredients);
         setSuggestedIngredients(ingredients);
       } catch (error) {
         toaster.create({
