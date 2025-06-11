@@ -28,7 +28,7 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
     merma: 0
   });
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [ingredientOptions, setIngredientOptions] = useState<{ raw_ingredient_id: string; name: string }[]>([]);
+  const [ingredientOptions, setIngredientOptions] = useState<{ raw_ingredient_id: string; name: string; merma?: number }[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [fetchError, setFetchError] = useState('');
   const [errors, setErrors] = useState({
@@ -73,6 +73,7 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
       ...prev,
       raw_ingredient_id: selectedId,
       name: selectedOption ? selectedOption.name : '',
+      merma: selectedOption && typeof selectedOption.merma === 'number' ? selectedOption.merma : 0,
     }));
     setErrors(prev => ({ ...prev, name: false }));
   };
@@ -213,6 +214,15 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
               <option value="taza">taza</option>
             </select>
           </CustomField>
+          <CustomField label="Merma (%)">
+            <Input
+              value={currentIngredient.merma}
+              name="merma"
+              type="number"
+              readOnly
+              disabled
+            />
+          </CustomField>
           <CustomField
             label="Precio"
             required
@@ -237,28 +247,36 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
           <Box mt={4}>
             <Box fontWeight="semibold" mb={2}>Ingredientes Agregados</Box>
             <Box borderWidth={1} borderRadius="md" overflow="hidden">
-              <Grid templateColumns="2fr 1fr 1fr 1fr 1fr" gap={4} p={4} bg="gray.50" fontWeight="bold">
+              <Grid templateColumns="2fr 1fr 1fr 1fr 1fr 1fr 1fr" gap={4} p={4} bg="gray.50" fontWeight="bold">
                 <GridItem>Ingrediente</GridItem>
                 <GridItem textAlign="right">Cantidad Bruta</GridItem>
                 <GridItem>Unidad</GridItem>
-                <GridItem>Merma</GridItem>
-                <GridItem>Cantidad Neta</GridItem>
+                <GridItem>Merma (%)</GridItem>
+                <GridItem textAlign="right">Cantidad Neta</GridItem>
                 <GridItem textAlign="right">Precio</GridItem>
                 <GridItem>Acciones</GridItem>
               </Grid>
               {ingredients.map((ingredient, index) => (
                 <Grid
                   key={index}
-                  templateColumns="2fr 1fr 1fr 1fr 1fr"
+                  templateColumns="2fr 1fr 1fr 1fr 1fr 1fr 1fr"
                   gap={4}
                   p={4}
                   borderTopWidth={1}
                   alignItems="center"
                 >
-                  <GridItem>{ingredient.name}</GridItem>
+                  <GridItem style={{ whiteSpace: 'nowrap', minWidth: 120 }}>{ingredient.name}</GridItem>
                   <GridItem textAlign="right">{ingredient.quantity}</GridItem>
                   <GridItem>{ingredient.unit}</GridItem>
-                  <GridItem textAlign="right">${ingredient.price.toFixed(2)}</GridItem>
+                  <GridItem textAlign="right">
+                    {ingredient.merma !== undefined ? ((ingredient.merma ?? 0) * 100).toFixed(2) : ''}
+                  </GridItem>
+                  <GridItem textAlign="right">
+                    {ingredient.quantity && ingredient.merma !== undefined
+                      ? ((ingredient.quantity ?? 0) * (1 - (ingredient.merma ?? 0))).toFixed(2)
+                      : ''}
+                  </GridItem>
+                  <GridItem textAlign="right">${(ingredient.price ?? 0).toFixed(2)}</GridItem>
                   <GridItem>
                     <Button
                       size="sm"

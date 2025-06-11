@@ -16,23 +16,24 @@ import (
 	"testing"
 
 	"github.com/gorilla/mux"
+	"github.com/testcontainers/testcontainers-go"
 	"gorm.io/gorm"
 )
 
-type mockImpl struct {
+type MockImpl struct {
 	Db *gorm.DB
 }
 
-func NewMock() *mockImpl {
+func NewMock(t *testing.T) *MockImpl {
 	os.Setenv("APP_ENV", "test")
 	// Load config
 	cfg := config.LoadConfig()
 	config.ConnectDB(cfg)
 	utils.SetJWT(cfg)
-	return &mockImpl{Db: config.DB}
+	return &MockImpl{Db: config.DB}
 }
 
-func (m mockImpl) SetRoutes() *mux.Router {
+func (m MockImpl) SetRoutes(localstackContainer testcontainers.Container) *mux.Router {
 
 	// Repositories
 	userRepo := repositories.NewUserRepository(config.DB)
@@ -44,8 +45,7 @@ func (m mockImpl) SetRoutes() *mux.Router {
 	ingredientRepo := repositories.NewIngredientRepository(config.DB)
 	rawIngredientRepo := repositories.NewRawIngredientsRepository(config.DB)
 
-	// Use LocalStack S3 manager
-	s3Manager := infraports.InitLocalstackS3()
+	s3Manager := infraports.InitLocalstackS3(localstackContainer)
 
 	// Services
 	userService := services.NewUserService(userRepo)
@@ -81,13 +81,13 @@ func (m mockImpl) SetRoutes() *mux.Router {
 	return router
 }
 
-func (m mockImpl) ExecuteRequest(req *http.Request, router http.Handler) *httptest.ResponseRecorder {
+func (m MockImpl) ExecuteRequest(req *http.Request, router http.Handler) *httptest.ResponseRecorder {
 	rr := httptest.NewRecorder()
 	router.ServeHTTP(rr, req)
 	return rr
 }
 
-func (s mockImpl) TestMain(m *testing.M) {
+func (s MockImpl) TestMain(m *testing.M) {
 	m.Run()
 }
 

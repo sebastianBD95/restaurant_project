@@ -56,3 +56,7 @@ func (as3 *AwsS3Manager) UploadImage(folder string, subfolder string, bucketName
 func generateUniqueFileName() string {
 	return fmt.Sprintf("%s.jpg", strings.ReplaceAll(fmt.Sprintf("%d", time.Now().UnixNano()), "-", ""))
 }
+
+func NewAwsS3ManagerWithClient(client *s3.S3) AwsS3Manager {
+	return AwsS3Manager{s3Manager: client}
+}

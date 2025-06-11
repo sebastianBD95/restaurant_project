@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"testing"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/go-connections/nat"
+	"github.com/rs/zerolog/log"
 	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/modules/localstack"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
@@ -83,11 +86,25 @@ func FlyWayContainer(ip string) (testcontainers.Container, error) {
 	return container, nil
 }
 
-func SetUp() (testcontainers.Container, testcontainers.Container) {
+func LocalstackContainer() (testcontainers.Container, error) {
+	ctx := context.Background()
+	localstackContainer, err := localstack.Run(ctx, "localstack/localstack:latest",
+		testcontainers.WithEnv(map[string]string{"SERVICES": "s3,sqs"}),
+		testcontainers.WithExposedPorts("4566/tcp"),
+	)
+
+	if err != nil {
+		log.Error().Msgf("Failed to run localstack container: %v", err)
+	}
+	return localstackContainer, nil
+}
+
+func SetUp(t *testing.T) (testcontainers.Container, testcontainers.Container, testcontainers.Container) {
 	postgresContainer, postgresIp, _ := PostgresContainer()
 	flyContainer, _ := FlyWayContainer(postgresIp)
+	localstackContainer, _ := LocalstackContainer()
 
-	return postgresContainer, flyContainer
+	return postgresContainer, flyContainer, localstackContainer
 }
 func CleanUp(container []testcontainers.Container) {
 	ctx := context.Background()
