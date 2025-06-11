@@ -89,5 +89,8 @@ func SetupRoutes(userHandler *handlers.UserHandler,
 	r.HandleFunc("/inventory", inventoryHandler.UpdateInventory).Methods("PUT", "OPTIONS")
 	r.HandleFunc("/ingredients", ingredientHandler.GetIngredientsByRestaurantID).Methods("GET", "OPTIONS")
 	r.HandleFunc("/raw-ingredients", rawIngredientsHandler.GetByCategory).Methods("GET", "OPTIONS")
+	r.HandleFunc("/raw-ingredients/upload", rawIngredientsHandler.UploadRawIngredientsCSV).Methods("POST", "OPTIONS")
+	r.HandleFunc("/raw-ingredients", rawIngredientsHandler.UpdateRawIngredients).Methods("PUT", "OPTIONS")
+	r.HandleFunc("/raw-ingredients/{raw_ingredient_id}", rawIngredientsHandler.DeleteRawIngredients).Methods("DELETE", "OPTIONS")
 	return r
 }

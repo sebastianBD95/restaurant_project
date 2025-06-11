@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Grid, GridItem, Image, Text, Accordion, AbsoluteCenter, Button, ButtonGroup } from '@chakra-ui/react';
 import { MenuItemResponse } from '../../interfaces/menuItems';
-import MenuItem from './MenuItemWaiter';
+import MenuItem from './MenuItem';
 import MenuForm from './MenuForm';
 import { editMenuItem, hideMenuItem, deleteMenuItem } from '../../services/menuService';
 import { getCookie } from '../../pages/utils/cookieManager';

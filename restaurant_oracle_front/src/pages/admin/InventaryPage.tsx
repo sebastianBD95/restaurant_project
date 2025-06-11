@@ -20,9 +20,11 @@ import { getCookie } from '../utils/cookieManager';
 import { Toaster, toaster } from "../../components/ui/toaster";
 import { AddIngredientDialog } from '../../components/inventory/AddIngredientDialog';
 import { InventoryTable } from '../../components/inventory/InventoryTable';
-import { getIngredients, getRawIngredientsByCategory, Ingredient } from '../../services/ingredientService';
-import { deleteInventoryItem, getInventory, InventoryResponse, createInventoryItems, updateInventoryItems } from '../../services/inventoryService';
-import type { Inventory } from '../../types/inventory';
+import { getIngredients, Ingredient } from '../../services/ingredientService';
+import { getRawIngredientsByCategory } from '../../services/rawIngredientService';
+import { deleteInventoryItem, getInventory, createInventoryItems, updateInventoryItems } from '../../services/inventoryService';
+import type { InventoryItem, Inventory, InventoryResponse } from '../../interfaces/inventory';
+
 
 interface CustomIngredient {
   nombre: string;

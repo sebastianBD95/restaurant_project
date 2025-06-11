@@ -4,14 +4,7 @@ import { MenuItemResponse } from '../../interfaces/menuItems';
 import BasicInfoForm from './BasicInfoForm';
 import IngredientsForm from './IngredientsForm';
 import { toaster } from '../ui/toaster';
-
-interface Ingredient {
-  raw_ingredient_id: string;
-  name: string;
-  quantity: number;
-  unit: string;
-  price: number;
-}
+import { Ingredient } from '../../interfaces/ingredients';
 
 interface MenuFormProps {
   category: string;
@@ -167,6 +160,19 @@ const MenuForm: React.FC<MenuFormProps> = ({
     }
   }, [initialData]);
 
+  useEffect(() => {
+    if (initialData && initialData.ingredients) {
+      setIngredients(initialData.ingredients.map((ing: any) => ({
+        raw_ingredient_id: ing.ingredient_id,
+        name: ing.name,
+        quantity: ing.amount,
+        unit: ing.unit,
+        price: ing.price,
+        merma: typeof ing.merma === 'number' ? ing.merma : 0
+      })));
+    }
+  }, [initialData, setIngredients]);
+
   const steps = [
     {
       title: "Step 1",
@@ -199,7 +205,7 @@ const MenuForm: React.FC<MenuFormProps> = ({
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner>
-          <Dialog.Content>
+          <Dialog.Content maxWidth="900px">
             <Dialog.Header>
               <Dialog.Title>{initialData ? 'Editar Plato' : 'Añadir Plato'}</Dialog.Title>
             </Dialog.Header>
@@ -238,7 +244,7 @@ const MenuForm: React.FC<MenuFormProps> = ({
                             </Box>
                             <Box as="tr">
                               <Box as="td" p={2} borderBottom="1px" borderColor="gray.200">Precio:</Box>
-                              <Box as="td" p={2} borderBottom="1px" borderColor="gray.200">${formData.price.toFixed(2)}</Box>
+                              <Box as="td" p={2} borderBottom="1px" borderColor="gray.200">${(formData.price ?? 0).toFixed(2)}</Box>
                             </Box>
                             <Box as="tr">
                               <Box as="td" p={2} borderBottom="1px" borderColor="gray.200">Categoría:</Box>
@@ -272,7 +278,7 @@ const MenuForm: React.FC<MenuFormProps> = ({
                                   <Box as="td" p={2}>{ingredient.name}</Box>
                                   <Box as="td" p={2} textAlign="right">{ingredient.quantity}</Box>
                                   <Box as="td" p={2}>{ingredient.unit}</Box>
-                                  <Box as="td" p={2} textAlign="right">${ingredient.price.toFixed(2)}</Box>
+                                  <Box as="td" p={2} textAlign="right">${(ingredient.price ?? 0).toFixed(2)}</Box>
                                 </Box>
                               ))}
                             </Box>

@@ -46,6 +46,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar, 
               <Icon as={MdOutlineInventory2} />
               Inventario
             </Link>
+            <Link to={currentRestaurantId ? `/ingredientes/${currentRestaurantId}` : "/ingredientes"} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
+              <Icon as={MdOutlineInventory2} />
+              Ingredientes
+            </Link>
             <Link to={currentRestaurantId ? `/receta/${currentRestaurantId}` : "/receta"} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
               <Icon as={MdRestaurantMenu} />
               Recetas

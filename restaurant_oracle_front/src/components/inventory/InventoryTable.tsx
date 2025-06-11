@@ -12,7 +12,7 @@ import {
   Icon,
 } from '@chakra-ui/react';
 import { MdDeleteForever } from 'react-icons/md';
-import type { Inventory } from '../../types/inventory';
+import type { Inventory } from '../../interfaces/inventory';
 
 interface InventoryTableProps {
   inventario: Inventory[];
@@ -112,6 +112,9 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                       }
                     />
                   </Table.Cell>
+                  <Table.Cell>
+                    <Text>{(item.merma * 100).toFixed(0)}%</Text>
+                  </Table.Cell>
                   <Table.Cell display={{ base: 'none', lg: 'table-cell' }}>
                     <Text>
                       {item.ultima_reposicion
@@ -141,7 +144,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                     <Text>${item.precio.toFixed(2)}</Text>
                   </Table.Cell>
                   <Table.Cell>
-                  <Text>{(item.merma * 100).toFixed(0)}%</Text>
+                    <Text>{(item.merma * 100).toFixed(0)}%</Text>
                   </Table.Cell>
                   <Table.Cell display={{ base: 'none', lg: 'table-cell' }}>
                     <Text>

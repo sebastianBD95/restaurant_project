@@ -10,17 +10,15 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
-	"github.com/testcontainers/testcontainers-go"
 )
 
 func TestAddRestaurant(t *testing.T) {
-	postgresContainer, flyContainer := utils.SetUp()
-	mock := utils.NewMock()
-	router := mock.SetRoutes()
+	fixture := NewTestFixture(t)
+	defer fixture.TearDown()
 
 	var userID string
 
-	result := mock.Db.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+	result := fixture.Mock.Db.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
 		VALUES ('John Doe', 'john@example.com', '$2a$10$OadQYtj4KxIpkjOQ/zw62euZ00cLJDUmUGMJ5bdGU2TE1.6GwKsoa', 'admin', '1234567890')
 		RETURNING user_id`).Scan(&userID)
 	if result.Error != nil {
@@ -28,7 +26,7 @@ func TestAddRestaurant(t *testing.T) {
 	}
 
 	// Login to get token
-	token := utils.LoginAndGetToken(t, router, "john@example.com", "admin123")
+	token := utils.LoginAndGetToken(t, fixture.Router, "john@example.com", "admin123")
 
 	restaurantData := map[string]string{
 		"name":     "Test Restaurant",
@@ -42,31 +40,29 @@ func TestAddRestaurant(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
 
-	response := mock.ExecuteRequest(req, router)
+	response := fixture.Mock.ExecuteRequest(req, fixture.Router)
 	assert.Equal(t, http.StatusOK, response.Code)
 
 	var responseBody map[string]string
 	json.Unmarshal(response.Body.Bytes(), &responseBody)
 
 	assert.NotEmpty(t, responseBody["restaurant_id"])
-	utils.CleanUp([]testcontainers.Container{postgresContainer, flyContainer})
 }
 
 func TestDeleteRestaurant(t *testing.T) {
-	postgresContainer, flyContainer := utils.SetUp()
-	mock := utils.NewMock()
-	router := mock.SetRoutes()
+	fixture := NewTestFixture(t)
+	defer fixture.TearDown()
 
 	var userID, restaurantID string
 
-	result := mock.Db.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+	result := fixture.Mock.Db.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
 		VALUES ('John Doe', 'john@example.com', '$2a$10$OadQYtj4KxIpkjOQ/zw62euZ00cLJDUmUGMJ5bdGU2TE1.6GwKsoa', 'admin', '1234567890')
 		RETURNING user_id`).Scan(&userID)
 	if result.Error != nil {
 		log.Err(result.Error)
 	}
 
-	result = mock.Db.Raw(`INSERT INTO servu.restaurants (name, owner_id)
+	result = fixture.Mock.Db.Raw(`INSERT INTO servu.restaurants (name, owner_id)
 		VALUES ('Test Restaurant', ?) 
 		RETURNING restaurant_id`, userID).Scan(&restaurantID)
 	if result.Error != nil {
@@ -74,7 +70,7 @@ func TestDeleteRestaurant(t *testing.T) {
 	}
 
 	// Login to get token
-	token := utils.LoginAndGetToken(t, router, "john@example.com", "admin123")
+	token := utils.LoginAndGetToken(t, fixture.Router, "john@example.com", "admin123")
 
 	constStr := fmt.Sprintf("/restaurants/%s", restaurantID)
 
@@ -82,27 +78,25 @@ func TestDeleteRestaurant(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
 
-	response := mock.ExecuteRequest(req, router)
+	response := fixture.Mock.ExecuteRequest(req, fixture.Router)
 	assert.Equal(t, http.StatusNoContent, response.Code)
 
-	utils.CleanUp([]testcontainers.Container{postgresContainer, flyContainer})
 }
 
 func TestGetRestaurant(t *testing.T) {
-	postgresContainer, flyContainer := utils.SetUp()
-	mock := utils.NewMock()
-	router := mock.SetRoutes()
+	fixture := NewTestFixture(t)
+	defer fixture.TearDown()
 
 	var userID, restaurantID string
 
-	result := mock.Db.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+	result := fixture.Mock.Db.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
 		VALUES ('John Doe', 'john@example.com', '$2a$10$OadQYtj4KxIpkjOQ/zw62euZ00cLJDUmUGMJ5bdGU2TE1.6GwKsoa', 'admin', '1234567890')
 		RETURNING user_id`).Scan(&userID)
 	if result.Error != nil {
 		log.Err(result.Error)
 	}
 
-	result = mock.Db.Raw(`INSERT INTO servu.restaurants (name, owner_id)
+	result = fixture.Mock.Db.Raw(`INSERT INTO servu.restaurants (name, owner_id)
 		VALUES ('Test Restaurant', ?) 
 		RETURNING restaurant_id`, userID).Scan(&restaurantID)
 	if result.Error != nil {
@@ -110,7 +104,7 @@ func TestGetRestaurant(t *testing.T) {
 	}
 
 	// Login to get token
-	token := utils.LoginAndGetToken(t, router, "john@example.com", "admin123")
+	token := utils.LoginAndGetToken(t, fixture.Router, "john@example.com", "admin123")
 
 	constStr := fmt.Sprintf("/restaurants/%s", restaurantID)
 
@@ -118,30 +112,28 @@ func TestGetRestaurant(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
 
-	response := mock.ExecuteRequest(req, router)
+	response := fixture.Mock.ExecuteRequest(req, fixture.Router)
 	assert.Equal(t, http.StatusOK, response.Code)
 	var responseBody map[string]string
 	json.Unmarshal(response.Body.Bytes(), &responseBody)
 
 	assert.NotEmpty(t, responseBody["restaurant_id"])
-	utils.CleanUp([]testcontainers.Container{postgresContainer, flyContainer})
 }
 
 func TestUpdateRestaurant(t *testing.T) {
-	postgresContainer, flyContainer := utils.SetUp()
-	mock := utils.NewMock()
-	router := mock.SetRoutes()
+	fixture := NewTestFixture(t)
+	defer fixture.TearDown()
 
 	var userID, restaurantID string
 
-	result := mock.Db.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+	result := fixture.Mock.Db.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
 		VALUES ('John Doe', 'john@example.com', '$2a$10$OadQYtj4KxIpkjOQ/zw62euZ00cLJDUmUGMJ5bdGU2TE1.6GwKsoa', 'admin', '1234567890')
 		RETURNING user_id`).Scan(&userID)
 	if result.Error != nil {
 		log.Err(result.Error)
 	}
 
-	result = mock.Db.Raw(`INSERT INTO servu.restaurants (name, owner_id)
+	result = fixture.Mock.Db.Raw(`INSERT INTO servu.restaurants (name, owner_id)
 		VALUES ('Test Restaurant', ?) 
 		RETURNING restaurant_id`, userID).Scan(&restaurantID)
 	if result.Error != nil {
@@ -149,7 +141,7 @@ func TestUpdateRestaurant(t *testing.T) {
 	}
 
 	// Login to get token
-	token := utils.LoginAndGetToken(t, router, "john@example.com", "admin123")
+	token := utils.LoginAndGetToken(t, fixture.Router, "john@example.com", "admin123")
 
 	constStr := fmt.Sprintf("/restaurants/%s", restaurantID)
 	restaurantData := map[string]string{
@@ -163,8 +155,7 @@ func TestUpdateRestaurant(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
 
-	response := mock.ExecuteRequest(req, router)
+	response := fixture.Mock.ExecuteRequest(req, fixture.Router)
 	assert.Equal(t, http.StatusOK, response.Code)
 
-	utils.CleanUp([]testcontainers.Container{postgresContainer, flyContainer})
 }
