@@ -4,7 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"restaurant_manager/src/domain/models"
 	"restaurant_manager/tests/integration/utils"
 	"testing"
 
@@ -28,16 +32,31 @@ func TestAddRestaurant(t *testing.T) {
 	// Login to get token
 	token := utils.LoginAndGetToken(t, fixture.Router, "john@example.com", "admin123")
 
-	restaurantData := map[string]string{
-		"name":     "Test Restaurant",
-		"owner_id": userID,
-		"address":  "123 Main St",
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	writer.WriteField("name", "Test Restaurant")
+	writer.WriteField("description", "Test Description")
+	imageField, err := writer.CreateFormFile("image", "cafe.jpeg")
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	restaurantJSON, _ := json.Marshal(restaurantData)
+	// Open the actual JPEG file
+	f, err := os.Open("./resources/cafe.jpg")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
 
-	req, _ := http.NewRequest("POST", "/restaurants", bytes.NewBuffer(restaurantJSON))
-	req.Header.Set("Content-Type", "application/json")
+	// Copy the file bytes to the multipart writer
+	if _, err := io.Copy(imageField, f); err != nil {
+		t.Fatal(err)
+	}
+	writer.Close()
+
+	req, _ := http.NewRequest("POST", "/restaurants", body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
 	req.Header.Set("Authorization", "Bearer "+token)
 
 	response := fixture.Mock.ExecuteRequest(req, fixture.Router)
@@ -96,8 +115,8 @@ func TestGetRestaurant(t *testing.T) {
 		log.Err(result.Error)
 	}
 
-	result = fixture.Mock.Db.Raw(`INSERT INTO servu.restaurants (name, owner_id)
-		VALUES ('Test Restaurant', ?) 
+	result = fixture.Mock.Db.Raw(`INSERT INTO servu.restaurants (name, description, owner_id, image_url)
+		VALUES ('Test Restaurant', 'Test Description', ?, 'https://test.com') 
 		RETURNING restaurant_id`, userID).Scan(&restaurantID)
 	if result.Error != nil {
 		log.Err(result.Error)
@@ -106,18 +125,19 @@ func TestGetRestaurant(t *testing.T) {
 	// Login to get token
 	token := utils.LoginAndGetToken(t, fixture.Router, "john@example.com", "admin123")
 
-	constStr := fmt.Sprintf("/restaurants/%s", restaurantID)
-
-	req, _ := http.NewRequest("GET", constStr, nil)
+	req, _ := http.NewRequest("GET", "/restaurants", nil)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
 
 	response := fixture.Mock.ExecuteRequest(req, fixture.Router)
 	assert.Equal(t, http.StatusOK, response.Code)
-	var responseBody map[string]string
+	var responseBody []models.Restaurant
 	json.Unmarshal(response.Body.Bytes(), &responseBody)
 
-	assert.NotEmpty(t, responseBody["restaurant_id"])
+	assert.Equal(t, "Test Restaurant", responseBody[0].Name)
+	assert.Equal(t, "Test Description", responseBody[0].Description)
+	assert.Equal(t, "https://test.com", responseBody[0].ImageURL)
+	assert.Equal(t, userID, responseBody[0].OwnerID)
 }
 
 func TestUpdateRestaurant(t *testing.T) {
