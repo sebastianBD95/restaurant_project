@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"restaurant_manager/src/application/interfaces/handlers/dto"
 	"testing"
 
 	"github.com/rs/zerolog/log"
@@ -23,8 +24,8 @@ func TestCreateOrder(t *testing.T) {
 		log.Err(result.Error)
 	}
 
-	result = fixture.Mock.Db.Raw(`INSERT INTO servu.restaurants (name, owner_id)
-		VALUES ('Test Restaurant', ?) 
+	result = fixture.Mock.Db.Raw(`INSERT INTO servu.restaurants (name, owner_id, description, image_url)
+		VALUES ('Test Restaurant', ?, 'Test Description', 'https://test.com') 
 		RETURNING restaurant_id`, userID).Scan(&restaurantID)
 	if result.Error != nil {
 		log.Err(result.Error)
@@ -44,15 +45,22 @@ func TestCreateOrder(t *testing.T) {
 		log.Err(result.Error)
 	}
 
-	orderData := map[string]interface{}{
-		"table_id": tableID,
-		"status":   "ordered",
-		"items": []map[string]interface{}{
+	orderData := dto.OrderDTO{
+		TableID:      tableID,
+		Status:       "ordered",
+		RestaurantID: restaurantID,
+		Items: []dto.OrderItemDTO{
 			{
-				"menu_item_id": menuItemID,
-				"quantity":     "2",
+				MenuItemID:  menuItemID,
+				Name:        "Burger",
+				Quantity:    2,
+				Price:       10.99,
+				Status:      "pending",
+				Observation: "",
+				Image:       "https://www.google.com",
 			},
 		},
+		TotalPrice: 21.98,
 	}
 	orderJSON, _ := json.Marshal(orderData)
 
@@ -80,8 +88,8 @@ func TestDeleteOrder(t *testing.T) {
 		log.Err(result.Error)
 	}
 
-	result = fixture.Mock.Db.Raw(`INSERT INTO servu.restaurants (name, owner_id)
-		VALUES ('Test Restaurant', ?) 
+	result = fixture.Mock.Db.Raw(`INSERT INTO servu.restaurants (name, description, image_url, owner_id)
+		VALUES ('Test Restaurant', 'Test Description', 'https://test.com', ?) 
 		RETURNING restaurant_id`, userID).Scan(&restaurantID)
 	if result.Error != nil {
 		log.Err(result.Error)
@@ -101,15 +109,22 @@ func TestDeleteOrder(t *testing.T) {
 		log.Err(result.Error)
 	}
 
-	orderData := map[string]interface{}{
-		"table_id": tableID,
-		"status":   "ordered",
-		"items": []map[string]interface{}{
+	orderData := dto.OrderDTO{
+		TableID:      tableID,
+		Status:       "ordered",
+		RestaurantID: restaurantID,
+		Items: []dto.OrderItemDTO{
 			{
-				"menu_item_id": menuItemID,
-				"quantity":     "2",
+				MenuItemID:  menuItemID,
+				Name:        "Burger",
+				Quantity:    2,
+				Price:       10.99,
+				Status:      "pending",
+				Observation: "",
+				Image:       "https://www.google.com",
 			},
 		},
+		TotalPrice: 21.98,
 	}
 	orderJSON, _ := json.Marshal(orderData)
 
