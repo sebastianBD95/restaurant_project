@@ -162,10 +162,11 @@ const MenuForm: React.FC<MenuFormProps> = ({
 
   useEffect(() => {
     if (initialData && initialData.ingredients) {
+      console.log(initialData.ingredients);
       setIngredients(initialData.ingredients.map((ing: any) => ({
         raw_ingredient_id: ing.ingredient_id,
         name: ing.name,
-        quantity: ing.amount,
+        amount: ing.amount,
         unit: ing.unit,
         price: ing.price,
         merma: typeof ing.merma === 'number' ? ing.merma : 0
@@ -276,7 +277,7 @@ const MenuForm: React.FC<MenuFormProps> = ({
                               {ingredients.map((ingredient, index) => (
                                 <Box as="tr" key={index} borderBottom="1px" borderColor="gray.200">
                                   <Box as="td" p={2}>{ingredient.name}</Box>
-                                  <Box as="td" p={2} textAlign="right">{ingredient.quantity}</Box>
+                                  <Box as="td" p={2} textAlign="right">{ingredient.amount}</Box>
                                   <Box as="td" p={2}>{ingredient.unit}</Box>
                                   <Box as="td" p={2} textAlign="right">${(ingredient.price ?? 0).toFixed(2)}</Box>
                                 </Box>

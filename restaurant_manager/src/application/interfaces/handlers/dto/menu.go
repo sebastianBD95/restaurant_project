@@ -17,8 +17,10 @@ type IngredientSummary struct {
 	ID       string  `json:"ingredient_id"`
 	Name     string  `json:"name"`
 	Category string  `json:"category"`
+	Price    float64 `json:"price"`
 	Amount   float64 `json:"amount"`
 	Unit     string  `json:"unit"`
+	Merma    float64 `json:"merma"`
 }
 
 // FromMenuItems transforms a slice of MenuItem models to MenuItemResponse DTOs
@@ -53,8 +55,10 @@ func fromIngredients(ingredients []models.Ingredient) []IngredientSummary {
 				ID:       ing.RawIngredientID,
 				Name:     ing.RawIngredient.Name,
 				Category: ing.RawIngredient.Category,
+				Price:    ing.Price,
 				Amount:   ing.Amount,
 				Unit:     ing.Unit,
+				Merma:    ing.RawIngredient.Merma,
 			})
 		}
 	}

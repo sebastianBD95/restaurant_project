@@ -9,7 +9,7 @@ type Ingredient struct {
 	Unit            string  `gorm:"column:unit" json:"unit"`
 
 	// Relations
-	RawIngredient *RawIngredient `gorm:"foreignKey:RawIngredientID" json:"raw_ingredient"`
+	RawIngredient *RawIngredient `gorm:"foreignKey:RawIngredientID;references:ID" json:"raw_ingredient"`
 }
 
 const (
@@ -17,7 +17,7 @@ const (
 	UnitMilliliter = "ml"
 	UnitKilogram   = "kg"
 	UnitLiter      = "l"
-	UnitUnit       = "un"
+	UnitUnit       = "unidad"
 )
 
 func ValidUnits() []string {

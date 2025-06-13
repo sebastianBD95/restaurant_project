@@ -21,6 +21,10 @@ func (s *IngredientsService) GetIngredients() ([]*models.Ingredient, error) {
 	return s.repo.GetIngredients()
 }
 
+func (s *IngredientsService) DeleteIngredients(ingredients []models.Ingredient) error {
+	return s.repo.DeleteIngredients(ingredients)
+}
+
 func (s *IngredientsService) GetIngredientsByRestaurantID(restaurantID string) ([]models.RawIngredient, error) {
 	return s.repo.GetIngredientsByRestaurantID(restaurantID)
 }

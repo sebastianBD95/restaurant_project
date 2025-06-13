@@ -10,4 +10,5 @@ type MenuRepository interface {
 	UpdateMenuItem(menuItem *models.MenuItem) error
 	GetMenuItemsByRestaurantID(restaurantID string) ([]models.MenuItem, error)
 	GetMenuItemByID(menuItemID string) (*models.MenuItem, error)
+	WithTransaction(fn func(txRepo MenuRepository) error) error
 }

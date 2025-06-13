@@ -48,3 +48,9 @@ func (repo *MenuRepositoryImpl) GetMenuItemByID(menuItemID string) (*models.Menu
 	}
 	return &item, nil
 }
+
+func (repo *MenuRepositoryImpl) WithTransaction(fn func(txRepo repositories.MenuRepository) error) error {
+	return repo.db.Transaction(func(tx *gorm.DB) error {
+		return fn(repo)
+	})
+}

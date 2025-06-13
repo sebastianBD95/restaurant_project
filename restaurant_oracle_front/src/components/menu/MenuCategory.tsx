@@ -56,6 +56,7 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
   const [editingItem, setEditingItem] = useState<MenuItemResponse | undefined>(undefined);
 
   const handleEdit = async (item: MenuItemResponse) => {
+    console.log(item);
     setEditingItem(item);
     setFormData({
       name: item.name,
