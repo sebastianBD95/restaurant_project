@@ -78,6 +78,7 @@ CREATE TABLE servu.menu_items (
                                   description TEXT,
                                   price DECIMAL(10,2) NOT NULL,
                                   available BOOLEAN DEFAULT TRUE,
+                                  side_dishes INT DEFAULT 0,
                                   category VARCHAR(20) CHECK (category IN ('Appetizer', 'Dessert', 'Main','Soup','Salad','Drinks','Side')) NOT NULL,
                                   image_url TEXT
 );
@@ -95,7 +96,7 @@ CREATE TABLE servu.ingredients (
                                   raw_ingredient_id SERIAL REFERENCES servu.raw_ingredients(raw_ingredient_id),
                                   price DECIMAL(10,2) NOT NULL,
                                   amount DECIMAL(10,2) NOT NULL,
-                                  unit VARCHAR(20) CHECK (unit IN ('g', 'ml', 'kg', 'l', 'un')) NOT NULL
+                                  unit VARCHAR(20) CHECK (unit IN ('g', 'ml', 'kg', 'l', 'unit', 'spoon', 'tea_spoon', 'cup')) NOT NULL
 );
 
 -- Indexes for ingredients table
@@ -109,7 +110,7 @@ CREATE TABLE servu.inventories (
     restaurant_id UUID REFERENCES servu.restaurants(restaurant_id) ON DELETE CASCADE,
     raw_ingredient_id SERIAL REFERENCES servu.raw_ingredients(raw_ingredient_id),
     quantity DECIMAL(10,2) NOT NULL,
-    unit VARCHAR(20) CHECK (unit IN ('g', 'ml', 'kg', 'l', 'un')) NOT NULL,
+    unit VARCHAR(20) CHECK (unit IN ('g', 'ml', 'kg', 'l', 'unit', 'spoon', 'tea_spoon', 'cup')) NOT NULL,
     minimum_quantity DECIMAL(10,2) NOT NULL,
     last_restock_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     price DECIMAL(10,2) NOT NULL,

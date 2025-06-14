@@ -3,6 +3,7 @@ package services
 import (
 	"restaurant_manager/src/domain/models"
 	"restaurant_manager/src/domain/repositories"
+	"strings"
 )
 
 type OrderService struct {
@@ -65,28 +66,29 @@ func (s *OrderService) AddOrderItem(orderItem *models.OrderItem) (string, error)
 	var orderItemID string
 
 	err := s.repo.WithTransaction(func(txRepo repositories.OrderRepository) error {
-		order, err := s.repo.GetOrder(orderItem.OrderID)
+		order, _ := s.repo.GetOrder(orderItem.OrderID)
 		if order != nil {
 			// Existing order: add or update order item
 			itemExists := false
 			for _, item := range order.OrderItems {
-				if item.MenuItemID == orderItem.MenuItemID && item.Status == models.OrderItemStatus("pending") {
+				if item.MenuItemID == orderItem.MenuItemID && item.Status == models.OrderItemStatus("pending") && strings.EqualFold(*orderItem.Observation, *item.Observation) {
 					itemExists = true
 					orderItem.Quantity += item.Quantity
 					break
 				}
 			}
 			if itemExists {
-				err = s.repo.UpdateOrderItem(orderItem)
-				if err != nil {
-					return err
-				}
+				return s.updateOrderItemQuantity(orderItem)
 			} else {
 				menuItem, err := s.menuService.GetMenuItemByID(orderItem.MenuItemID)
 				if err != nil {
 					return err
 				}
-				orderItem.Price = menuItem.Price
+				if strings.Contains(*orderItem.Observation, "Guarnición") {
+					orderItem.Price = 0
+				} else {
+					orderItem.Price = menuItem.Price
+				}
 				orderItem.Status = models.OrderItemStatus("pending")
 				id, err := s.repo.AddOrderItem(orderItem)
 				if err != nil {
@@ -111,6 +113,15 @@ func (s *OrderService) AddOrderItem(orderItem *models.OrderItem) (string, error)
 	}
 
 	return orderItemID, nil
+}
+
+// updateOrderItemQuantity updates the quantity of an existing order item
+func (s *OrderService) updateOrderItemQuantity(orderItem *models.OrderItem) error {
+	err := s.repo.UpdateOrderItem(orderItem)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *OrderService) handleInventoryAndMenu(menuItemID string, quantity int) error {

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Box, Image, Text, Button, Textarea, Stack } from '@chakra-ui/react';
+import React, { useState, useMemo } from 'react';
+import { Box, Image, Text, Button, Textarea, Stack, Portal, createListCollection, Wrap, Badge, Select } from '@chakra-ui/react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -14,19 +14,19 @@ const formSchema = z.object({
     .refine(val => Number(val) > 0, { message: 'Debe ingresar una cantidad positiva.' }),
 });
 
-type FormValues = z.infer<typeof formSchema>;
 
 interface MenuItemProps {
   item: MenuItemResponse;
-  onAdd: (item: MenuItemResponse, quantity: number, observation: string) => void;
+  onAdd: (item: MenuItemResponse, quantity: number, observation: string, selectedSides: string[]) => void;
   orderPlaced: boolean;
   disabled: boolean;
   onEdit?: (item: MenuItemResponse) => void;
   onDelete?: (item: MenuItemResponse) => void;
   onHide?: (item: MenuItemResponse) => void;
+  allMenuItems: MenuItemResponse[];
 }
 
-const MenuItem: React.FC<MenuItemProps> = ({ item, onAdd, orderPlaced, disabled, onEdit, onDelete, onHide }) => {
+const MenuItem: React.FC<MenuItemProps> = ({ item, onAdd, orderPlaced, disabled, onEdit, onDelete, onHide, allMenuItems }) => {
   const {
     control,
     handleSubmit,
@@ -35,6 +35,15 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onAdd, orderPlaced, disabled,
     resolver: zodResolver(formSchema),
   });
   const [observation, setObservation] = useState('');
+  const [selectedSides, setSelectedSides] = useState<string[]>(Array(item.side_dishes).fill(''));
+
+  // Get available side dishes
+  const availableSides = allMenuItems.filter(mi => mi.category === 'Side');
+
+  const allSideItems = availableSides.map(side => ({
+    label: side.name,
+    value: side.menu_item_id,
+  }));
 
   return (
     <Box
@@ -95,6 +104,63 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onAdd, orderPlaced, disabled,
             />
           </CustomField>
 
+          {/* Side dish selection */}
+          {item.side_dishes > 0 && (
+            <CustomField
+              label={`Guarnición`}
+              helperText={`Puedes elegir hasta ${item.side_dishes} guarnición${item.side_dishes > 1 ? 'es' : ''} para este plato.`}
+            >
+              <Stack gap={2}>
+                {[...Array(item.side_dishes)].map((_, idx) => {
+                  const collection = createListCollection({ items: allSideItems });
+                  return (
+                    <Select.Root
+                      key={idx}
+                      collection={collection}
+                      size="sm"
+                      width="250px"
+                      value={selectedSides[idx] ? [selectedSides[idx]] : []}
+                      onValueChange={({ value }) => {
+                        const newSides = [...selectedSides];
+                        newSides[idx] = value[0] || '';
+                        setSelectedSides(newSides);
+                      }}
+                      disabled={disabled}
+                    >
+                      <Select.HiddenSelect />
+                      <Select.Control>
+                        <Select.Trigger>
+                          <Select.ValueText placeholder={`Guarnición ${idx + 1}`} />
+                        </Select.Trigger>
+                        <Select.IndicatorGroup>
+                          <Select.Indicator />
+                        </Select.IndicatorGroup>
+                      </Select.Control>
+                      <Portal>
+                        <Select.Positioner>
+                          <Select.Content>
+                            {allSideItems.length === 0 ? (
+                              <Select.Item item={{ label: 'No hay guarniciones', value: 'none' }} key="none">
+                                No hay guarniciones
+                              </Select.Item>
+                            ) : (
+                              allSideItems.map((item) => (
+                                <Select.Item item={item} key={item.value}>
+                                  {item.label}
+                                  <Select.ItemIndicator />
+                                </Select.Item>
+                              ))
+                            )}
+                          </Select.Content>
+                        </Select.Positioner>
+                      </Portal>
+                    </Select.Root>
+                  );
+                })}
+              </Stack>
+            </CustomField>
+          )}
+
           <Textarea
             placeholder="Observaciones para este plato..."
             value={observation}
@@ -107,7 +173,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onAdd, orderPlaced, disabled,
           <Button
             mt={3}
             colorScheme="blue"
-            onClick={handleSubmit((data) => onAdd(item, Number(data.quantity), observation))}
+            onClick={handleSubmit((data) => onAdd(item, Number(data.quantity), observation, selectedSides))}
           >
             Agregar al Pedido
           </Button>

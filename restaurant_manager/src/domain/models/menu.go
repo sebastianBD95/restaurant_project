@@ -7,6 +7,7 @@ type MenuItem struct {
 	Description  string   `gorm:"column:description" json:"description"`
 	Price        float64  `gorm:"column:price" json:"price"`
 	Available    bool     `gorm:"column:available" json:"available"`
+	SideDishes   int      `gorm:"column:side_dishes" json:"side_dishes"`
 	ImageURL     string   `gorm:"column:image_url" json:"image_url"`
 	Category     Category `gorm:"column:category" json:"category"`
 	// Relations
@@ -22,4 +23,5 @@ const (
 	Soup      Category = "Soup"
 	Salad     Category = "Salad"
 	Drinks    Category = "Drinks"
+	Side      Category = "Side"
 )

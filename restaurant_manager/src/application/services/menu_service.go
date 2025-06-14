@@ -38,7 +38,28 @@ func (s *MenuService) DeleteMenuItem(menuItemID string) error {
 }
 
 func (s *MenuService) UpdateMenuItem(menuItem *models.MenuItem) error {
-	return s.repo.UpdateMenuItem(menuItem)
+	err := s.repo.WithTransaction(func(txRepo repositories.MenuRepository) error {
+		menuItemOld, err := s.repo.GetMenuItemByID(menuItem.MenuItemID)
+		if err != nil {
+			return err
+		}
+		for i := range menuItemOld.Ingredients {
+			menuItemOld.Ingredients[i].MenuItemID = menuItem.MenuItemID
+		}
+		err = s.ingredientService.DeleteIngredients(menuItemOld.Ingredients)
+		if err != nil {
+			return err
+		}
+		for i := range menuItem.Ingredients {
+			menuItem.Ingredients[i].MenuItemID = menuItem.MenuItemID
+		}
+		_, err = s.ingredientService.CreateIngredients(menuItem.Ingredients)
+		if err != nil {
+			return err
+		}
+		return txRepo.UpdateMenuItem(menuItem)
+	})
+	return err
 }
 
 func (s *MenuService) GetMenuItemsByRestaurantID(restaurantID string) ([]models.MenuItem, error) {

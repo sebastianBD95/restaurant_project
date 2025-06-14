@@ -5,6 +5,7 @@ export interface MenuItemRequest  {
     image: File;
     category: string;
     ingredients: Ingredient[];
+    side_dishes: number;
   };
 
 export interface MenuItemResponse  {
@@ -16,6 +17,7 @@ export interface MenuItemResponse  {
     available: boolean;
     image_url: string;
     category: string;
+    side_dishes: number;
     ingredients: {
       ingredient_id: string;
       menu_item_id: string;
@@ -32,4 +34,7 @@ export interface MenuData  {
     platoFuerte: MenuItemResponse[];
     postres: MenuItemResponse[];
     bebidas: MenuItemResponse[];
+    sopas: MenuItemResponse[];
+    ensaladas: MenuItemResponse[];
+    extras: MenuItemResponse[];
   };

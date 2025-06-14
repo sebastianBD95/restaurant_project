@@ -43,3 +43,14 @@ func (repo *IngredientRepository) GetIngredientsByRestaurantID(restaurantID stri
 
 	return rawIngredients, result.Error
 }
+func (repo *IngredientRepository) DeleteIngredients(ingredients []models.Ingredient) error {
+
+	for _, ingredient := range ingredients {
+		result := repo.db.Clauses(clause.Returning{}).Delete(&ingredient).
+			Where("ingredient_id = ?", ingredient.IngredientID)
+		if result.Error != nil {
+			return result.Error
+		}
+	}
+	return nil
+}

@@ -7,6 +7,7 @@ interface BasicInfoFormProps {
     name: string;
     description: string;
     price: number;
+    sideDishes: number;
   };
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -15,6 +16,7 @@ interface BasicInfoFormProps {
     description: boolean;
     price: boolean;
     image: boolean;
+    sideDishes: boolean;
   };
   imagePreview: string | null;
   initialData?: any;
@@ -68,6 +70,20 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             type="number"
             min="0"
             step="0.01"
+          />
+        </CustomField>
+        <CustomField
+          label="Número de guarniciones"
+          errorText={errors.sideDishes ? "Ingrese un número válido." : undefined}
+        >
+          <Input
+            placeholder="Número de guarniciones"
+            value={formData.sideDishes}
+            onChange={handleChange}
+            name="sideDishes"
+            type="number"
+            min="0"
+            step="1"
           />
         </CustomField>
         <CustomField

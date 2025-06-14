@@ -4,6 +4,7 @@ import { CustomField } from '../ui/field';
 import { Ingredient } from '../../interfaces/ingredients';
 import { getRawIngredientsByCategory } from '../../services/rawIngredientService';
 import { getCookie } from '../../pages/utils/cookieManager';
+import { toaster } from '../ui/toaster';
 
 const categories = [
   'Pollo', 'Fruta', 'Lácteo', 'Res', 'Cerdo', 'Condimento', 'Cereal', 'Pescado',
@@ -22,7 +23,7 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
   const [currentIngredient, setCurrentIngredient] = useState<Ingredient>({
     raw_ingredient_id: '',
     name: '',
-    quantity: 0,
+    amount: 0,
     unit: 'g',
     price: 0,
     merma: 0
@@ -33,7 +34,7 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
   const [fetchError, setFetchError] = useState('');
   const [errors, setErrors] = useState({
     name: false,
-    quantity: false,
+    amount: false,
     price: false
   });
 
@@ -61,7 +62,7 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
     const { name, value } = e.target;
     setCurrentIngredient(prev => ({
       ...prev,
-      [name]: name === 'quantity' || name === 'price' ? Number(value) || 0 : value
+      [name]: name === 'amount' || name === 'price' ? Number(value) || 0 : value
     }));
     setErrors(prev => ({ ...prev, [name]: false }));
   };
@@ -89,7 +90,7 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
   const validateIngredient = () => {
     const newErrors = {
       name: !currentIngredient.raw_ingredient_id,
-      quantity: !currentIngredient.quantity || currentIngredient.quantity <= 0,
+      amount: !currentIngredient.amount || currentIngredient.amount <= 0,
       price: !currentIngredient.price || currentIngredient.price <= 0
     };
     setErrors(newErrors);
@@ -103,12 +104,21 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
       setCurrentIngredient({
         raw_ingredient_id: '',
         name: '',
-        quantity: 0,
+        amount: 0,
         unit: 'g',
         price: 0,
         merma: 0
       });
-      setErrors({ name: false, quantity: false, price: false });
+      setErrors({ name: false, amount: false, price: false });
+    }else{
+      toaster.create({
+        title: 'Error',
+        description: errors.name ? "Este campo es obligatorio." 
+        : errors.amount ? "La cantidad debe ser mayor a 0." 
+        : errors.price ? "El precio debe ser mayor a 0." : "",
+        type: 'error',
+        duration: 5000,
+      });
     }
   };
 
@@ -177,13 +187,13 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
           <CustomField
             label="Cantidad"
             required
-            errorText={errors.quantity ? "La cantidad debe ser mayor a 0." : undefined}
+            errorText={errors.amount ? "La cantidad debe ser mayor a 0." : undefined}
           >
             <Input
               placeholder="Cantidad"
-              value={currentIngredient.quantity}
+              value={currentIngredient.amount}
               onChange={handleIngredientChange}
-              name="quantity"
+              name="amount"
               type="number"
               min="0"
               step="0.01"
@@ -208,10 +218,10 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
               <option value="kg">kilogramos (kg)</option>
               <option value="ml">mililitros (ml)</option>
               <option value="l">litros (l)</option>
-              <option value="unidad">unidad</option>
-              <option value="cucharada">cucharada</option>
-              <option value="cucharadita">cucharadita</option>
-              <option value="taza">taza</option>
+              <option value="unit">unidad</option>
+              <option value="spoon">cucharada</option>
+              <option value="tea_spoon">cucharadita</option>
+              <option value="cup">taza</option>
             </select>
           </CustomField>
           <CustomField label="Merma (%)">
@@ -266,14 +276,14 @@ const IngredientsForm: React.FC<IngredientsFormProps> = ({
                   alignItems="center"
                 >
                   <GridItem style={{ whiteSpace: 'nowrap', minWidth: 120 }}>{ingredient.name}</GridItem>
-                  <GridItem textAlign="right">{ingredient.quantity}</GridItem>
+                  <GridItem textAlign="right">{ingredient.amount}</GridItem>
                   <GridItem>{ingredient.unit}</GridItem>
                   <GridItem textAlign="right">
                     {ingredient.merma !== undefined ? ((ingredient.merma ?? 0) * 100).toFixed(2) : ''}
                   </GridItem>
                   <GridItem textAlign="right">
-                    {ingredient.quantity && ingredient.merma !== undefined
-                      ? ((ingredient.quantity ?? 0) * (1 - (ingredient.merma ?? 0))).toFixed(2)
+                    {ingredient.amount && ingredient.merma !== undefined
+                      ? ((ingredient.amount ?? 0) * (1 - (ingredient.merma ?? 0))).toFixed(2)
                       : ''}
                   </GridItem>
                   <GridItem textAlign="right">${(ingredient.price ?? 0).toFixed(2)}</GridItem>
