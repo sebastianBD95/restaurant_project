@@ -78,6 +78,7 @@ CREATE TABLE servu.menu_items (
                                   description TEXT,
                                   price DECIMAL(10,2) NOT NULL,
                                   available BOOLEAN DEFAULT TRUE,
+                                  side_dishes INT DEFAULT 0,
                                   category VARCHAR(20) CHECK (category IN ('Appetizer', 'Dessert', 'Main','Soup','Salad','Drinks','Side')) NOT NULL,
                                   image_url TEXT
 );

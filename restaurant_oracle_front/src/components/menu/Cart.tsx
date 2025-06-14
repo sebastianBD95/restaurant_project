@@ -15,6 +15,7 @@ interface CartItem {
   price: number;
   quantity: number;
   observation: string;
+  selectedSides?: string[];
 }
 
 interface CartProps {
@@ -26,6 +27,7 @@ interface CartProps {
   setObservations: (value: string) => void;
   updateCartQuantity: (id: string, newQuantity: number) => void;
   placeOrder: () => Promise<void>;
+  allMenuItems: MenuItemResponse[];
 }
 
 const Cart: React.FC<CartProps> = ({
@@ -37,6 +39,7 @@ const Cart: React.FC<CartProps> = ({
   setObservations,
   updateCartQuantity,
   placeOrder,
+  allMenuItems,
 }) => {
   const { restaurantId } = useParams();
   const { tables, loading: tablesLoading, error: tablesError, fetchTables } = useTables(restaurantId);
@@ -87,29 +90,48 @@ const Cart: React.FC<CartProps> = ({
       {cart.length === 0 ? (
         <Text>No has agregado ningún plato.</Text>
       ) : (
-        cart.map((item) => (
-          <Box
-            key={item.menu_item_id}
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            mb={2}
-          >
-            <Text>
-              {item.quantity} - {item.name} - ${item.price * item.quantity} - {item.observation}
-            </Text>
-            {!orderPlaced && (
-              <Box display="flex" alignItems="center">
-                <StepperInput
-                  key={item.menu_item_id}
-                  name={item.menu_item_id}
-                  value={item.quantity.toString()}
-                  onValueChange={(e: { value: string }) => updateCartQuantity(item.menu_item_id, Number(e.value))}
-                />
+        cart.map((item) => {
+          // Get side dish names if present
+          const sideDishes = item.selectedSides && item.selectedSides.length > 0
+            ? item.selectedSides
+                .map((sideId: string) => {
+                  const side = allMenuItems.find(mi => mi.menu_item_id === sideId);
+                  return side ? side.name : null;
+                })
+                .filter(Boolean)
+            : [];
+
+          return (
+            <Box
+              key={item.menu_item_id + (item.selectedSides ? item.selectedSides.join(',') : '')}
+              display="flex"
+              flexDirection="column"
+              mb={2}
+            >
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Text>
+                  {item.quantity} - {item.name} - ${item.price * item.quantity} - {item.observation}
+                </Text>
+                {!orderPlaced && (
+                  <Box display="flex" alignItems="center">
+                    <StepperInput
+                      key={item.menu_item_id}
+                      name={item.menu_item_id}
+                      value={item.quantity.toString()}
+                      onValueChange={(e: { value: string }) => updateCartQuantity(item.menu_item_id, Number(e.value))}
+                    />
+                  </Box>
+                )}
               </Box>
-            )}
-          </Box>
-        ))
+              {/* Show side dishes if any */}
+              {sideDishes.length > 0 && (
+                <Text fontSize="sm" color="gray.600" ml={2}>
+                  Guarniciones: {sideDishes.join(', ')}
+                </Text>
+              )}
+            </Box>
+          );
+        })
       )}
 
       <Text fontSize="lg" fontWeight="bold" mt={3}>

@@ -30,6 +30,35 @@ const OrderCard: React.FC<OrderCardProps> = ({
   onUpdateOrderItem,
   onAddDishes,
 }) => {
+  // Group items
+  const mainDishes = order.items.filter((item: OrderItem) =>
+    item.status !== 'cancelled' && item.price > 0 && (!item.observation || !item.observation.startsWith('Guarnición de '))
+  );
+  const sideDishes = order.items.filter((item: OrderItem) =>
+    item.status !== 'cancelled' && item.price === 0 && item.observation && item.observation.startsWith('Guarnición de ')
+  );
+  const extras = order.items.filter((item: OrderItem) =>
+    item.status !== 'cancelled' &&
+    item.price > 0 &&
+    (!mainDishes.includes(item)) &&
+    (!sideDishes.includes(item))
+  );
+
+  // Cancel main dish and its side dishes
+  const handleCancelWithSides = (mainItem: OrderItem) => {
+    onCancelItem(order.order_id, mainItem.menu_item_id, mainItem.observation);
+    order.items
+      .filter(
+        (item) =>
+          item.price === 0 &&
+          item.observation === `Guarnición de ${mainItem.name}` &&
+          item.status !== 'cancelled'
+      )
+      .forEach((side) => {
+        onCancelItem(order.order_id, side.menu_item_id, side.observation);
+      });
+  };
+
   return (
     <Box
       className={`card${highlight ? ' card-highlight' : ''}`}
@@ -47,44 +76,70 @@ const OrderCard: React.FC<OrderCardProps> = ({
       </Text>
       <Box borderBottom="1px solid #E2E8F0" mb={3} />
       <Box mb={3}>
-        {order.items
-          .filter((item: OrderItem) => item.status !== 'cancelled')
-          .map((item: OrderItem, idx: number) => (
-            <Flex key={idx} align="center" mb={1} direction={{ base: 'column', sm: 'row' }} gap={1}>
+        {/* Main dishes and their side dishes */}
+        {mainDishes.map((main, idx) => (
+          <Box key={idx} mb={1}>
+            <Flex align="center" direction={{ base: 'column', sm: 'row' }} gap={1}>
               <Text flex={1} fontSize={{ base: 'sm', md: 'md' }}>
-                <b>{item.quantity}x {item.name}</b> <span style={{ color: '#718096' }}>- ${item.price * item.quantity}</span>
-                {item.observation && (
-                  <Text as="span" color="gray.500" fontSize="sm"> - {item.observation}</Text>
+                <b>{main.quantity}x {main.name}</b> <span style={{ color: '#718096' }}>- ${main.price * main.quantity}</span>
+                {main.observation && (
+                  <Text as="span" color="gray.500" fontSize="sm"> - {main.observation}</Text>
                 )}
               </Text>
-              {item.status === 'void' && (
+              {main.status === 'void' && (
                 <Badge colorScheme="yellow" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }}>Anulado</Badge>
               )}
-              {item.status === 'prepared' && (
+              {main.status === 'prepared' && (
                 <>
-                  <Button size="xs" colorPalette="green" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onUpdateOrderItem(order.order_id, item.menu_item_id, item.observation, 'completed')}>
+                  <Button size="xs" colorPalette="green" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onUpdateOrderItem(order.order_id, main.menu_item_id, main.observation, 'completed')}>
                     Entregado
                   </Button>
-                  <Button size="xs" colorPalette="yellow" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onVoidItem(order.order_id, item.menu_item_id, item.observation)}>
+                  <Button size="xs" colorPalette="yellow" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onVoidItem(order.order_id, main.menu_item_id, main.observation)}>
                     Anular
                   </Button>
-                  <Button size="xs" colorPalette="blue" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onUpdateOrderItem(order.order_id, item.menu_item_id, item.observation, 'pending')}>
+                  <Button size="xs" colorPalette="blue" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onUpdateOrderItem(order.order_id, main.menu_item_id, main.observation, 'pending')}>
                     Pendiente
                   </Button>
                 </>
               )}
-              {(item.status === 'ordered' || item.status === 'pending') && (
+              {(main.status === 'ordered' || main.status === 'pending') && (
                 <>
-                  <Button size="xs" colorPalette="blue" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onUpdateOrderItem(order.order_id, item.menu_item_id, item.observation, 'prepared')}>
+                  <Button size="xs" colorPalette="blue" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onUpdateOrderItem(order.order_id, main.menu_item_id, main.observation, 'prepared')}>
                     Preparado
                   </Button>
-                  <Button size="xs" colorPalette="red" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => onCancelItem(order.order_id, item.menu_item_id, item.observation)}>
+                  <Button size="xs" colorPalette="red" ml={{ base: 0, sm: 2 }} mt={{ base: 1, sm: 0 }} onClick={() => handleCancelWithSides(main)}>
                     Cancelar
                   </Button>
                 </>
               )}
             </Flex>
-          ))}
+            {/* Side dishes for this main dish */}
+            {sideDishes
+              .filter(sd => sd.observation === `Guarnición de ${main.name}`)
+              .map((sd, sidx) => (
+                <Flex key={sidx} align="center" ml={6} gap={1}>
+                  <Badge colorScheme="purple" mr={2}>Guarnición</Badge>
+                  <Text fontSize="sm" color="gray.700">
+                    {sd.quantity}x {sd.name}
+                  </Text>
+                </Flex>
+              ))}
+          </Box>
+        ))}
+        {/* Extras section */}
+        {extras.length > 0 && (
+          <Box mt={3}>
+            <Text fontWeight="bold" color="gray.700" mb={1}>Extras:</Text>
+            {extras.map((extra, eidx) => (
+              <Flex key={eidx} align="center" ml={2} gap={1}>
+                <Badge colorScheme="yellow" mr={2}>Extra</Badge>
+                <Text fontSize="sm">
+                  {extra.quantity}x {extra.name}
+                </Text>
+              </Flex>
+            ))}
+          </Box>
+        )}
       </Box>
       <Box borderBottom="1px solid #E2E8F0" mb={3} />
       <Stack 

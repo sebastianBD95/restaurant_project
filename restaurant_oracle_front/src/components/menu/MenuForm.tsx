@@ -20,8 +20,9 @@ interface MenuFormProps {
     name: string;
     description: string;
     price: number;
+    sideDishes: number;
   };
-  setFormData: (data: { name: string; description: string; price: number }) => void;
+  setFormData: (data: { name: string; description: string; price: number; sideDishes: number }) => void;
   file: File | null;
   setFile: (file: File | null) => void;
   ingredients: Ingredient[];
@@ -52,6 +53,7 @@ const MenuForm: React.FC<MenuFormProps> = ({
     description: false,
     price: false,
     image: false,
+    sideDishes: false,
   });
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -129,6 +131,7 @@ const MenuForm: React.FC<MenuFormProps> = ({
       price: !formData.price || formData.price <= 0,
       image: !file && !initialData,
       ingredients: !ingredients,
+      sideDishes: false,
     };
     setErrors(newErrors);
     if (Object.values(newErrors).some(Boolean)) return;
@@ -138,6 +141,7 @@ const MenuForm: React.FC<MenuFormProps> = ({
         name: '',
         description: '',
         price: 0,
+        sideDishes: 0,
       });
       setFile(null);
       setImagePreview(null);
@@ -173,6 +177,17 @@ const MenuForm: React.FC<MenuFormProps> = ({
       })));
     }
   }, [initialData, setIngredients]);
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        name: initialData.name,
+        description: initialData.description,
+        price: initialData.price,
+        sideDishes: initialData.side_dishes || 0,
+      });
+    }
+  }, [initialData]);
 
   const steps = [
     {
@@ -252,6 +267,10 @@ const MenuForm: React.FC<MenuFormProps> = ({
                               <Box as="td" p={2} borderBottom="1px" borderColor="gray.200">{categoryMap[category]}</Box>
                             </Box>
                             <Box as="tr">
+                              <Box as="td" p={2} borderBottom="1px" borderColor="gray.200">Guarniciones:</Box>
+                              <Box as="td" p={2} borderBottom="1px" borderColor="gray.200">{formData.sideDishes}</Box>
+                            </Box>
+                            <Box as="tr">
                               <Box as="td" p={2} borderBottom="1px" borderColor="gray.200">Imagen:</Box>
                               <Box as="td" p={2} borderBottom="1px" borderColor="gray.200">
                                 {file ? file.name : initialData?.image_url ? 'Imagen existente' : 'No se ha seleccionado imagen'}
@@ -313,11 +332,12 @@ const MenuForm: React.FC<MenuFormProps> = ({
                           name: '',
                           description: '',
                           price: 0,
+                          sideDishes: 0,
                         });
                         setFile(null);
                         setImagePreview(null);
                         setIsOpen?.(false);
-                        setErrors({ name: false, description: false, price: false, image: false });
+                        setErrors({ name: false, description: false, price: false, image: false, sideDishes: false });
                         setIngredients([]);
                       }}
                     >

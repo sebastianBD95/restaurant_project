@@ -10,6 +10,7 @@ type MenuItemResponse struct {
 	Available   bool                `json:"available"`
 	ImageURL    string              `json:"image_url"`
 	Category    string              `json:"category"`
+	SideDishes  int                 `json:"side_dishes"`
 	Ingredients []IngredientSummary `json:"ingredients"`
 }
 
@@ -41,6 +42,7 @@ func FromMenuItem(menu models.MenuItem) MenuItemResponse {
 		Price:       menu.Price,
 		Available:   menu.Available,
 		ImageURL:    menu.ImageURL,
+		SideDishes:  menu.SideDishes,
 		Category:    string(menu.Category),
 		Ingredients: fromIngredients(menu.Ingredients),
 	}

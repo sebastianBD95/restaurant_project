@@ -16,20 +16,22 @@ interface MenuCategoryProps {
   onSubmit: (e: React.FormEvent, category: string, ingredients: Ingredient[], item?: MenuItemResponse) => Promise<void>;
   error: string;
   MAX_FILE_SIZE: number;
-  onAddToCart: (item: MenuItemResponse, quantity: number, observation: string) => void;
+  onAddToCart: (item: MenuItemResponse, quantity: number, observation: string, selectedSides: string[]) => void;
   orderPlaced: boolean;
   platoDisponible: (platoName: string) => boolean;
   formData: {
     name: string;
     description: string;
     price: number;
+    sideDishes: number;
   };
-  setFormData: (data: { name: string; description: string; price: number }) => void;
+  setFormData: (data: { name: string; description: string; price: number; sideDishes: number }) => void;
   file: File | null;
   setFile: (file: File | null) => void;
   onMenuUpdate: () => Promise<void>;
   ingredients: Ingredient[];
   setIngredients: (ingredients: Ingredient[]) => void;
+  allMenuItems: MenuItemResponse[];
 }
 
 const MenuCategory: React.FC<MenuCategoryProps> = ({
@@ -48,7 +50,8 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
   setFile,
   onMenuUpdate,
   ingredients,
-  setIngredients
+  setIngredients,
+  allMenuItems
 }) => {
   const token = getCookie(document.cookie, 'token');
   const restaurantId = window.location.pathname.split('/').find((v, i, arr) => arr[i-1] === 'menu') || '';
@@ -59,9 +62,10 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
     console.log(item);
     setEditingItem(item);
     setFormData({
-      name: item.name,
+      name: item.name,  
       description: item.description,
       price: item.price,
+      sideDishes: item.side_dishes,
     });
     setIsFormOpen(true);
   };
@@ -72,6 +76,7 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
       name: '',
       description: '',
       price: 0,
+      sideDishes: 0,
     });
     setIsFormOpen(false);
   };
@@ -176,6 +181,7 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onHide={handleHide}
+                allMenuItems={allMenuItems}
               />
             ))
           }

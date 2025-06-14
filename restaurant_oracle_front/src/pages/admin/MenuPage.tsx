@@ -18,13 +18,8 @@ import {
   Flex,
   Spinner
 } from '@chakra-ui/react';
-import { NumberInputField, NumberInputRoot } from '../../components/ui/number-input';
 import { useEffect, useState, useRef } from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { CustomField } from '../../components/ui/field';
-import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { StepperInput } from '../../components/ui/stepper-input';
 import { useNavigate } from 'react-router-dom';
 import '../styles/MenuPage.css';
 import { MenuData, MenuItemRequest, MenuItemResponse } from '../../interfaces/menuItems';
@@ -51,6 +46,7 @@ const categoryMap: Record<string, string> = {
   'platoFuerte': 'Main',
   postres: 'Desserts',
   bebidas: 'Drinks',
+  extras: 'Side',
 };
 
 const MenuPage: React.FC = () => {
@@ -59,6 +55,9 @@ const MenuPage: React.FC = () => {
     platoFuerte: [],
     postres: [],
     bebidas: [],
+    sopas: [],
+    ensaladas: [],
+    extras: [],
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -75,6 +74,7 @@ const MenuPage: React.FC = () => {
     name: '',
     description: '',
     price: 0,
+    sideDishes: 0,
   });
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
@@ -108,13 +108,22 @@ const MenuPage: React.FC = () => {
       const mainCourses = menuItems.filter(item => item.category === 'Main');
       const desserts = menuItems.filter(item => item.category === 'Desserts');
       const drinks = menuItems.filter(item => item.category === 'Drinks');
+      const soups = menuItems.filter(item => item.category === 'Soup');
+      const salads = menuItems.filter(item => item.category === 'Salad');
+      const sides = menuItems.filter(item => item.category === 'Side');
       
       setMenuData({
         entrada: appetizers,
         platoFuerte: mainCourses,
         postres: desserts,
         bebidas: drinks,
+        sopas: soups,
+        ensaladas: salads,
+        extras: sides,
       });
+
+      // After menuData is set, create a flat array of all menu items
+      const allMenuItems: MenuItemResponse[] = Object.values(menuData).flat();
 
     } catch (error) {
       toaster.create({
@@ -166,6 +175,7 @@ const MenuPage: React.FC = () => {
       description: formData.description,
       image: file || new File([], ''),
       price: Number(formData.price),
+      side_dishes: Number(formData.sideDishes),
       category: categoryMap[category],
       ingredients: ingredients
     };
@@ -194,6 +204,7 @@ const MenuPage: React.FC = () => {
         name: '',
         description: '',
         price: 0,
+        sideDishes: 0,
       });
       
       await fetchMenuItems();
@@ -203,15 +214,16 @@ const MenuPage: React.FC = () => {
     }
   };
 
-  const addToCart = (item: MenuItemResponse, quantity: number, observation: string) => {
+  const addToCart = (item: MenuItemResponse, quantity: number, observation: string, selectedSides: string[] = []) => {
     const obs = observation.trim() === '' ? 'No observation' : observation.trim();
     if (quantity > 0) {
       setCart((prevCart) => {
-        // Find if an item with the same menu_item_id and observation exists
+        // Find if an item with the same menu_item_id, observation, and selectedSides exists
         const existingItemIndex = prevCart.findIndex(
           (cartItem) =>
             cartItem.menu_item_id === item.menu_item_id &&
-            cartItem.observation.trim() === obs
+            cartItem.observation.trim() === obs &&
+            JSON.stringify(cartItem.selectedSides || []) === JSON.stringify(selectedSides)
         );
         if (existingItemIndex !== -1) {
           // Increment quantity for the matching item
@@ -222,7 +234,7 @@ const MenuPage: React.FC = () => {
           );
         } else {
           // Add new item
-          return [...prevCart, { ...item, quantity, observation: obs }];
+          return [...prevCart, { ...item, quantity, observation: obs, selectedSides }];
         }
       });
     }
@@ -260,18 +272,33 @@ const MenuPage: React.FC = () => {
     }
 
     try {
-      const orderData = {
-        table_id: tableNumber,
-        restaurant_id: restaurantId,
-        status: 'ordered',
-        items: cart.map(item => ({
+      // Build the order items array
+      const items = cart.flatMap(item => {
+        // Main dish
+        const main = {
           menu_item_id: item.menu_item_id,
           quantity: item.quantity,
           observation: item.observation,
           price: item.price
-        })),
-        total_price: totalCost
+        };
+        // Side dishes (each as a separate item, price 0)
+        const sides = (item.selectedSides || []).map((sideId: string) => ({
+          menu_item_id: sideId,
+          quantity: item.quantity,
+          observation: `Guarnición de ${item.name}`,
+          price: 0
+        }));
+        return [main, ...sides];
+      });
+
+      const orderData = {
+        table_id: tableNumber,
+        restaurant_id: restaurantId,
+        status: 'ordered',
+        items,
+        total_price: totalCost // This will still be the sum of main dishes only
       };
+
       await placeOrderService(orderData);
       toaster.create({
         title: 'Pedido realizado con éxito',
@@ -361,6 +388,7 @@ const MenuPage: React.FC = () => {
                     onMenuUpdate={fetchMenuItems}
                     ingredients={ingredients}
                     setIngredients={setIngredients}
+                    allMenuItems={Object.values(menuData).flat()}
                   />
                 ))}
               </Accordion.Root>
@@ -374,6 +402,7 @@ const MenuPage: React.FC = () => {
                 setObservations={setObservations}
                 updateCartQuantity={updateCartQuantity}
                 placeOrder={placeOrder}
+                allMenuItems={Object.values(menuData).flat()}
               />
             </>
           )}

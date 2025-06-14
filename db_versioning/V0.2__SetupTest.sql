@@ -216,17 +216,34 @@ VALUES
 INSERT INTO servu.menu_items (menu_item_id, restaurant_id, name, description, price, available, category, image_url)
 VALUES
   ('ccccccc1-cccc-cccc-cccc-ccccccccccc1', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'Bife a la Criolla', 'Bife a la criolla con papas fritas y ensalada', 50000, TRUE, 'Main', 'https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/bife.jpg'),
-  ('ccccccc2-cccc-cccc-cccc-ccccccccccc2', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'Pasta Alfredo', 'Pasta Alfredo con champiñones y queso', 25000, TRUE, 'Main', 'https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/Alfredo.jpg');
+  ('ccccccc2-cccc-cccc-cccc-ccccccccccc2', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'Pasta Alfredo', 'Pasta Alfredo con champiñones y queso', 25000, TRUE, 'Main', 'https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/Alfredo.jpg'),
+  ('ccccccc3-cccc-cccc-cccc-ccccccccccc3', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'Papas Fritas', 'Porción de papas fritas crujientes', 8000, TRUE, 'Side', 'https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/papas_fritas.jpg'),
+  ('ccccccc4-cccc-cccc-cccc-ccccccccccc4', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'Ensalada César', 'Lechuga romana, crutones, queso parmesano y aderezo césar', 12000, TRUE, 'Side', 'https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/ensalada_cesar.jpg'),
+  ('ccccccc5-cccc-cccc-cccc-ccccccccccc5', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'Arroz con Vegetales', 'Arroz blanco con vegetales salteados', 7000, TRUE, 'Side', 'https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/arroz_vegetales.jpg'),
+  ('ccccccc6-cccc-cccc-cccc-ccccccccccc6', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'Puré de Papas', 'Puré de papas cremoso con mantequilla', 8000, TRUE, 'Side', 'https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/pure_papas.jpg');
+
 
 -- INGREDIENTS
 INSERT INTO servu.ingredients (ingredient_id, menu_item_id, raw_ingredient_id, price, amount, unit)
 VALUES
-  ('ddddddd1-dddd-dddd-dddd-ddddddddddd1', 'ccccccc1-cccc-cccc-cccc-ccccccccccc1', 35, 12000, 200, 'g'),
-  ('ddddddd2-dddd-dddd-dddd-ddddddddddd2', 'ccccccc1-cccc-cccc-cccc-ccccccccccc1', 62, 4000, 10, 'g'),
-  ('ddddddd3-dddd-dddd-dddd-ddddddddddd3', 'ccccccc1-cccc-cccc-cccc-ccccccccccc1', 60, 3200, 3, 'g'),
-  ('ddddddd4-dddd-dddd-dddd-ddddddddddd4', 'ccccccc2-cccc-cccc-cccc-ccccccccccc2', 53, 4000, 200, 'g'),
-  ('ddddddd5-dddd-dddd-dddd-ddddddddddd5', 'ccccccc2-cccc-cccc-cccc-ccccccccccc2',94, 4000, 100, 'g'),
-  ('ddddddd6-dddd-dddd-dddd-ddddddddddd6', 'ccccccc2-cccc-cccc-cccc-ccccccccccc2', 26, 4000, 200, 'g');
+  ('dddddddd-dddd-dddd-dddd-dddddddd0001', 'ccccccc1-cccc-cccc-cccc-ccccccccccc1', 35, 12000, 200, 'g'),
+  ('dddddddd-dddd-dddd-dddd-dddddddd0002', 'ccccccc1-cccc-cccc-cccc-ccccccccccc1', 62, 4000, 10, 'g'),
+  ('dddddddd-dddd-dddd-dddd-dddddddd0003', 'ccccccc1-cccc-cccc-cccc-ccccccccccc1', 60, 3200, 3, 'g'),
+  ('dddddddd-dddd-dddd-dddd-dddddddd0004', 'ccccccc2-cccc-cccc-cccc-ccccccccccc2', 53, 4000, 200, 'g'),
+  ('dddddddd-dddd-dddd-dddd-dddddddd0005', 'ccccccc2-cccc-cccc-cccc-ccccccccccc2', 94, 4000, 100, 'g'),
+  ('dddddddd-dddd-dddd-dddd-dddddddd0006', 'ccccccc2-cccc-cccc-cccc-ccccccccccc2', 26, 4000, 200, 'g'),
+  ('dddddddd-dddd-dddd-dddd-dddddddd0007', 'ccccccc3-cccc-cccc-cccc-ccccccccccc3', 107, 2000, 200, 'g'), 
+  ('dddddddd-dddd-dddd-dddd-dddddddd0008', 'ccccccc3-cccc-cccc-cccc-ccccccccccc3', 108, 1000, 50, 'ml'),
+  ('dddddddd-dddd-dddd-dddd-dddddddd0009', 'ccccccc4-cccc-cccc-cccc-ccccccccccc4', 109, 3000, 100, 'g'), 
+  ('dddddddd-dddd-dddd-dddd-dddddddd000a', 'ccccccc4-cccc-cccc-cccc-ccccccccccc4', 110, 2000, 50, 'g'), 
+  ('dddddddd-dddd-dddd-dddd-dddddddd000b', 'ccccccc4-cccc-cccc-cccc-ccccccccccc4', 111, 4000, 30, 'g'), 
+  ('dddddddd-dddd-dddd-dddd-dddddddd000c', 'ccccccc4-cccc-cccc-cccc-ccccccccccc4', 112, 1000, 30, 'ml'), 
+  ('dddddddd-dddd-dddd-dddd-dddddddd000d', 'ccccccc5-cccc-cccc-cccc-ccccccccccc5', 113, 2000, 100, 'g'),  
+  ('dddddddd-dddd-dddd-dddd-dddddddd000e', 'ccccccc5-cccc-cccc-cccc-ccccccccccc5', 114, 3000, 50, 'g'), 
+  ('dddddddd-dddd-dddd-dddd-dddddddd000f', 'ccccccc5-cccc-cccc-cccc-ccccccccccc5', 115, 2000, 50, 'g'), 
+  ('dddddddd-dddd-dddd-dddd-dddddddd0010', 'ccccccc6-cccc-cccc-cccc-ccccccccccc6', 107, 2000, 200, 'g'),
+  ('dddddddd-dddd-dddd-dddd-dddddddd0011', 'ccccccc6-cccc-cccc-cccc-ccccccccccc6', 116, 1000, 30, 'g'),
+  ('dddddddd-dddd-dddd-dddd-dddddddd0012', 'ccccccc6-cccc-cccc-cccc-ccccccccccc6', 117, 500, 50, 'ml');
 
 -- INVENTORIES
 INSERT INTO servu.inventories (inventory_id, restaurant_id, raw_ingredient_id, quantity, unit, minimum_quantity, last_restock_date, price, created_at, updated_at)
@@ -236,7 +253,18 @@ VALUES
   ('eeeeeee3-eeee-eeee-eeee-eeeeeeeeeee3', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 60, 2000, 'g', 500, CURRENT_TIMESTAMP, 1200, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
   ('eeeeeee4-eeee-eeee-eeee-eeeeeeeeeee4', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 53, 1000, 'g', 200, CURRENT_TIMESTAMP, 1600, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
   ('eeeeeee5-eeee-eeee-eeee-eeeeeeeeeee5', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 94, 500, 'g', 100, CURRENT_TIMESTAMP, 8000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-  ('eeeeeee6-eeee-eeee-eeee-eeeeeeeeeee6', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 26, 2000, 'g', 500, CURRENT_TIMESTAMP, 1200, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+  ('eeeeeee6-eeee-eeee-eeee-eeeeeeeeeee6', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 26, 2000, 'g', 500, CURRENT_TIMESTAMP, 1200, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+  ('eeeeeee7-eeee-eeee-eeee-eeeeeeeeeee7', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 107, 1000, 'g', 200, CURRENT_TIMESTAMP, 2000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Papa
+  ('eeeeeee8-eeee-eeee-eeee-eeeeeeeeeee8', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 108, 500, 'ml', 100, CURRENT_TIMESTAMP, 1000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Aceite vegetal
+  ('eeeeeee9-eeee-eeee-eeee-eeeeeeeeeee9', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 109, 500, 'g', 100, CURRENT_TIMESTAMP, 3000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Lechuga romana
+  ('eeeeeeea-eeee-eeee-eeee-eeeeeeeeeeea', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 110, 200, 'g', 50, CURRENT_TIMESTAMP, 2000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Crutones
+  ('eeeeeeeb-eeee-eeee-eeee-eeeeeeeeeeeb', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 111, 100, 'g', 20, CURRENT_TIMESTAMP, 4000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Queso parmesano
+  ('eeeeeeec-eeee-eeee-eeee-eeeeeeeeeeec', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 112, 200, 'ml', 50, CURRENT_TIMESTAMP, 1000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Aderezo César
+  ('eeeeeeed-eeee-eeee-eeee-eeeeeeeeeeed', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 113, 1000, 'g', 200, CURRENT_TIMESTAMP, 2000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Arroz
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 114, 500, 'g', 100, CURRENT_TIMESTAMP, 3000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Zanahoria
+  ('eeeeeeef-eeee-eeee-eeee-eeeeeeeeeeef', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 115, 500, 'g', 100, CURRENT_TIMESTAMP, 2000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Arvejas
+  ('eeeeeef0-eeee-eeee-eeee-eeeeeeeeeef0', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 116, 100, 'g', 20, CURRENT_TIMESTAMP, 1000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Mantequilla
+  ('eeeeeef1-eeee-eeee-eeee-eeeeeeeeeef1', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 117, 200, 'ml', 50, CURRENT_TIMESTAMP, 500, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP); -- Leche
 
 -- ORDERS
 INSERT INTO servu.orders (order_id, table_id, restaurant_id, status, total_price, observation, created_at)
