@@ -205,3 +205,71 @@ func TestAddMenuItemWithIngredients(t *testing.T) {
 	assert.Equal(t, "107", items[0].Ingredients[0].IngredientID)
 	assert.Equal(t, "2", items[0].Ingredients[1].IngredientID)
 }
+
+func TestUpdateMenuItem(t *testing.T) {
+	fixture := NewTestFixture(t)
+	defer fixture.TearDown()
+
+	token := utils.LoginAndGetToken(t, fixture.Router, "alice@admin.com", "admin123")
+
+	restaurantID := "aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+	menuItemID := "ccccccc1-cccc-cccc-cccc-ccccccccccc1"
+
+	menuItem := models.MenuItem{
+		MenuItemID:   menuItemID,
+		Name:         "Bife a la Criolla",
+		Description:  "Bife a la criolla con papas fritas y ensalada",
+		Price:        50000,
+		Available:    true,
+		RestaurantID: restaurantID,
+		Ingredients: []models.Ingredient{
+			{
+				IngredientID:    "dddddddd-dddd-dddd-dddd-dddddddd0001",
+				Amount:          250,
+				Unit:            "g",
+				Price:           100000,
+				RawIngredientID: "107",
+			},
+		},
+		SideDishes: 3,
+		Category:   "Main",
+		ImageURL:   "https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/bife.jpg",
+	}
+
+	menuItemJSON, _ := json.Marshal(menuItem)
+
+	req, _ := http.NewRequest("PUT", fmt.Sprintf("/menus/%s/items/%s", restaurantID, menuItemID), bytes.NewBuffer(menuItemJSON))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	response := fixture.Mock.ExecuteRequest(req, fixture.Router)
+	assert.Equal(t, http.StatusOK, response.Code)
+
+	// Get menu item
+	connStr := fmt.Sprintf("/menus/%s/items", restaurantID)
+	req, _ = http.NewRequest("GET", connStr, nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	response = fixture.Mock.ExecuteRequest(req, fixture.Router)
+	assert.Equal(t, http.StatusOK, response.Code)
+
+	var items []models.MenuItem
+	json.Unmarshal(response.Body.Bytes(), &items)
+
+	for _, item := range items {
+		if item.MenuItemID == menuItemID {
+			assert.Equal(t, menuItem.Name, item.Name)
+			assert.Equal(t, menuItem.Description, item.Description)
+			assert.Equal(t, menuItem.Price, item.Price)
+			assert.Equal(t, menuItem.Available, item.Available)
+			assert.Equal(t, menuItem.SideDishes, item.SideDishes)
+			assert.Equal(t, menuItem.Category, item.Category)
+			assert.Equal(t, menuItem.ImageURL, item.ImageURL)
+			assert.Equal(t, menuItem.Ingredients[0].Amount, item.Ingredients[0].Amount)
+			assert.Equal(t, menuItem.Ingredients[0].Unit, item.Ingredients[0].Unit)
+			assert.Equal(t, menuItem.Ingredients[0].Price, item.Ingredients[0].Price)
+			break
+		}
+	}
+
+}
