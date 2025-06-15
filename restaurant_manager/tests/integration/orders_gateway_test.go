@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"restaurant_manager/src/application/interfaces/handlers/dto"
+	"restaurant_manager/tests/integration/utils"
 	"testing"
 
 	"github.com/rs/zerolog/log"
@@ -143,4 +144,61 @@ func TestDeleteOrder(t *testing.T) {
 	deleteReq, _ := http.NewRequest("DELETE", "/orders/"+orderID, nil)
 	deleteResponse := fixture.Mock.ExecuteRequest(deleteReq, fixture.Router)
 	assert.Equal(t, http.StatusNoContent, deleteResponse.Code)
+}
+
+func TestOrderWithSideDish(t *testing.T) {
+	fixture := NewTestFixture(t)
+	defer fixture.TearDown()
+
+	token := utils.LoginAndGetToken(t, fixture.Router, "alice@admin.com", "admin123")
+
+	orderData := dto.OrderDTO{
+		TableID:      "bbbbbbb1-bbbb-bbbb-bbbb-bbbbbbbbbbb1",
+		Table:        1,
+		Status:       "ordered",
+		RestaurantID: "aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1",
+		Items: []dto.OrderItemDTO{
+			{
+				MenuItemID:  "ccccccc1-cccc-cccc-cccc-ccccccccccc1",
+				Name:        "Bife a la Criolla",
+				Quantity:    1,
+				Price:       50000,
+				Status:      "pending",
+				Observation: "",
+				Image:       "https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/bife.jpg",
+			},
+			{
+				MenuItemID:  "ccccccc3-cccc-cccc-cccc-ccccccccccc3",
+				Name:        "Papas Fritas",
+				Quantity:    1,
+				Price:       0,
+				Status:      "pending",
+				Observation: "Guardicion bife a la criolla",
+				Image:       "https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/papas_fritas.jpg",
+			},
+			{
+				MenuItemID:  "ccccccc3-cccc-cccc-cccc-ccccccccccc3",
+				Name:        "Papas Fritas",
+				Quantity:    1,
+				Price:       8000,
+				Status:      "pending",
+				Observation: "",
+				Image:       "https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/papas_fritas.jpg",
+			},
+		},
+		TotalPrice: 58000,
+	}
+	orderJSON, _ := json.Marshal(orderData)
+
+	req, _ := http.NewRequest("POST", "/orders", bytes.NewBuffer(orderJSON))
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+
+	response := fixture.Mock.ExecuteRequest(req, fixture.Router)
+	assert.Equal(t, http.StatusOK, response.Code)
+
+	var responseBody map[string]string
+	json.Unmarshal(response.Body.Bytes(), &responseBody)
+
+	assert.NotEmpty(t, responseBody["order_id"])
 }
