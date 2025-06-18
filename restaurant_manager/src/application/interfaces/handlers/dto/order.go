@@ -6,14 +6,17 @@ import (
 )
 
 type OrderDTO struct {
-	OrderID      string         `json:"order_id"`
-	TableID      string         `json:"table_id"`
-	Table        int            `json:"table"`
-	RestaurantID string         `json:"restaurant_id"`
-	Items        []OrderItemDTO `json:"items"`
-	Status       string         `json:"status"`
-	TotalPrice   float64        `json:"total_price"`
-	CreatedAt    time.Time      `json:"created_at"`
+	OrderID       string         `json:"order_id"`
+	TableID       string         `json:"table_id"`
+	Table         int            `json:"table"`
+	RestaurantID  string         `json:"restaurant_id"`
+	Items         []OrderItemDTO `json:"items"`
+	Status        string         `json:"status"`
+	TotalPrice    float64        `json:"total_price"`
+	TimeToPrepare float64        `json:"time_to_prepare"`
+	TimeToDeliver float64        `json:"time_to_deliver"`
+	TimeToPay     float64        `json:"time_to_pay"`
+	CreatedAt     time.Time      `json:"created_at"`
 }
 
 type OrderItemDTO struct {
@@ -37,14 +40,17 @@ func FromOrders(orders []models.Order) []OrderDTO {
 	orderDTOs := make([]OrderDTO, len(orders))
 	for i, order := range orders {
 		orderDTOs[i] = OrderDTO{
-			OrderID:      order.OrderID,
-			TableID:      order.Table.TableID,
-			Table:        order.Table.TableNumber,
-			RestaurantID: order.RestaurantID,
-			Status:       string(order.Status),
-			TotalPrice:   order.TotalPrice,
-			Items:        FromOrderItems(order.OrderItems),
-			CreatedAt:    order.CreatedAt,
+			OrderID:       order.OrderID,
+			TableID:       order.Table.TableID,
+			Table:         order.Table.TableNumber,
+			RestaurantID:  order.RestaurantID,
+			Status:        string(order.Status),
+			TotalPrice:    order.TotalPrice,
+			Items:         FromOrderItems(order.OrderItems),
+			CreatedAt:     order.CreatedAt,
+			TimeToPrepare: order.TimeToPrepare,
+			TimeToDeliver: order.TimeToDeliver,
+			TimeToPay:     order.TimeToPay,
 		}
 	}
 	return orderDTOs
