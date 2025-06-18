@@ -136,9 +136,12 @@ CREATE TABLE servu.orders (
                               order_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
                               table_id UUID REFERENCES servu.tables(table_id) ON DELETE CASCADE,
                               restaurant_id UUID REFERENCES servu.restaurants(restaurant_id) ON DELETE CASCADE,
-                              status VARCHAR(20) CHECK (status IN ('ordered', 'delivered', 'paid', 'cancelled')) DEFAULT 'ordered',
+                              status VARCHAR(20) CHECK (status IN ('ordered', 'prepared', 'delivered', 'paid', 'cancelled')) DEFAULT 'ordered',
                               total_price DECIMAL(10,2) DEFAULT 0.0,
                               observation TEXT,
+                              time_to_prepare_seconds FLOAT DEFAULT 0.0, -- in seconds
+                              time_to_deliver_seconds FLOAT DEFAULT 0.0, -- in seconds
+                              time_to_pay_seconds FLOAT DEFAULT 0.0, -- in seconds
                               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -154,7 +157,7 @@ CREATE TABLE servu.order_items (
                                    quantity INT CHECK (quantity > 0),
                                    price DECIMAL(10,2) NOT NULL, -- Price at the time of order
                                    observation TEXT NOT NULL DEFAULT 'Sin observaciones',
-                                   status VARCHAR(20) CHECK (status IN ('pending', 'completed', 'cancelled', 'prepared')) DEFAULT 'pending',
+                                   status VARCHAR(20) CHECK (status IN ('pending', 'completed', 'cancelled', 'prepared', 'delivered')) DEFAULT 'pending',
                                    PRIMARY KEY (order_id, menu_item_id, observation)
 );
 

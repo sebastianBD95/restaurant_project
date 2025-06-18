@@ -14,9 +14,10 @@ import { MenuItemResponse } from '../../interfaces/menuItems';
 import { useDisclosure } from '@chakra-ui/react';
 import { getCookie } from '../utils/cookieManager';
 import AddDishesDialog from '../../components/orders/AddDishesDialog';
-import { Order, OrderItem, VoidOrderItem } from '../../interfaces/order';
+import { Order, VoidOrderItem, OrderStatusUpdate, OrderItem} from '../../interfaces/order';
 import { useTables } from '../../hooks/useTables';
 import VoidOrderItemCard from '../../components/orders/VoidOrderItemCard';
+
 
 const statusMap: Record<string, string> = {
   'ordered': 'Pedido',
@@ -42,7 +43,11 @@ const Ordenes: React.FC = () => {
     try {
       if (restaurantId) {
         const orders = await getOrdersByRestaurant(restaurantId,"ordered");
-        setOrders(orders);
+        const ordersPrepared = await getOrdersByRestaurant(restaurantId,"prepared");
+        const ordersDelivered = await getOrdersByRestaurant(restaurantId,"delivered");
+       
+        setOrders(orders.concat(ordersPrepared).concat(ordersDelivered));
+        
       }
     } catch (error) {
       toaster.create({
@@ -77,12 +82,24 @@ const Ordenes: React.FC = () => {
     fetchVoidOrders();
   }, [restaurantId]);
 
-  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+  const updateOrderStatus = async (orderId: string, newStatus: string, duration?: number) => {
     try {
-      await updateOrderStatusService({
+      let orderStatusUpdate: OrderStatusUpdate = {
         order_id: orderId,
         status: newStatus
-      });
+      };
+      if (newStatus === 'prepared') {
+        duration = duration || 0;
+        orderStatusUpdate.time_to_prepare = duration;
+      }else if (newStatus === 'delivered') {
+        duration = duration || 0;
+        orderStatusUpdate.time_to_deliver = duration;
+      }else if (newStatus === 'paid') {
+        duration = duration || 0;
+        orderStatusUpdate.time_to_pay = duration;
+      }
+      
+      await updateOrderStatusService(orderStatusUpdate);
       
       // Wait for the orders to be refreshed
       await fetchOrders();
@@ -91,6 +108,7 @@ const Ordenes: React.FC = () => {
       console.error('Error updating order status:', error);
     }
   };
+
 
   const voidOrderItem = async (orderId: string, menuItemId: string, observation: string) => {
     // TODO: Call backend to void the item, then refresh orders
@@ -175,7 +193,7 @@ const Ordenes: React.FC = () => {
       .map(([menu_item_id, quantity]) => ({ menu_item_id, quantity }));
     if (itemsToAdd.length === 0) return;
     try {
-      await addItemsToOrder(selectedOrder.order_id, itemsToAdd);
+      await addItemsToOrder(selectedOrder.order_id, itemsToAdd as OrderItem[]);
       toaster.create({
         title: 'Platos agregados',
         description: 'Platos agregados al pedido.',
@@ -232,8 +250,7 @@ const Ordenes: React.FC = () => {
                       <Box key={order.order_id} mb={4}>
                         <OrderCard
                           order={order}
-                          onDeliver={orderId => updateOrderStatus(orderId, 'delivered')}
-                          onPay={orderId => updateOrderStatus(orderId, 'paid')}
+                          onUpdateOrder={updateOrderStatus}
                           highlight={order.status === 'delivered'}
                           onVoidItem={voidOrderItem}
                           onCancelItem={cancelOrderItemAction}

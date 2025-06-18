@@ -213,14 +213,14 @@ VALUES
 
 
 -- MENU ITEMS
-INSERT INTO servu.menu_items (menu_item_id, restaurant_id, name, description, price, available, category, image_url)
+INSERT INTO servu.menu_items (menu_item_id, restaurant_id, name, description, price, available, category, image_url,side_dishes)
 VALUES
-  ('ccccccc1-cccc-cccc-cccc-ccccccccccc1', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'Bife a la Criolla', 'Bife a la criolla con papas fritas y ensalada', 50000, TRUE, 'Main', 'https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/bife.jpg'),
-  ('ccccccc2-cccc-cccc-cccc-ccccccccccc2', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'Pasta Alfredo', 'Pasta Alfredo con champiñones y queso', 25000, TRUE, 'Main', 'https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/Alfredo.jpg'),
-  ('ccccccc3-cccc-cccc-cccc-ccccccccccc3', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'Papas Fritas', 'Porción de papas fritas crujientes', 8000, TRUE, 'Side', 'https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/papas_fritas.jpg'),
-  ('ccccccc4-cccc-cccc-cccc-ccccccccccc4', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'Ensalada César', 'Lechuga romana, crutones, queso parmesano y aderezo césar', 12000, TRUE, 'Side', 'https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/ensalada_cesar.jpg'),
-  ('ccccccc5-cccc-cccc-cccc-ccccccccccc5', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'Arroz con Vegetales', 'Arroz blanco con vegetales salteados', 7000, TRUE, 'Side', 'https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/arroz_vegetales.jpg'),
-  ('ccccccc6-cccc-cccc-cccc-ccccccccccc6', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'Puré de Papas', 'Puré de papas cremoso con mantequilla', 8000, TRUE, 'Side', 'https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/pure_papas.jpg');
+  ('ccccccc1-cccc-cccc-cccc-ccccccccccc1', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'Bife a la Criolla', 'Bife a la criolla con papas fritas y ensalada', 50000, TRUE, 'Main', 'https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/bife.jpg',2),
+  ('ccccccc2-cccc-cccc-cccc-ccccccccccc2', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'Pasta Alfredo', 'Pasta Alfredo con champiñones y queso', 25000, TRUE, 'Main', 'https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/Alfredo.jpg',0),
+  ('ccccccc3-cccc-cccc-cccc-ccccccccccc3', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'Papas Fritas', 'Porción de papas fritas crujientes', 8000, TRUE, 'Side', 'https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/papas_fritas.jpg',0),
+  ('ccccccc4-cccc-cccc-cccc-ccccccccccc4', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'Ensalada César', 'Lechuga romana, crutones, queso parmesano y aderezo césar', 12000, TRUE, 'Side', 'https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/ensalada_cesar.jpg',0),
+  ('ccccccc5-cccc-cccc-cccc-ccccccccccc5', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'Arroz con Vegetales', 'Arroz blanco con vegetales salteados', 7000, TRUE, 'Side', 'https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/arroz_vegetales.jpg',0),
+  ('ccccccc6-cccc-cccc-cccc-ccccccccccc6', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'Puré de Papas', 'Puré de papas cremoso con mantequilla', 8000, TRUE, 'Side', 'https://servu-web.s3.us-east-1.amazonaws.com/TestMock/menu/pure_papas.jpg',0);
 
 
 -- INGREDIENTS
@@ -267,11 +267,11 @@ VALUES
   ('eeeeeef1-eeee-eeee-eeee-eeeeeeeeeef1', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 117, 200, 'ml', 50, CURRENT_TIMESTAMP, 500, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP); -- Leche
 
 -- ORDERS
-INSERT INTO servu.orders (order_id, table_id, restaurant_id, status, total_price, observation, created_at)
+INSERT INTO servu.orders (order_id, table_id, restaurant_id, status, total_price, observation, created_at, time_to_prepare, time_to_deliver, time_to_pay)
 VALUES
-  ('fffffff1-ffff-ffff-ffff-fffffffffff1', 'bbbbbbb2-bbbb-bbbb-bbbb-bbbbbbbbbbb2', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'ordered', 75000, 'No onions', CURRENT_TIMESTAMP),
-  ('fffffff2-ffff-ffff-ffff-fffffffffff2', 'bbbbbbb1-bbbb-bbbb-bbbb-bbbbbbbbbbb1', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'paid', 50000, 'Sin observaciones', CURRENT_TIMESTAMP),
-  ('fffffff3-ffff-ffff-ffff-fffffffffff3', 'bbbbbbb1-bbbb-bbbb-bbbb-bbbbbbbbbbb1', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'paid', 25000, 'Sin observaciones', CURRENT_TIMESTAMP);
+  ('fffffff1-ffff-ffff-ffff-fffffffffff1', 'bbbbbbb2-bbbb-bbbb-bbbb-bbbbbbbbbbb2', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'ordered', 75000, 'No onions', CURRENT_TIMESTAMP, 0.0, 0.0, 0.0),
+  ('fffffff2-ffff-ffff-ffff-fffffffffff2', 'bbbbbbb1-bbbb-bbbb-bbbb-bbbbbbbbbbb1', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'paid', 50000, 'Sin observaciones', CURRENT_TIMESTAMP, 0.0, 0.0, 0.0),
+  ('fffffff3-ffff-ffff-ffff-fffffffffff3', 'bbbbbbb1-bbbb-bbbb-bbbb-bbbbbbbbbbb1', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'paid', 25000, 'Sin observaciones', CURRENT_TIMESTAMP, 0.0, 0.0, 0.0);
 
 -- ORDER ITEMS
 INSERT INTO servu.order_items (order_id, menu_item_id, quantity, price, observation, status)

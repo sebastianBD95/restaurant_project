@@ -72,6 +72,15 @@ func (h *OrderHandler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
 		Status:       models.OrderStatus(orderDto.Status),
 		TotalPrice:   orderDto.TotalPrice,
 	}
+	if orderDto.TimeToPrepare != 0 {
+		order.TimeToPrepare = orderDto.TimeToPrepare
+	}
+	if orderDto.TimeToDeliver != 0 {
+		order.TimeToDeliver = orderDto.TimeToDeliver
+	}
+	if orderDto.TimeToPay != 0 {
+		order.TimeToPay = orderDto.TimeToPay
+	}
 	err := h.service.UpdateOrder(&order)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

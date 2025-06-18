@@ -1,20 +1,5 @@
 import { getCookie } from '../pages/utils/cookieManager';
-
-interface OrderItem {
-  menu_item_id: string;
-  quantity: number;
-}
-
-interface OrderRequest {
-  table_id: string;
-  status: string;
-  items: OrderItem[];
-}
-
-interface OrderStatusUpdate {
-  order_id: string;
-  status: string;
-}
+import { OrderRequest, OrderStatusUpdate, OrderItem } from '../interfaces/order';
 
 export const placeOrder = async (orderData: OrderRequest) => {
   const token = getCookie(document.cookie, 'token');

@@ -36,22 +36,36 @@ func (service *OrderService) DeleteOrder(orderID string) error {
 }
 
 func (service *OrderService) UpdateOrder(order *models.Order) error {
-	err := service.repo.UpdateOrder(order)
-	if err != nil {
-		return err
-	}
-	order, err = service.repo.GetOrder(order.OrderID)
-	if err != nil {
-		return err
-	}
-	if order.Status == models.Paid {
-		err = service.tableService.UpdateTableStatus(order.TableID, string(models.TableStatusAvailable))
+	return service.repo.WithTransaction(func(txRepo repositories.OrderRepository) error {
+		err := txRepo.UpdateOrder(order)
 		if err != nil {
 			return err
 		}
-	}
-
-	return nil
+		order, err = txRepo.GetOrder(order.OrderID)
+		if err != nil {
+			return err
+		}
+		for _, item := range order.OrderItems {
+			if item.Status != models.OrderStatus("cancelled") && item.Status != models.OrderStatus("completed") {
+				if order.Status == models.OrderStatus("paid") {
+					item.Status = models.OrderStatus("completed")
+				} else {
+					item.Status = models.OrderStatus(order.Status)
+				}
+				err = txRepo.UpdateOrderItem(&item)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		if order.Status == models.Paid {
+			err = service.tableService.UpdateTableStatus(order.TableID, string(models.TableStatusAvailable))
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 func (service *OrderService) GetOrder(orderID string) (*models.Order, error) {
@@ -71,7 +85,7 @@ func (s *OrderService) AddOrderItem(orderItem *models.OrderItem) (string, error)
 			// Existing order: add or update order item
 			itemExists := false
 			for _, item := range order.OrderItems {
-				if item.MenuItemID == orderItem.MenuItemID && item.Status == models.OrderItemStatus("pending") && strings.EqualFold(*orderItem.Observation, *item.Observation) {
+				if item.MenuItemID == orderItem.MenuItemID && item.Status == models.OrderStatus("pending") && strings.EqualFold(*orderItem.Observation, *item.Observation) {
 					itemExists = true
 					orderItem.Quantity += item.Quantity
 					break
@@ -89,7 +103,7 @@ func (s *OrderService) AddOrderItem(orderItem *models.OrderItem) (string, error)
 				} else {
 					orderItem.Price = menuItem.Price
 				}
-				orderItem.Status = models.OrderItemStatus("pending")
+				orderItem.Status = models.OrderStatus("pending")
 				id, err := s.repo.AddOrderItem(orderItem)
 				if err != nil {
 					return err
@@ -157,7 +171,7 @@ func (s *OrderService) UpdateOrderItem(orderID string, menuItemID string, observ
 		if err != nil {
 			return err
 		}
-		orderItem.Status = models.OrderItemStatus(status)
+		orderItem.Status = models.OrderStatus(status)
 		if err := txRepo.UpdateOrderItem(orderItem); err != nil {
 			return err
 		}
@@ -175,7 +189,7 @@ func (s *OrderService) DeleteOrderItem(orderID string, menuItemID string, observ
 		if orderItem.Quantity > 1 {
 			orderItem.Quantity--
 		} else {
-			orderItem.Status = models.OrderItemStatus("cancelled")
+			orderItem.Status = models.OrderStatus("cancelled")
 		}
 
 		if err := txRepo.UpdateOrderItem(orderItem); err != nil {
@@ -205,7 +219,7 @@ func (s *OrderService) DeleteOrderItem(orderID string, menuItemID string, observ
 func CancelOrder(order *models.Order, txRepo repositories.OrderRepository, s *OrderService) (bool, error) {
 	orderCancelled := true
 	for _, item := range order.OrderItems {
-		if item.Status != models.OrderItemStatus("cancelled") {
+		if item.Status != models.OrderStatus("cancelled") {
 			orderCancelled = false
 			break
 		}

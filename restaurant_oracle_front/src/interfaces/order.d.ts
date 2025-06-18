@@ -16,6 +16,10 @@ export interface Order {
   items: OrderItem[];
   status: string;
   total_price: number;
+  time_to_prepare: number;
+  time_to_deliver: number;
+  time_to_pay: number;
+  created_at: string;
 }
 
 export interface VoidOrderItem {
@@ -28,3 +32,22 @@ export interface VoidOrderItem {
   status: string;
   created_at?: string;
 } 
+
+interface OrderItem {
+  menu_item_id: string;
+  quantity: number;
+}
+
+interface OrderRequest {
+  table_id: string;
+  status: string;
+  items: OrderItem[];
+}
+
+interface OrderStatusUpdate {
+  order_id: string;
+  status: string;
+  time_to_prepare?: number;
+  time_to_deliver?: number;
+  time_to_pay?: number;
+}

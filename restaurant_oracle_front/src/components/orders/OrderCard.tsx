@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Heading, Text, Box, Flex, Badge, Stack } from '@chakra-ui/react';
 import { Order, OrderItem } from '../../interfaces/order';
 
@@ -11,8 +11,7 @@ const statusMap: Record<string, string> = {
 
 interface OrderCardProps {
   order: Order;
-  onDeliver: (orderId: string) => void;
-  onPay: (orderId: string) => void;
+  onUpdateOrder: (orderId: string, newStatus: string, duration?: number) => void;
   highlight?: boolean;
   onVoidItem: (orderId: string, menuItemId: string, observation: string) => void;
   onCancelItem: (orderId: string, menuItemId: string, observation: string) => void;
@@ -20,16 +19,33 @@ interface OrderCardProps {
   onAddDishes?: () => void;
 }
 
+const formatTime = (seconds: number) => {
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};
+
 const OrderCard: React.FC<OrderCardProps> = ({
   order,
-  onDeliver,
-  onPay,
+  onUpdateOrder,
   highlight,
   onVoidItem,
   onCancelItem,
   onUpdateOrderItem,
   onAddDishes,
 }) => {
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  useEffect(() => {
+    let initialTime = new Date(order.created_at).getTime();
+    const timer = setInterval(() => {
+      const now = new Date().getTime();
+      const elapsed = Math.floor((now - initialTime) / 1000);
+      setElapsedTime(elapsed >= 0 ? elapsed : 0);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [order.status, order.created_at]);
+
   // Group items
   const mainDishes = order.items.filter((item: OrderItem) =>
     item.status !== 'cancelled' && item.price > 0 && (!item.observation || !item.observation.startsWith('Guarnición de '))
@@ -59,6 +75,10 @@ const OrderCard: React.FC<OrderCardProps> = ({
       });
   };
 
+  // Timer display logic
+  let timerDisplay = formatTime(elapsedTime);
+
+
   return (
     <Box
       className={`card${highlight ? ' card-highlight' : ''}`}
@@ -67,9 +87,14 @@ const OrderCard: React.FC<OrderCardProps> = ({
         <Heading size={{ base: 'sm', md: 'md' }} fontWeight="bold">
           Mesa {order.table}
         </Heading>
-        <Badge className="status" colorScheme="purple" fontSize={{ base: '0.9em', md: '1em' }} px={3} py={1} borderRadius="md">
-          {statusMap[order.status] || order.status}
-        </Badge>
+        <Flex align="center" gap={2}>
+          <Badge colorScheme="blue" fontSize={{ base: '0.9em', md: '1em' }} px={3} py={1} borderRadius="md">
+            {timerDisplay}
+          </Badge>
+          <Badge className="status" colorScheme="purple" fontSize={{ base: '0.9em', md: '1em' }} px={3} py={1} borderRadius="md">
+            {statusMap[order.status] || order.status}
+          </Badge>
+        </Flex>
       </Flex>
       <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.500" mb={2}>
         Total: <b>${order.total_price}</b>
@@ -149,10 +174,24 @@ const OrderCard: React.FC<OrderCardProps> = ({
         minW={0} 
         overflowX="auto"
       >
-        {order.status !== 'delivered' && order.status !== 'paid' && order.status !== 'canceled' && (
+        {order.status === 'ordered' && (
           <Button 
             colorScheme="blackAlpha" 
-            onClick={() => onDeliver(order.order_id)} 
+            onClick={() => onUpdateOrder(order.order_id, 'prepared', elapsedTime)} 
+            w="100%"
+            fontSize={{ base: 'sm', md: 'md' }}
+            px={{ base: 2, md: 4 }}
+            py={{ base: 2, md: 3 }}
+            whiteSpace="nowrap"
+            minW={0}
+          >
+            Marcar como Preparado
+          </Button>
+        )}
+        {order.status === 'prepared' && (
+          <Button 
+            colorScheme="green" 
+            onClick={() => onUpdateOrder(order.order_id, 'delivered', elapsedTime - order.time_to_prepare)} 
             w="100%"
             fontSize={{ base: 'sm', md: 'md' }}
             px={{ base: 2, md: 4 }}
@@ -166,7 +205,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
         {order.status === 'delivered' && (
           <Button 
             colorScheme="green" 
-            onClick={() => onPay(order.order_id)} 
+            onClick={() => onUpdateOrder(order.order_id, 'paid', elapsedTime - order.time_to_deliver - order.time_to_prepare)} 
             w="100%"
             fontSize={{ base: 'sm', md: 'md' }}
             px={{ base: 2, md: 4 }}
