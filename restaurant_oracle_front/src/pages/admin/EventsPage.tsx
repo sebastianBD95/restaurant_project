@@ -3,39 +3,19 @@ import {
   Box,
   Button,
   Heading,
-  Input,
   Text,
   VStack,
   HStack,
-  Card,
-  CardHeader,
-  CardBody,
   Grid,
   GridItem,
   Spinner,
   Badge,
   Flex,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
   Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableCell,
-  TableColumnHeader,
   Image,
   Container,
-  Stack,
-  Field,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
   NativeSelect,
-  Divider
+
 } from '@chakra-ui/react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MenuItemResponse, MenuData } from '../../interfaces/menuItems';
@@ -44,6 +24,8 @@ import { getCookie } from '../utils/cookieManager';
 import { Sidebar } from '../../components/ui/navegator';
 import { useSidebar } from '../../hooks/useSidebar';
 import { Toaster, toaster } from '../../components/ui/toaster';
+import { CustomField } from '../../components/ui/field';
+import { NumberInputRoot, NumberInputField } from '../../components/ui/number-input';
 
 interface EventCalculation {
   menuItem: MenuItemResponse;
@@ -99,9 +81,29 @@ const EventsPage: React.FC = () => {
     extras: 'Extras',
   };
 
+  // Colombian Peso formatter
+  const copFormatter = new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+
   useEffect(() => {
     fetchMenuItems();
   }, [restaurantId]);
+
+  // Show error as a toast notification when error changes
+  useEffect(() => {
+    if (error) {
+      toaster.create({
+        title: 'Error',
+        description: error,
+        type: 'error',
+        duration: 5000,
+      });
+    }
+  }, [error]);
 
   const fetchMenuItems = async () => {
     setIsLoading(true);
@@ -228,7 +230,7 @@ const EventsPage: React.FC = () => {
 
       <Box flex={1} p={{ base: 4, md: 8 }} overflowY="auto" bg="gray.50">
         <Container maxW="container.xl">
-          <VStack spacing={6} align="stretch">
+          <VStack gap={6} align="stretch">
             <Heading 
               textAlign="center" 
               size="2xl" 
@@ -247,108 +249,87 @@ const EventsPage: React.FC = () => {
               Selecciona un plato del menú y especifica el número de personas para calcular la cantidad de ingredientes necesarios.
             </Text>
 
-            {error && (
-              <Alert status="error" borderRadius="md">
-                <AlertIcon />
-                <AlertTitle>Error:</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
             <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={8}>
               {/* Left Column - Menu Selection */}
               <GridItem>
-                <Card>
-                  <CardHeader>
+                <Box bg="white" borderRadius="md" boxShadow="md" mb={4}>
+                  <Box p={4} borderBottom="1px solid #e2e8f0">
                     <Heading size="lg">Seleccionar Plato</Heading>
-                  </CardHeader>
-                  <CardBody>
-                    <VStack spacing={4} align="stretch">
-                      <Field label="Filtrar por categoría">
-                        <NativeSelect 
-                          value={selectedCategory} 
-                          onChange={(e) => setSelectedCategory(e.target.value)}
-                        >
-                          {Object.entries(categoryLabels).map(([key, label]) => (
-                            <option key={key} value={key}>
-                              {label}
-                            </option>
-                          ))}
-                        </NativeSelect>
-                      </Field>
+                  </Box>
+                  <Box p={4}>
+                    <VStack gap={4} align="stretch">
+                      <CustomField label="Filtrar por categoría">
+                        <NativeSelect.Root size="sm">
+                          <NativeSelect.Field
+                            value={selectedCategory}
+                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedCategory(e.target.value)}
+                          >
+                            {Object.entries(categoryLabels).map(([key, label]) => (
+                              <option key={key} value={key}>
+                                {label}
+                              </option>
+                            ))}
+                          </NativeSelect.Field>
+                          <NativeSelect.Indicator />
+                        </NativeSelect.Root>
+                      </CustomField>
 
-                      <Field label="Número de personas">
-                                                 <NumberInput
-                           value={peopleCount}
-                           onChange={(valueAsString: string, valueAsNumber: number) => setPeopleCount(valueAsNumber || 1)}
-                           min={1}
-                           max={1000}
-                         >
+                      <CustomField label="Número de personas">
+                        <NumberInputRoot
+                          value={String(peopleCount)}
+                          onValueChange={({ value }) => setPeopleCount(Number(value) || 1)}
+                          min={1}
+                          max={1000}
+                        >
                           <NumberInputField />
-                          <NumberInputStepper>
-                            <NumberIncrementStepper />
-                            <NumberDecrementStepper />
-                          </NumberInputStepper>
-                        </NumberInput>
-                      </Field>
+                        </NumberInputRoot>
+                      </CustomField>
 
                       <Box maxH="400px" overflowY="auto">
-                        <VStack spacing={3} align="stretch">
+                        <VStack gap={3} align="stretch">
                           {getFilteredMenuItems().map((item) => (
-                            <Card 
+                            <Box
                               key={item.menu_item_id}
                               cursor="pointer"
                               onClick={() => setSelectedMenuItem(item)}
                               bg={selectedMenuItem?.menu_item_id === item.menu_item_id ? "blue.50" : "white"}
                               borderColor={selectedMenuItem?.menu_item_id === item.menu_item_id ? "blue.200" : "gray.200"}
+                              borderWidth="1px"
+                              borderRadius="md"
                               _hover={{ bg: "gray.50" }}
-                              size="sm"
+                              p={3}
                             >
-                              <CardBody>
-                                <HStack spacing={3}>
-                                  <Image 
-                                    src={item.image_url} 
-                                    alt={item.name}
-                                    boxSize="50px"
-                                    objectFit="cover"
-                                    borderRadius="md"
-                                    fallback={
-                                      <Box 
-                                        boxSize="50px" 
-                                        bg="gray.200" 
-                                        borderRadius="md"
-                                        display="flex"
-                                        alignItems="center"
-                                        justifyContent="center"
-                                      >
-                                        <Text fontSize="xs" color="gray.500">IMG</Text>
-                                      </Box>
-                                    }
-                                  />
-                                  <VStack align="start" spacing={1} flex={1}>
-                                    <Text fontWeight="medium" fontSize="sm">
-                                      {item.name}
+                              <HStack gap={3}>
+                                <Image
+                                  src={item.image_url}
+                                  alt={item.name}
+                                  boxSize="50px"
+                                  objectFit="cover"
+                                  borderRadius="md"
+                                />
+                                <VStack align="start" gap={1} flex={1}>
+                                  <Text fontWeight="medium" fontSize="sm">
+                                    {item.name}
+                                  </Text>
+                                  <Text fontSize="xs" color="gray.600">
+                                    {item.description}
+                                  </Text>
+                                  <HStack>
+                                    <Badge colorScheme="blue" fontSize="0.8em">
+                                      {Object.entries(categoryMap).find(([_, value]) => value === item.category)?.[0] || item.category}
+                                    </Badge>
+                                    <Text fontSize="xs" color="gray.500">
+                                      {copFormatter.format(item.price)}
                                     </Text>
-                                    <Text fontSize="xs" color="gray.600" noOfLines={2}>
-                                      {item.description}
-                                    </Text>
-                                    <HStack>
-                                      <Badge colorScheme="blue" size="sm">
-                                        {Object.entries(categoryMap).find(([_, value]) => value === item.category)?.[0] || item.category}
-                                      </Badge>
-                                      <Text fontSize="xs" color="gray.500">
-                                        ${item.price}
-                                      </Text>
-                                    </HStack>
-                                  </VStack>
-                                </HStack>
-                              </CardBody>
-                            </Card>
+                                  </HStack>
+                                </VStack>
+                              </HStack>
+                            </Box>
                           ))}
                         </VStack>
                       </Box>
 
-                      <HStack spacing={3}>
+                      <HStack gap={3}>
                         <Button 
                           colorScheme="blue" 
                           onClick={calculateIngredients}
@@ -366,19 +347,19 @@ const EventsPage: React.FC = () => {
                         </Button>
                       </HStack>
                     </VStack>
-                  </CardBody>
-                </Card>
+                  </Box>
+                </Box>
               </GridItem>
 
               {/* Right Column - Calculation Results */}
               <GridItem>
-                <Card>
-                  <CardHeader>
+                <Box bg="white" borderRadius="md" boxShadow="md" mb={4}>
+                  <Box p={4} borderBottom="1px solid #e2e8f0">
                     <Heading size="lg">Resultado del Cálculo</Heading>
-                  </CardHeader>
-                  <CardBody>
+                  </Box>
+                  <Box p={4}>
                     {eventCalculation ? (
-                      <VStack spacing={4} align="stretch">
+                      <VStack gap={4} align="stretch">
                         <Box p={4} bg="blue.50" borderRadius="md">
                           <Text fontSize="lg" fontWeight="bold" mb={2}>
                             {eventCalculation.menuItem.name}
@@ -391,13 +372,11 @@ const EventsPage: React.FC = () => {
                           </Text>
                         </Box>
 
-                        <Divider />
 
                         <Box>
                           <Text fontSize="md" fontWeight="semibold" mb={3}>
                             Ingredientes Necesarios:
                           </Text>
-                          
                           <Table.Root size="sm">
                             <Table.Header>
                               <Table.Row>
@@ -414,7 +393,7 @@ const EventsPage: React.FC = () => {
                                     {ingredient.totalAmount.toFixed(2)} {ingredient.unit}
                                   </Table.Cell>
                                   <Table.Cell textAlign="right">
-                                    ${ingredient.totalPrice.toFixed(2)}
+                                    {copFormatter.format(ingredient.totalPrice)}
                                   </Table.Cell>
                                 </Table.Row>
                               ))}
@@ -422,7 +401,6 @@ const EventsPage: React.FC = () => {
                           </Table.Root>
                         </Box>
 
-                        <Divider />
 
                         <Box p={4} bg="green.50" borderRadius="md">
                           <HStack justify="space-between">
@@ -430,20 +408,16 @@ const EventsPage: React.FC = () => {
                               Costo Total de Ingredientes:
                             </Text>
                             <Text fontSize="lg" fontWeight="bold" color="green.600">
-                              ${getTotalCost().toFixed(2)}
+                              {copFormatter.format(getTotalCost())}
                             </Text>
                           </HStack>
                           <Text fontSize="sm" color="gray.600" mt={1}>
-                            Precio por persona: ${(getTotalCost() / eventCalculation.peopleCount).toFixed(2)}
+                            Precio por persona: {copFormatter.format(getTotalCost() / eventCalculation.peopleCount)}
                           </Text>
                         </Box>
                       </VStack>
                     ) : (
-                      <Box 
-                        textAlign="center" 
-                        py={8}
-                        color="gray.500"
-                      >
+                      <Box textAlign="center" py={8} color="gray.500">
                         <Text fontSize="lg" mb={2}>
                           No hay cálculos disponibles
                         </Text>
@@ -452,8 +426,8 @@ const EventsPage: React.FC = () => {
                         </Text>
                       </Box>
                     )}
-                  </CardBody>
-                </Card>
+                  </Box>
+                </Box>
               </GridItem>
             </Grid>
           </VStack>
