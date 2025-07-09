@@ -21,6 +21,7 @@ import {
 } from '@chakra-ui/react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import IngredientPage from './pages/admin/IngredientPage';
+import EventsPage from './pages/admin/EventsPage';
 
 function App() {
   return (
@@ -47,6 +48,8 @@ function App() {
             <Route path="/usuarios/:restaurantId" element={<WaiterUserPage />} />
             <Route path="/ingredientes" element={<IngredientPage />} />
             <Route path="/ingredientes/:restaurantId" element={<IngredientPage />} />
+            <Route path="/eventos" element={<EventsPage />} />
+            <Route path="/eventos/:restaurantId" element={<EventsPage />} />
           </Routes>
         </Box>
       </Router>
