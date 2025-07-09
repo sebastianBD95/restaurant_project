@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Button, Text, VStack, Icon } from '@chakra-ui/react';
 import { Link, useParams } from 'react-router-dom';
-import { FiChevronLeft, FiChevronRight, FiHome, FiMenu, FiShoppingCart, FiBarChart2, FiToggleLeft } from 'react-icons/fi';
+import { FiChevronLeft, FiChevronRight, FiHome, FiMenu, FiShoppingCart, FiBarChart2, FiToggleLeft, FiCalendar } from 'react-icons/fi';
 import { MdOutlineInventory2, MdRestaurantMenu, MdPayment ,MdAccountCircle } from 'react-icons/md';
 import { isWaiter } from '../../pages/utils/roleUtils';
 
@@ -61,6 +61,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar, 
             <Link to={currentRestaurantId ? `/menu/${currentRestaurantId}` : "/menu"} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
               <Icon as={FiMenu} />
               Menú
+            </Link>
+            <Link to={currentRestaurantId ? `/eventos/${currentRestaurantId}` : "/eventos"} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
+              <Icon as={FiCalendar} />
+              Eventos
             </Link>
             <Link to={currentRestaurantId ? `/ordenes/${currentRestaurantId}` : "/ordenes"} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}>
               <Icon as={FiShoppingCart} />
