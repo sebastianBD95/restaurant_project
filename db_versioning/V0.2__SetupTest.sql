@@ -267,7 +267,7 @@ VALUES
   ('eeeeeef1-eeee-eeee-eeee-eeeeeeeeeef1', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 117, 200, 'ml', 50, CURRENT_TIMESTAMP, 500, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP); -- Leche
 
 -- ORDERS
-INSERT INTO servu.orders (order_id, table_id, restaurant_id, status, total_price, observation, created_at, time_to_prepare, time_to_deliver, time_to_pay)
+INSERT INTO servu.orders (order_id, table_id, restaurant_id, status, total_price, observation, created_at, time_to_prepare_seconds, time_to_deliver_seconds, time_to_pay_seconds)
 VALUES
   ('fffffff1-ffff-ffff-ffff-fffffffffff1', 'bbbbbbb2-bbbb-bbbb-bbbb-bbbbbbbbbbb2', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'ordered', 75000, 'No onions', CURRENT_TIMESTAMP, 0.0, 0.0, 0.0),
   ('fffffff2-ffff-ffff-ffff-fffffffffff2', 'bbbbbbb1-bbbb-bbbb-bbbb-bbbbbbbbbbb1', 'aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'paid', 50000, 'Sin observaciones', CURRENT_TIMESTAMP, 0.0, 0.0, 0.0),

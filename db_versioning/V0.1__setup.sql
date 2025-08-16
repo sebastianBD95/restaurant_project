@@ -196,6 +196,36 @@ CREATE INDEX idx_payments_status ON servu.payments(status);
 CREATE INDEX idx_payments_payment_method ON servu.payments(payment_method);
 CREATE INDEX idx_payments_created_at ON servu.payments(created_at);
 
+-- Cash Closings table for daily financial summaries
+CREATE TABLE servu.cash_closings (
+    cash_closing_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    restaurant_id UUID REFERENCES servu.restaurants(restaurant_id) ON DELETE CASCADE,
+    closing_date DATE NOT NULL,
+    cash_in_register DECIMAL(10,2) NOT NULL DEFAULT 0.0,
+    cash_withdrawn DECIMAL(10,2) NOT NULL DEFAULT 0.0,
+    notes TEXT,
+    total_sales DECIMAL(10,2) NOT NULL DEFAULT 0.0,
+    total_revenue DECIMAL(10,2) NOT NULL DEFAULT 0.0,
+    total_costs DECIMAL(10,2) NOT NULL DEFAULT 0.0,
+    total_profit DECIMAL(10,2) NOT NULL DEFAULT 0.0,
+    order_count INT NOT NULL DEFAULT 0,
+    average_order_value DECIMAL(10,2) NOT NULL DEFAULT 0.0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(restaurant_id, closing_date)
+);
+
+-- Indexes for cash_closings table
+CREATE INDEX idx_cash_closings_restaurant_id ON servu.cash_closings(restaurant_id);
+CREATE INDEX idx_cash_closings_closing_date ON servu.cash_closings(closing_date);
+CREATE INDEX idx_cash_closings_created_at ON servu.cash_closings(created_at);
+
+-- Add trigger for updating updated_at timestamp
+CREATE TRIGGER update_cash_closings_timestamp
+    BEFORE UPDATE ON servu.cash_closings
+    FOR EACH ROW
+    EXECUTE FUNCTION update_timestamp();
+
 ALTER TABLE servu.users
 ADD COLUMN restaurant_id UUID;
 
