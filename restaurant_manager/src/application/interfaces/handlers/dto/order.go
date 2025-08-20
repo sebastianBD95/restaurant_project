@@ -29,6 +29,10 @@ type OrderItemDTO struct {
 	Image       string  `json:"image"`
 }
 
+type RecoverVoidOrderItemDTO struct {
+	TargetOrderID string `json:"target_order_id"`
+}
+
 func safeString(s *string) string {
 	if s == nil {
 		return ""
