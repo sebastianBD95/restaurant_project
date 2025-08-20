@@ -23,11 +23,13 @@ export interface Order {
 }
 
 export interface VoidOrderItem {
+  void_order_item_id: string;
   menu_item_id: string;
   name: string;
   image?: string;
   quantity: number;
   price: number;
+  observation: string;
   void_reason: string;
   status: string;
   created_at?: string;

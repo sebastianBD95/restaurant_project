@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 import TableDistribution from '../../components/orders/TableComponent';
 import { Sidebar } from '../../components/ui/navegator';
 import { useSidebar } from '../../hooks/useSidebar';
-import { getOrdersByRestaurant, updateOrderStatus as updateOrderStatusService, addItemsToOrder, cancelOrderItem, createVoidOrderItem, getVoidOrders, updateOrderItem } from '../../services/orderService';
+import { getOrdersByRestaurant, updateOrderStatus as updateOrderStatusService, addItemsToOrder, cancelOrderItem, createVoidOrderItem, getVoidOrders, updateOrderItem, recoverVoidOrderItem } from '../../services/orderService';
 import OrderCard from '../../components/orders/OrderCard';
 import { toaster } from '../../components/ui/toaster';
 import { getMenus } from '../../services/menuService';
@@ -17,6 +17,7 @@ import AddDishesDialog from '../../components/orders/AddDishesDialog';
 import { Order, VoidOrderItem, OrderStatusUpdate, OrderItem} from '../../interfaces/order';
 import { useTables } from '../../hooks/useTables';
 import VoidOrderItemCard from '../../components/orders/VoidOrderItemCard';
+import RecoverVoidItemDialog from '../../components/orders/RecoverVoidItemDialog';
 
 
 const statusMap: Record<string, string> = {
@@ -36,7 +37,9 @@ const Ordenes: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [selectedDishes, setSelectedDishes] = useState<{ [id: string]: number }>({});
   const { open, onOpen, onClose } = useDisclosure();
+  const [isRecoverDialogOpen, setIsRecoverDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedVoidItem, setSelectedVoidItem] = useState<VoidOrderItem | null>(null);
   const categories = Array.from(new Set(menuItems.map(item => item.category)));
 
   const fetchOrders = async () => {
@@ -165,6 +168,33 @@ const Ordenes: React.FC = () => {
     }
   };
 
+  const handleRecoverClick = (voidItem: VoidOrderItem) => {
+    setSelectedVoidItem(voidItem);
+    setIsRecoverDialogOpen(true);
+  };
+
+  const recoverVoidOrderItemAction = async (voidOrderItemId: string, targetOrderId: string) => {
+    console.log('Recover void item', voidOrderItemId, targetOrderId);
+    console.log('Available orders', orders);
+    try {
+      await recoverVoidOrderItem(voidOrderItemId, targetOrderId);
+      await fetchOrders();
+      await fetchVoidOrders();
+      toaster.create({
+        title: 'Plato recuperado',
+        description: 'Plato recuperado correctamente.',
+        type: 'success',
+      });
+    } catch (error) {
+      toaster.create({
+        title: 'Error',
+        description: 'No se pudo recuperar el plato.',
+        type: 'error',
+      });
+      console.error('Error recovering void order item:', error);
+    }
+  };
+
   const handleAddDishesClick = (order: Order) => {
     setSelectedOrder(order);
     setSelectedDishes({});
@@ -279,8 +309,13 @@ const Ordenes: React.FC = () => {
                 <VStack align="stretch" gap={4}>
                     {voidOrders.map(item => (
                       <VoidOrderItemCard
-                        key={item.menu_item_id + (item.created_at || '')}
+                        key={item.void_order_item_id || item.menu_item_id + (item.created_at || '')}
                         item={item}
+                        onRecoverClick={handleRecoverClick}
+                        availableOrders={orders
+                          .filter(order => order.status !== 'paid' && order.status !== 'canceled')
+                          .map(order => ({ order_id: order.order_id, table: order.table }))
+                        }
                       />
                     ))}
                 </VStack>
@@ -316,6 +351,20 @@ const Ordenes: React.FC = () => {
         selectedDishes={selectedDishes}
         handleDishQuantityChange={handleDishQuantityChange}
         handleAddDishesSubmit={handleAddDishesSubmit}
+      />
+
+      <RecoverVoidItemDialog
+        isOpen={isRecoverDialogOpen}
+        onClose={() => {
+          setIsRecoverDialogOpen(false);
+          setSelectedVoidItem(null);
+        }}
+        voidItem={selectedVoidItem}
+        availableOrders={orders
+          .filter(order => order.status !== 'paid' && order.status !== 'canceled')
+          .map(order => ({ order_id: order.order_id, table: order.table }))
+        }
+        onRecover={recoverVoidOrderItemAction}
       />
     </Flex>
   );
