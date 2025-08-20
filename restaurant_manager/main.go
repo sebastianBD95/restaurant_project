@@ -27,6 +27,7 @@ func main() {
 	inventoryRepo := repositories.NewInventoryRepository(config.DB)
 	ingredientRepo := repositories.NewIngredientRepository(config.DB)
 	rawIngredientRepo := repositories.NewRawIngredientsRepository(config.DB)
+	cashClosingRepo := repositories.NewCashClosingRepository(config.DB)
 
 	ingredientService := services.NewIngredientsService(ingredientRepo)
 	userService := services.NewUserService(userRepo)
@@ -36,6 +37,7 @@ func main() {
 	inventoryService := services.NewInventoryService(inventoryRepo, menuService)
 	orderService := services.NewOrderService(orderRepo, tableService, menuService, inventoryService)
 	rawIngredientService := services.NewRawIngredientsService(rawIngredientRepo)
+	cashClosingService := services.NewCashClosingService(cashClosingRepo, orderRepo, menuRepo)
 
 	userHandler := handlers.NewUserHandler(userService)
 	restaurantHandler := handlers.NewRestaurantHandler(restaurantService)
@@ -45,8 +47,18 @@ func main() {
 	inventoryHandler := handlers.NewInventoryHandler(inventoryService)
 	ingredientHandler := handlers.NewIngredientHandler(ingredientService)
 	rawIngredientsHandler := handlers.NewRawIngredientsHandler(rawIngredientService)
+	cashClosingHandler := handlers.NewCashClosingHandler(cashClosingService)
 
-	r := routes.SetupRoutes(userHandler, restaurantHandler, menuHandler, orderHandler, tableHandler, inventoryHandler, ingredientHandler, rawIngredientsHandler)
+	r := routes.SetupRoutes(
+		userHandler,
+		restaurantHandler,
+		menuHandler,
+		orderHandler,
+		tableHandler,
+		inventoryHandler,
+		ingredientHandler,
+		rawIngredientsHandler,
+		cashClosingHandler)
 
 	fmt.Println("🚀 Server running on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", r))

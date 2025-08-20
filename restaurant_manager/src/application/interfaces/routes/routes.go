@@ -48,7 +48,8 @@ func SetupRoutes(userHandler *handlers.UserHandler,
 	tableHandler *handlers.TableHandler,
 	inventoryHandler *handlers.InventoryHandler,
 	ingredientHandler *handlers.IngredientHandler,
-	rawIngredientsHandler *handlers.RawIngredientsHandler) *mux.Router {
+	rawIngredientsHandler *handlers.RawIngredientsHandler,
+	cashClosingHandler *handlers.CashClosingHandler) *mux.Router {
 
 	r := mux.NewRouter()
 
@@ -92,5 +93,13 @@ func SetupRoutes(userHandler *handlers.UserHandler,
 	r.HandleFunc("/raw-ingredients/upload", rawIngredientsHandler.UploadRawIngredientsCSV).Methods("POST", "OPTIONS")
 	r.HandleFunc("/raw-ingredients", rawIngredientsHandler.UpdateRawIngredients).Methods("PUT", "OPTIONS")
 	r.HandleFunc("/raw-ingredients/{raw_ingredient_id}", rawIngredientsHandler.DeleteRawIngredients).Methods("DELETE", "OPTIONS")
+
+	// Cash Closing routes
+	r.HandleFunc("/cash-closings", cashClosingHandler.CreateCashClosing).Methods("POST", "OPTIONS")
+	r.HandleFunc("/cash-closings/data", cashClosingHandler.GetCashClosingData).Methods("GET", "OPTIONS")
+	r.HandleFunc("/cash-closings/history", cashClosingHandler.GetCashClosingHistory).Methods("GET", "OPTIONS")
+	r.HandleFunc("/cash-closings/{id}", cashClosingHandler.UpdateCashClosing).Methods("PUT", "OPTIONS")
+	r.HandleFunc("/cash-closings/{id}", cashClosingHandler.DeleteCashClosing).Methods("DELETE", "OPTIONS")
+	r.HandleFunc("/cash-closings/stats", cashClosingHandler.GetCashClosingStats).Methods("GET", "OPTIONS")
 	return r
 }

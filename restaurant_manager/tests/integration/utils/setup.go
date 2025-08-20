@@ -44,6 +44,7 @@ func (m MockImpl) SetRoutes(localstackContainer testcontainers.Container) *mux.R
 	inventoryRepo := repositories.NewInventoryRepository(config.DB)
 	ingredientRepo := repositories.NewIngredientRepository(config.DB)
 	rawIngredientRepo := repositories.NewRawIngredientsRepository(config.DB)
+	cashClosingRepo := repositories.NewCashClosingRepository(config.DB)
 
 	s3Manager := infraports.InitLocalstackS3(localstackContainer)
 
@@ -56,6 +57,7 @@ func (m MockImpl) SetRoutes(localstackContainer testcontainers.Container) *mux.R
 	restaurantService := services.NewRestaurantService(restaurantRepo, &s3Manager)
 	orderService := services.NewOrderService(orderRepo, tableService, menuService, inventoryService)
 	rawIngredientsService := services.NewRawIngredientsService(rawIngredientRepo)
+	cashClosingService := services.NewCashClosingService(cashClosingRepo, orderRepo, menuRepo)
 
 	// Handlers
 	userHandler := handlers.NewUserHandler(userService)
@@ -66,6 +68,7 @@ func (m MockImpl) SetRoutes(localstackContainer testcontainers.Container) *mux.R
 	inventoryHandler := handlers.NewInventoryHandler(inventoryService)
 	ingredientHandler := handlers.NewIngredientHandler(ingredientService)
 	rawIngredientsHandler := handlers.NewRawIngredientsHandler(rawIngredientsService)
+	cashClosingHandler := handlers.NewCashClosingHandler(cashClosingService)
 
 	// Setup routes
 	router := routes.SetupRoutes(
@@ -77,6 +80,7 @@ func (m MockImpl) SetRoutes(localstackContainer testcontainers.Container) *mux.R
 		inventoryHandler,
 		ingredientHandler,
 		rawIngredientsHandler,
+		cashClosingHandler,
 	)
 	return router
 }

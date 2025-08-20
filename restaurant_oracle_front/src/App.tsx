@@ -22,6 +22,7 @@ import {
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import IngredientPage from './pages/admin/IngredientPage';
 import EventsPage from './pages/admin/EventsPage';
+import CashClosingPage from './pages/admin/CashClosingPage';
 
 function App() {
   return (
@@ -50,6 +51,8 @@ function App() {
             <Route path="/ingredientes/:restaurantId" element={<IngredientPage />} />
             <Route path="/eventos" element={<EventsPage />} />
             <Route path="/eventos/:restaurantId" element={<EventsPage />} />
+            <Route path="/cierre-caja" element={<CashClosingPage />} />
+            <Route path="/cierre-caja/:restaurantId" element={<CashClosingPage />} />
           </Routes>
         </Box>
       </Router>
