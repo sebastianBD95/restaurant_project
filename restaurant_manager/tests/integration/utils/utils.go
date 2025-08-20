@@ -90,7 +90,7 @@ func LocalstackContainer() (testcontainers.Container, error) {
 	ctx := context.Background()
 	localstackContainer, err := localstack.Run(ctx, "localstack/localstack:latest",
 		testcontainers.WithEnv(map[string]string{"SERVICES": "s3,sqs"}),
-		testcontainers.WithExposedPorts("4566/tcp"),
+		testcontainers.WithExposedPorts("4567/tcp"),
 	)
 
 	if err != nil {
