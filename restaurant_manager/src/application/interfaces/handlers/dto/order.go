@@ -20,13 +20,15 @@ type OrderDTO struct {
 }
 
 type OrderItemDTO struct {
-	MenuItemID  string  `json:"menu_item_id"`
-	Name        string  `json:"name"`
-	Quantity    int     `json:"quantity"`
-	Price       float64 `json:"price"`
-	Status      string  `json:"status"`
-	Observation string  `json:"observation"`
-	Image       string  `json:"image"`
+	MenuItemID      string     `json:"menu_item_id"`
+	Name            string     `json:"name"`
+	Quantity        int        `json:"quantity"`
+	Price           float64    `json:"price"`
+	Status          string     `json:"status"`
+	Observation     string     `json:"observation"`
+	Image           string     `json:"image"`
+	CreatedAt       *time.Time `json:"created_at,omitempty"`
+	VoidOrderItemID string     `json:"void_order_item_id,omitempty"`
 }
 
 type RecoverVoidOrderItemDTO struct {
@@ -80,13 +82,15 @@ func FromVoidOrderItems(voidOrderItems []models.VoidOrderItem) []OrderItemDTO {
 	orderItemDTOs := make([]OrderItemDTO, len(voidOrderItems))
 	for i, voidOrderItem := range voidOrderItems {
 		orderItemDTOs[i] = OrderItemDTO{
-			MenuItemID:  voidOrderItem.MenuItemID,
-			Name:        voidOrderItem.MenuItem.Name,
-			Quantity:    voidOrderItem.Quantity,
-			Price:       voidOrderItem.Price,
-			Status:      string(voidOrderItem.Status),
-			Observation: safeString(&voidOrderItem.VoidReason),
-			Image:       voidOrderItem.MenuItem.ImageURL,
+			MenuItemID:      voidOrderItem.MenuItemID,
+			Name:            voidOrderItem.MenuItem.Name,
+			Quantity:        voidOrderItem.Quantity,
+			Price:           voidOrderItem.Price,
+			Status:          string(voidOrderItem.Status),
+			Observation:     safeString(&voidOrderItem.VoidReason),
+			Image:           voidOrderItem.MenuItem.ImageURL,
+			CreatedAt:       &voidOrderItem.CreatedAt,
+			VoidOrderItemID: voidOrderItem.VoidOrderItemID,
 		}
 	}
 	return orderItemDTOs

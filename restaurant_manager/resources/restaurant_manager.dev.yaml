@@ -1,5 +1,5 @@
 restaurant_manager:
-  database: "postgres://postgres:postgres@localhost:5433/servu?sslmode=disable"
+  database: "postgres://postgres:postgres@localhost:5433/servu?sslmode=disable&timezone=UTC"
   aws:
     profile: "devprofile"
     region: "us-east-1"

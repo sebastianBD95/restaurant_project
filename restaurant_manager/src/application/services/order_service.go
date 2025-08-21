@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"restaurant_manager/src/application/utils"
 	"restaurant_manager/src/domain/models"
 	"restaurant_manager/src/domain/repositories"
 	"strings"
@@ -266,11 +267,12 @@ func (s *OrderService) CreateVoidOrderItem(orderID string, menuItemID string, re
 		voidOrderItem := &models.VoidOrderItem{
 			RestaurantID: restaurantID,
 			MenuItemID:   menuItemID,
-			Quantity:     orderItem.Quantity,
+			Quantity:     1, // Always void 1 item at a time
 			Price:        orderItem.Price,
 			Observation:  observation,
 			VoidReason:   "void",
 			Status:       models.VoidOrderItemVoided,
+			CreatedAt:    utils.GetCurrentUTCTime(),
 		}
 		err = txRepo.AddVoidOrderItem(voidOrderItem)
 		if err != nil {

@@ -6,6 +6,7 @@ export interface OrderItem {
   status: string;
   observation: string;
   image?: string;
+  created_at?: string;
 }
 
 export interface Order {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Text, Button, Image, Flex } from '@chakra-ui/react';
 import { DialogRoot, DialogContent, DialogHeader, DialogBody, DialogFooter, DialogCloseTrigger } from '../ui/dialog';
 import { CustomField } from '../ui/field';
@@ -20,10 +20,34 @@ const RecoverVoidItemDialog: React.FC<RecoverVoidItemDialogProps> = ({
   onRecover,
 }) => {
   const [selectedOrderId, setSelectedOrderId] = useState<string>('');
+  const [timeRemaining, setTimeRemaining] = useState<number>(0);
+
+  useEffect(() => {
+    if (!voidItem?.created_at) return;
+
+    const calculateTimeRemaining = () => {
+      const createdAt = new Date(voidItem.created_at!).getTime();
+      const now = new Date().getTime();
+      const elapsedMinutes = Math.floor((now - createdAt) / 1000 / 60);
+      const remaining = Math.max(0, 20 - elapsedMinutes);
+      setTimeRemaining(remaining);
+    };
+
+    calculateTimeRemaining();
+    const interval = setInterval(calculateTimeRemaining, 10000); // Update every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [voidItem?.created_at]);
+
+  const formatTime = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+  };
 
   const handleRecover = () => {
     if (selectedOrderId && voidItem) {
-      onRecover(voidItem.void_order_item_id, selectedOrderId);
+      onRecover(voidItem.void_order_item_id, selectedOrderId);  
       onClose();
       setSelectedOrderId('');
     }
@@ -64,6 +88,9 @@ const RecoverVoidItemDialog: React.FC<RecoverVoidItemDialogProps> = ({
                         Observación: {voidItem.observation}
                       </Text>
                     )}
+                    <Text color={timeRemaining <= 5 ? "red.500" : "gray.400"} fontSize="sm" fontWeight="medium">
+                      Tiempo restante: {formatTime(timeRemaining)}
+                    </Text>
                   </Box>
                 </Flex>
               </Box>
@@ -105,9 +132,9 @@ const RecoverVoidItemDialog: React.FC<RecoverVoidItemDialogProps> = ({
           <Button
             colorScheme="green"
             onClick={handleRecover}
-            disabled={!selectedOrderId || availableOrders.length === 0}
+            disabled={!selectedOrderId || availableOrders.length === 0 || timeRemaining <= 0}
           >
-            Recuperar
+            {timeRemaining <= 0 ? "Tiempo Expirado" : "Recuperar"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -65,6 +65,7 @@ const Ordenes: React.FC = () => {
   const fetchVoidOrders = async () => {
     if (!restaurantId) return;
     const voidOrders = await getVoidOrders(restaurantId);
+    console.log('Void orders', voidOrders);
     setVoidOrders(voidOrders as VoidOrderItem[]);
   };
 
@@ -169,13 +170,29 @@ const Ordenes: React.FC = () => {
   };
 
   const handleRecoverClick = (voidItem: VoidOrderItem) => {
+    // Check if the item is still within the 20-minute recovery window
+    if (voidItem.created_at) {
+      const createdAt = new Date(voidItem.created_at).getTime();
+      const now = new Date().getTime();
+      const elapsedMinutes = Math.floor((now - createdAt) / 1000 / 60);
+      
+      if (elapsedMinutes >= 20) {
+        toaster.create({
+          title: 'Tiempo Expirado',
+          description: 'Este plato ya no puede ser recuperado (más de 20 minutos).',
+          type: 'error',
+        });
+        return;
+      }
+    }
+    
     setSelectedVoidItem(voidItem);
     setIsRecoverDialogOpen(true);
   };
 
   const recoverVoidOrderItemAction = async (voidOrderItemId: string, targetOrderId: string) => {
     console.log('Recover void item', voidOrderItemId, targetOrderId);
-    console.log('Available orders', orders);
+    console.log('Available orders', orders);  
     try {
       await recoverVoidOrderItem(voidOrderItemId, targetOrderId);
       await fetchOrders();
