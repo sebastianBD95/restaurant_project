@@ -160,3 +160,23 @@ export const getVoidOrders = async (restaurantId: string) => {
   return response.json();
 }
 
+export const recoverVoidOrderItem = async (voidOrderItemId: string, targetOrderId: string) => {
+  const token = getCookie(document.cookie, 'token');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  const response = await fetch(`http://localhost:8080/void-order-items/${voidOrderItemId}/recover`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ target_order_id: targetOrderId })
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to recover void order item');
+  }
+}
+

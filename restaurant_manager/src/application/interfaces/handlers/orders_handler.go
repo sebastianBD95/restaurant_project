@@ -216,3 +216,21 @@ func (h *OrderHandler) GetVoidOrderItems(w http.ResponseWriter, r *http.Request)
 	orderItemDTOs := dto.FromVoidOrderItems(items)
 	json.NewEncoder(w).Encode(orderItemDTOs)
 }
+
+func (h *OrderHandler) RecoverVoidOrderItem(w http.ResponseWriter, r *http.Request) {
+	voidOrderItemID := mux.Vars(r)["void_order_item_id"]
+
+	var recoveryDTO dto.RecoverVoidOrderItemDTO
+	if err := json.NewDecoder(r.Body).Decode(&recoveryDTO); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	err := h.service.RecoverVoidOrderItem(voidOrderItemID, recoveryDTO.TargetOrderID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

@@ -4,6 +4,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- Create schema
 CREATE SCHEMA IF NOT EXISTS servu;
 
+SET timezone = 'UTC';
 -- Create a trigger function to update `updated_at` automatically
 CREATE OR REPLACE FUNCTION update_timestamp()
 RETURNS TRIGGER AS $$

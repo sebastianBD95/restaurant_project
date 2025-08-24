@@ -33,6 +33,9 @@ func ConnectDB(cfg *Properties) {
 			TablePrefix: "servu.",
 		},
 		Logger: newLogger,
+		NowFunc: func() time.Time {
+			return time.Now().UTC()
+		},
 	})
 	if err != nil {
 		log.Fatalf("Error connecting to database: %v", err)
