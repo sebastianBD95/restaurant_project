@@ -18,4 +18,6 @@ type OrderRepository interface {
 	WithTransaction(fn func(txRepo OrderRepository) error) error
 	AddVoidOrderItem(voidOrderItem *models.VoidOrderItem) error
 	GetVoidOrderItems(restaurantID string) ([]models.VoidOrderItem, error)
+	DeleteVoidOrderItem(voidOrderItemID string) error
+	GetVoidOrderItemByID(voidOrderItemID string) (*models.VoidOrderItem, error)
 }

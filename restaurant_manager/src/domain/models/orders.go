@@ -9,9 +9,9 @@ type Order struct {
 	Status        OrderStatus `gorm:"column:status"`
 	TotalPrice    float64     `gorm:"column:total_price"`
 	Observation   *string     `gorm:"column:observation"`
-	TimeToPrepare float64     `gorm:"column:time_to_prepare"`
-	TimeToDeliver float64     `gorm:"column:time_to_deliver"`
-	TimeToPay     float64     `gorm:"column:time_to_pay"`
+	TimeToPrepare float64     `gorm:"column:time_to_prepare_seconds"`
+	TimeToDeliver float64     `gorm:"column:time_to_deliver_seconds"`
+	TimeToPay     float64     `gorm:"column:time_to_pay_seconds"`
 	CreatedAt     time.Time   `gorm:"column:created_at"`
 
 	// Relations

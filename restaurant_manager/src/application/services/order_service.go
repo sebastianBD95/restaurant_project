@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+	"restaurant_manager/src/application/utils"
 	"restaurant_manager/src/domain/models"
 	"restaurant_manager/src/domain/repositories"
 	"strings"
@@ -265,11 +267,12 @@ func (s *OrderService) CreateVoidOrderItem(orderID string, menuItemID string, re
 		voidOrderItem := &models.VoidOrderItem{
 			RestaurantID: restaurantID,
 			MenuItemID:   menuItemID,
-			Quantity:     orderItem.Quantity + 1,
+			Quantity:     1, // Always void 1 item at a time
 			Price:        orderItem.Price,
 			Observation:  observation,
 			VoidReason:   "void",
 			Status:       models.VoidOrderItemVoided,
+			CreatedAt:    utils.GetCurrentUTCTime(),
 		}
 		err = txRepo.AddVoidOrderItem(voidOrderItem)
 		if err != nil {
@@ -281,4 +284,54 @@ func (s *OrderService) CreateVoidOrderItem(orderID string, menuItemID string, re
 
 func (s *OrderService) GetVoidOrderItems(restaurantID string) ([]models.VoidOrderItem, error) {
 	return s.repo.GetVoidOrderItems(restaurantID)
+}
+
+func (s *OrderService) RecoverVoidOrderItem(voidOrderItemID string, targetOrderID string) error {
+	return s.repo.WithTransaction(func(txRepo repositories.OrderRepository) error {
+		// Get the void order item
+		voidItem, err := s.repo.GetVoidOrderItemByID(voidOrderItemID)
+		if err != nil {
+			return err
+		}
+
+		// Check if the void item is still available for recovery
+		if voidItem.Status != models.VoidOrderItemVoided {
+			return fmt.Errorf("void item is not available for recovery")
+		}
+
+		// Get the target order to check if it has a matching item
+		targetOrder, err := txRepo.GetOrder(targetOrderID)
+		if err != nil {
+			return fmt.Errorf("target order not found")
+		}
+
+		// Find a matching order item in the target order
+		var matchingOrderItem *models.OrderItem
+		for i := range targetOrder.OrderItems {
+			item := &targetOrder.OrderItems[i]
+			if item.MenuItemID == voidItem.MenuItemID {
+				matchingOrderItem = item
+				break
+			}
+		}
+
+		if matchingOrderItem == nil {
+			return fmt.Errorf("target order does not contain a matching item for recovery")
+		}
+
+		// Update the quantity of the existing order item
+		matchingOrderItem.Status = models.OrderStatus("prepared")
+		err = txRepo.UpdateOrderItem(matchingOrderItem)
+		if err != nil {
+			return err
+		}
+
+		// Delete the void order item
+		err = txRepo.DeleteVoidOrderItem(voidOrderItemID)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
 }

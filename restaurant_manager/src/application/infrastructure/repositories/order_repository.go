@@ -110,3 +110,18 @@ func (repo *OrderRepositoryImpl) GetVoidOrderItems(restaurantID string) ([]model
 		Find(&items).Error
 	return items, err
 }
+
+func (repo *OrderRepositoryImpl) DeleteVoidOrderItem(voidOrderItemID string) error {
+	return repo.db.Delete(&models.VoidOrderItem{}, "void_order_item_id = ?", voidOrderItemID).Error
+}
+
+func (repo *OrderRepositoryImpl) GetVoidOrderItemByID(voidOrderItemID string) (*models.VoidOrderItem, error) {
+	var item models.VoidOrderItem
+	err := repo.db.Preload("MenuItem").
+		Where("void_order_item_id = ?", voidOrderItemID).
+		First(&item).Error
+	if err != nil {
+		return nil, err
+	}
+	return &item, nil
+}
