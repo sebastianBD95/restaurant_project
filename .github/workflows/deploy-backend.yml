@@ -1,0 +1,92 @@
+name: Deploy Backend
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "restaurant_manager:v*"
+    paths:
+      - "restaurant_manager/**"
+      - ".github/workflows/deploy-backend.yml"
+
+jobs:
+  deploy:
+    name: Deploy Backend to EC2
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write     # for OIDC to AWS
+      contents: read
+    env:
+      ECR_REPOSITORY: restaurant-app-dev-backend
+      IMAGE_TAG: ${{ github.ref_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+        run: |
+          # Build a docker container and push it to ECR
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Build SSM deployment command JSON
+        id: build
+        shell: bash
+        run: |
+          # Create JSON file for deployment command
+          cat > deploy.json << 'EOF'
+          {
+            "commands": [
+              "sudo bash -lc 'set -euo pipefail; \
+                aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}; \
+                docker pull ${{ steps.build-image.outputs.image }}; \
+                docker stop restaurant-manager || true; \
+                docker rm restaurant-manager || true; \
+                docker run -d --name restaurant-manager --restart unless-stopped -p 8080:8080 -e APP_ENV=prod ${{ steps.build-image.outputs.image }}; \
+                docker ps'"
+            ]
+          }
+          EOF
+
+      - name: Deploy to EC2
+        id: deploy
+        run: |
+          CMD_ID=$(aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
+            --comment "Deploy backend $GITHUB_SHA" \
+            --parameters file://deploy.json \
+            --query 'Command.CommandId' \
+            --output text)
+          echo "cmd_id=$CMD_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for deployment completion
+        run: aws ssm wait command-executed --command-id "${{ steps.deploy.outputs.cmd_id }}" --instance-id "${{ secrets.EC2_INSTANCE_ID }}"
+
+      - name: Report deployment status
+        run: |
+          aws ssm get-command-invocation \
+            --command-id "${{ steps.deploy.outputs.cmd_id }}" \
+            --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
+            --query 'Status' --output text
+
+      - name: Health check
+        run: |
+          sleep 10
+          curl -f http://${{ secrets.EC2_INSTANCE_ID }}:8080/health || echo "Health check failed"
