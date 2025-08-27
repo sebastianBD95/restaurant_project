@@ -38,15 +38,6 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_REGION }}
-          mask-aws-account-id: false
-
-      - name: Who am I?
-        run: |
-          echo "AWS Region: ${AWS_REGION:-$AWS_DEFAULT_REGION}"
-          aws sts get-caller-identity
-
-      - name: Echo account id from action output
-        run: echo "Account from action output = ${{ steps.awscreds.outputs.aws-account-id }}"
 
       - name: Upload migrations to S3
         run: aws s3 cp migrations.tgz s3://${{ secrets.MIGRATIONS_BUCKET }}/${{ env.S3_KEY }} --sse AES256
