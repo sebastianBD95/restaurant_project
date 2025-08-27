@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - "restaurant_manager:v*"
+      - "restaurant_manager/v*"
     paths:
       - "restaurant_manager/**"
       - ".github/workflows/deploy-backend.yml"
