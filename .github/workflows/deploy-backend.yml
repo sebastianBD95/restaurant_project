@@ -48,6 +48,7 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG" >> $GITHUB_OUTPUT
+          echo "Built image: $ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG"
 
   deploy:
     name: Deploy to EC2
@@ -74,11 +75,21 @@ jobs:
           # Debug: Print the image variable
           echo "Image from build job: ${{ needs.build.outputs.image }}"
           
+          # Fallback: Construct image name if output is empty
+          if [ -z "${{ needs.build.outputs.image }}" ]; then
+            DOCKER_TAG=$(echo ${{ github.ref_name }} | sed 's/restaurant_manager\//restaurant_manager_/')
+            IMAGE_NAME="${{ steps.login-ecr.outputs.registry }}/restaurant-app-dev-backend:$DOCKER_TAG"
+            echo "Using fallback image name: $IMAGE_NAME"
+          else
+            IMAGE_NAME="${{ needs.build.outputs.image }}"
+            echo "Using build job output: $IMAGE_NAME"
+          fi
+          
           # Create JSON file for deployment command
-          cat > deploy.json << 'EOF'
+          cat > deploy.json << EOF
           {
             "commands": [
-              "sudo bash -lc 'set -euo pipefail; echo \"Starting deployment...\"; aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}; echo \"Pulling image: ${{ needs.build.outputs.image }}\"; docker pull \"${{ needs.build.outputs.image }}\"; docker stop restaurant-manager || true; docker rm restaurant-manager || true; docker run -d --name restaurant-manager --restart unless-stopped -p 8080:8080 -e APP_ENV=prod \"${{ needs.build.outputs.image }}\"; docker ps'"
+              "sudo bash -lc 'set -euo pipefail; echo \"Starting deployment...\"; aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}; echo \"Pulling image: $IMAGE_NAME\"; docker pull \"$IMAGE_NAME\"; docker stop restaurant-manager || true; docker rm restaurant-manager || true; docker run -d --name restaurant-manager --restart unless-stopped -p 8080:8080 -e APP_ENV=prod \"$IMAGE_NAME\"; docker ps'"
             ]
           }
           EOF
