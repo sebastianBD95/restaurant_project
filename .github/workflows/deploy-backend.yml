@@ -44,8 +44,8 @@ jobs:
         run: |
           # Convert tag format from restaurant_manager/v0.0.0 to restaurant_manager_v0.0.0
           DOCKER_TAG=$(echo $IMAGE_TAG | sed 's/restaurant_manager\//restaurant_manager_/')
-          # Build a docker container and push it to ECR
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG .
+          # Build a docker container for ARM64 and push it to ECR
+          docker build --platform linux/arm64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG" >> $GITHUB_OUTPUT
           echo "Built image: $ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG"
