@@ -17,8 +17,8 @@ WORKDIR /usr/src/app
 # Copy the binary from builder stage
 COPY --from=builder /usr/local/bin/app /usr/local/bin/app
 
-# Copy environment template and rename to .env
-COPY ./restaurant_manager/.env.prod.template ./.env
+# Copy environment template and rename to .env (same directory as binary)
+COPY ./restaurant_manager/.env.prod.template /usr/local/bin/.env
 
 # Copy JWT keys (if they exist in the build context)
 COPY ./restaurant_manager/resources/private.key ./resources/private.key
