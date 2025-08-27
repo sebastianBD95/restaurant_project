@@ -1,10 +1,12 @@
 name: Go Integration Test Report
 
 on:
-  push:
-    branches: [ master ]
+
   pull_request:
     branches: [ master ]
+    paths:
+      - "restaurant_manager/**"
+      - ".github/workflows/go-test-report.yml"
 
 jobs:
   test:
