@@ -1,0 +1,86 @@
+
+
+name: DB Migrations (Flyway via SSM)
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Optional Flyway target version (e.g., 1 or 1.2.3). Leave blank for latest."
+        required: false
+  push:
+    branches: [ main ]
+    paths:
+      - "db_versioning/**"
+      - ".github/workflows/db-migration.yml"
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write     # for OIDC to AWS
+      contents: read
+    env:
+      S3_KEY: migrations/${{ github.sha }}.tgz
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Archive migrations
+        run: |
+          test -d db_versioning || { echo "db_versioning/ not found"; exit 1; }
+          tar -czf migrations.tgz db_versioning
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Upload migrations to S3
+        run: aws s3 cp migrations.tgz s3://${{ secrets.MIGRATIONS_BUCKET }}/${{ env.S3_KEY }} --sse AES256
+
+      - name: Build SSM command JSON
+        id: build
+        shell: bash
+        run: |
+          # Build a single command string that downloads the tar, extracts to /opt/db_versioning,
+          # pulls Flyway, and runs migrate against RDS with TLS.
+          CMD="sudo bash -lc 'set -euo pipefail; \
+            mkdir -p /opt; \
+            aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/${{ env.S3_KEY }} /tmp/migrations.tgz; \
+            rm -rf /opt/db_versioning; \
+            tar -xzf /tmp/migrations.tgz -C /opt/; \
+            docker pull flyway/flyway:10; \
+            docker run --rm -v /opt/db_versioning:/flyway/sql flyway/flyway:10 \
+              -url=\"jdbc:postgresql://${{ secrets.DB_HOST }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }}?sslmode=require\" \
+              -user=\"${{ secrets.DB_USER }}\" \
+              -password=\"${{ secrets.DB_PASS }}\" \
+              -schemas=servu \
+              -connectRetries=30 \
+              $([[ -n \"${{ github.event.inputs.target }}\" ]] && printf \"%s\" \"-target=${{ github.event.inputs.target }}\") \
+              migrate'"
+          printf '{"commands": ["%s"]}\n' "$CMD" > cmd.json
+
+      - name: Send SSM command to EC2
+        id: ssm
+        run: |
+          CMD_ID=$(aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
+            --comment "Flyway migrate $GITHUB_SHA" \
+            --parameters file://cmd.json \
+            --query 'Command.CommandId' \
+            --output text)
+          echo "cmd_id=$CMD_ID" >> $GITHUB_OUTPUT
+
+      - name: Wait for completion
+        run: aws ssm wait command-executed --command-id "${{ steps.ssm.outputs.cmd_id }}" --instance-id "${{ secrets.EC2_INSTANCE_ID }}"
+
+      - name: Report status
+        run: |
+          aws ssm get-command-invocation \
+            --command-id "${{ steps.ssm.outputs.cmd_id }}" \
+            --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
+            --query 'Status' --output text

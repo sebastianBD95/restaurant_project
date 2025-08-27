@@ -22,8 +22,17 @@ var publicKey *rsa.PublicKey
 
 func SetJWT(cfg *config.Properties) {
 
-	privateKeyPath := "resources/private.key"
-	publicKeyPath := "resources/public.key"
+	privateKeyPath := cfg.RestaurantManager.JWT.PrivateKeyPath
+	publicKeyPath := cfg.RestaurantManager.JWT.PublicKeyPath
+
+	// Fallback to default paths if not configured
+	if privateKeyPath == "" {
+		privateKeyPath = "resources/private.key"
+	}
+	if publicKeyPath == "" {
+		publicKeyPath = "resources/public.key"
+	}
+
 	absPath, err := filepath.Abs(privateKeyPath)
 	if err != nil {
 		log.Error().Msgf("Failed to access path: %v", absPath)

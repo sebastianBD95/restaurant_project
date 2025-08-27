@@ -1,5 +1,8 @@
 restaurant_manager:
-  database: "postgres://postgres:postgres@postgres:5432/servu?sslmode=disable"
+  database: "${DATABASE_URL}"
+  jwt:
+    private_key_path: "${JWT_PRIVATE_KEY_PATH}"
+    public_key_path: "${JWT_PUBLIC_KEY_PATH}"
   aws:
-    profile: "devprofile"
-    region: "us-east-1"
+    profile: "${AWS_PROFILE}"
+    region: "${AWS_REGION}"
