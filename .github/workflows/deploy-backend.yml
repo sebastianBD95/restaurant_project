@@ -1,6 +1,7 @@
-name: Deploy Backend
+name: Build and Deploy Backend
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - "restaurant_manager/v*"
@@ -9,8 +10,8 @@ on:
       - ".github/workflows/deploy-backend.yml"
 
 jobs:
-  deploy:
-    name: Deploy Backend to EC2
+  build:
+    name: Build and Push to ECR
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -18,6 +19,8 @@ jobs:
     env:
       ECR_REPOSITORY: restaurant-app-dev-backend
       IMAGE_TAG: ${{ github.ref_name }}
+    outputs:
+      image: ${{ steps.build-image.outputs.image }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,6 +49,24 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG" >> $GITHUB_OUTPUT
 
+  deploy:
+    name: Deploy to EC2
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
       - name: Build SSM deployment command JSON
         id: build
         shell: bash
@@ -54,13 +75,7 @@ jobs:
           cat > deploy.json << 'EOF'
           {
             "commands": [
-              "sudo bash -lc 'set -euo pipefail; \
-                aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}; \
-                docker pull ${{ steps.build-image.outputs.image }}; \
-                docker stop restaurant-manager || true; \
-                docker rm restaurant-manager || true; \
-                docker run -d --name restaurant-manager --restart unless-stopped -p 8080:8080 -e APP_ENV=prod ${{ steps.build-image.outputs.image }}; \
-                docker ps'"
+              "sudo bash -lc 'set -euo pipefail; aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}; docker pull ${{ needs.build.outputs.image }}; docker stop restaurant-manager || true; docker rm restaurant-manager || true; docker run -d --name restaurant-manager --restart unless-stopped -p 8080:8080 -e APP_ENV=prod ${{ needs.build.outputs.image }}; docker ps'"
             ]
           }
           EOF
