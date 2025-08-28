@@ -1,0 +1,8 @@
+restaurant_manager:
+  database: ${DATABASE_URL}
+  aws:
+    profile: ${AWS_PROFILE}
+    region: ${AWS_REGION}
+  jwt:
+    private_key_path: ${JWT_PRIVATE_KEY_PATH}
+    public_key_path: ${JWT_PUBLIC_KEY_PATH}

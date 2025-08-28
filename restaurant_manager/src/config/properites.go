@@ -31,13 +31,13 @@ type awsCreds struct {
 func LoadConfig() *Properties {
 	err := godotenv.Load()
 	if err != nil {
-		log.Error().Msg("Error loading .env file")
+		log.Error().Msg("Error loading .env file " + err.Error())
 	}
 
 	env := os.Getenv("APP_ENV")
 	log.Info().Msg("APP_ENV: " + env)
 	if env == "" {
-		env = "dev"
+		env = "prod"
 	}
 
 	resourcePath := "resources/restaurant_manager." + env + ".yaml"

@@ -3,3 +3,6 @@ restaurant_manager:
   aws:
     profile: "devprofile"
     region: "us-east-1"
+  jwt:
+    private_key_path: "/usr/src/app/resources/private.key"
+    public_key_path: "/usr/src/app/resources/public.key"
