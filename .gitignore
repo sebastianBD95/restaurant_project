@@ -118,8 +118,8 @@ logs/
 # Environment variables
 .env
 .env.local
-.env.*
-resources/.env.*
+.env.*.local
+resources/.env.*.local
 
 # Temporary files
 *.tmp
