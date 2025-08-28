@@ -1,8 +1,6 @@
 -- Enable the UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE DATABASE IF NOT EXISTS servu;
-USE servu;
 -- Create schema
 CREATE SCHEMA IF NOT EXISTS servu;
 
