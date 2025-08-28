@@ -45,7 +45,7 @@ jobs:
           cat > cmd.json << 'EOF'
           {
             "commands": [
-              "sudo bash -lc 'set -euo pipefail; mkdir -p /opt; aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/${{ env.S3_KEY }} /tmp/migrations.tgz; rm -rf /opt/db_versioning; tar -xzf /tmp/migrations.tgz -C /opt/; docker pull flyway/flyway:latest; docker run --rm -v /opt/db_versioning:/flyway/sql flyway/flyway:latest -url=\"${{ secrets.DB_URL }}\" -user=\"${{ secrets.DB_USER }}\" -password=\"${{ secrets.DB_PASS }}\" -schemas=servu -connectRetries=30 migrate'"
+              "bash -lc 'set -euo pipefail; mkdir -p /opt; aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/${{ env.S3_KEY }} /tmp/migrations.tgz; rm -rf /opt/db_versioning; tar -xzf /tmp/migrations.tgz -C /opt/; docker pull flyway/flyway:latest; docker run --rm -v /opt/db_versioning:/flyway/sql flyway/flyway:latest -url=\"${{ secrets.DB_URL }}\" -user=\"${{ secrets.DB_USER }}\" -password=\"${{ secrets.DB_PASS }}\" -schemas=servu -connectRetries=30 migrate'"
             ]
           }
           EOF
@@ -109,7 +109,7 @@ jobs:
           cat > cmd.json << 'EOF'
           {
             "commands": [
-              "sudo bash -lc 'set -euo pipefail; mkdir -p /opt; aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/${{ env.S3_KEY }} /tmp/migrations.tgz; rm -rf /opt/db_versioning; tar -xzf /tmp/migrations.tgz -C /opt/; docker pull flyway/flyway:latest; docker run --rm -v /opt/db_versioning:/flyway/sql flyway/flyway:latest -url=\"${{ secrets.DB_URL }}\" -user=\"${{ secrets.DB_USER }}\" -password=\"${{ secrets.DB_PASS }}\" -schemas=servu -connectRetries=30 undo'"
+              "bash -lc 'set -euo pipefail; mkdir -p /opt; aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/${{ env.S3_KEY }} /tmp/migrations.tgz; rm -rf /opt/db_versioning; tar -xzf /tmp/migrations.tgz -C /opt/; docker pull flyway/flyway:latest; docker run --rm -v /opt/db_versioning:/flyway/sql flyway/flyway:latest -url=\"${{ secrets.DB_URL }}\" -user=\"${{ secrets.DB_USER }}\" -password=\"${{ secrets.DB_PASS }}\" -schemas=servu -connectRetries=30 undo'"
             ]
           }
           EOF

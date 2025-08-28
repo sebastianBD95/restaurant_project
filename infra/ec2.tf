@@ -39,22 +39,35 @@ locals {
   user_data = <<-EOF
     #!/bin/bash
     set -eux
+    
+    # Update system
     dnf update -y
-    dnf install -y docker awscli amazon-ssm-agent
+    
+    # Install Docker and other packages
+    dnf install -y docker awscli amazon-ssm-agent curl
+    
+    # Start and enable Docker
     systemctl enable --now docker
-    # ssm agent
+    
+    # Install Docker Compose
+    curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    chmod +x /usr/local/bin/docker-compose
+    
+    # Create docker group and add ec2-user to it (to avoid sudo)
+    usermod -aG docker ec2-user
+    
+    # Start SSM agent
     systemctl enable --now amazon-ssm-agent
-    # ECR login
-    aws ecr get-login-password --region ${var.region} | docker login --username AWS --password-stdin ${aws_ecr_repository.backend.repository_url}
-    # Pull and run app (replace :latest if you use semantic tags)
-    docker pull ${aws_ecr_repository.backend.repository_url}:latest || true
-    # Simple API on port 80 (if your Go app listens on 8080, add -p 80:8080)
-    docker run -d --restart always --name app -p 80:8080 \
-      -e DB_HOST=${aws_db_instance.pg.address} \
-      -e DB_USER=${var.db_username} \
-      -e DB_PASS='${var.db_password}' \
-      -e DB_NAME=${var.db_name} \
-      ${aws_ecr_repository.backend.repository_url}:latest
+    
+    # Create application directory
+    mkdir -p /opt/restaurant-manager
+    chown ec2-user:ec2-user /opt/restaurant-manager
+    
+    # ECR login (will be done by deployment script)
+    # aws ecr get-login-password --region ${var.region} | docker login --username AWS --password-stdin ${aws_ecr_repository.backend.repository_url}
+    
+    # Note: The actual deployment will be handled by the GitHub Actions workflow
+    # which will pull the image and run docker-compose
   EOF
 }
 
