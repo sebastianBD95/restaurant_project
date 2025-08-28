@@ -68,6 +68,109 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Copy deployment files to EC2
+        run: |
+          # Create deployment files content
+          cat > docker-compose.production.yaml << 'EOF'
+          version: "3.9"
+          
+          services:
+            restaurant-manager:
+              image: ${ECR_REGISTRY}/restaurant-app-dev-backend:${IMAGE_TAG}
+              container_name: restaurant-manager
+              restart: unless-stopped
+              expose:
+                - "8080"
+              environment:
+                - APP_ENV=prod
+                - DATABASE_URL=${DATABASE_URL}
+                - JWT_PRIVATE_KEY_PATH=/usr/local/bin/resources/private.key
+                - JWT_PUBLIC_KEY_PATH=/usr/local/bin/resources/public.key
+                - AWS_PROFILE=${AWS_PROFILE}
+                - AWS_REGION=${AWS_REGION}
+              healthcheck:
+                test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+                interval: 30s
+                timeout: 10s
+                retries: 3
+                start_period: 40s
+              networks:
+                - app-network
+          
+            caddy:
+              image: caddy:2-alpine
+              container_name: caddy-proxy
+              restart: unless-stopped
+              ports:
+                - "80:80"
+                - "443:443"
+              volumes:
+                - ./Caddyfile:/etc/caddy/Caddyfile:ro
+                - caddy_data:/data
+                - caddy_config:/config
+              depends_on:
+                - restaurant-manager
+              networks:
+                - app-network
+          
+          volumes:
+            caddy_data:
+            caddy_config:
+          
+          networks:
+            app-network:
+              driver: bridge
+          EOF
+          
+          cat > Caddyfile << 'EOF'
+          # Caddyfile for Restaurant Manager API
+          api.servu.com.co {
+              # Reverse proxy to the Go application
+              reverse_proxy restaurant-manager:8080 {
+                  # Health check
+                  health_uri /health
+                  health_interval 30s
+                  health_timeout 10s
+                  health_status 200
+              }
+          
+              # Logging
+              log {
+                  output file /var/log/caddy/api.log
+                  format json
+              }
+          
+              # Security headers
+              header {
+                  # Remove server header
+                  -Server
+                  # Security headers
+                  X-Content-Type-Options nosniff
+                  X-Frame-Options DENY
+                  X-XSS-Protection "1; mode=block"
+                  Referrer-Policy strict-origin-when-cross-origin
+                  # CORS headers for API
+                  Access-Control-Allow-Origin *
+                  Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+                  Access-Control-Allow-Headers "Content-Type, Authorization"
+              }
+          
+              # Handle preflight requests
+              @options {
+                  method OPTIONS
+              }
+              respond @options 200 {
+                  header Access-Control-Allow-Origin *
+                  header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+                  header Access-Control-Allow-Headers "Content-Type, Authorization"
+              }
+          }
+          EOF
+          
+          # Upload to S3 for deployment
+          aws s3 cp docker-compose.production.yaml s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/docker-compose.production.yaml
+          aws s3 cp Caddyfile s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/Caddyfile
+
       - name: Build SSM deployment command JSON
         id: build
         shell: bash
@@ -85,11 +188,15 @@ jobs:
             echo "Using build job output: $IMAGE_NAME"
           fi
           
+          # Extract registry and tag from image name
+          ECR_REGISTRY=$(echo $IMAGE_NAME | cut -d'/' -f1)
+          IMAGE_TAG=$(echo $IMAGE_NAME | cut -d':' -f2)
+          
           # Create JSON file for deployment command
           cat > deploy.json << EOF
           {
             "commands": [
-              "sudo bash -lc 'set -euo pipefail; echo \"Starting deployment...\"; aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}; echo \"Pulling image: $IMAGE_NAME\"; docker pull \"$IMAGE_NAME\"; docker stop restaurant-manager || true; docker rm restaurant-manager || true; docker run -d --name restaurant-manager --restart unless-stopped -p 8080:8080 -e APP_ENV=prod \"$IMAGE_NAME\"; docker ps'"
+              "sudo bash -lc 'set -euo pipefail; echo \"Starting deployment...\"; aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}; echo \"Pulling image: $IMAGE_NAME\"; docker pull \"$IMAGE_NAME\"; mkdir -p /opt/restaurant-manager; cd /opt/restaurant-manager; aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/docker-compose.production.yaml .; aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/Caddyfile .; echo \"ECR_REGISTRY=$ECR_REGISTRY\" > .env; echo \"IMAGE_TAG=$IMAGE_TAG\" >> .env; echo \"DATABASE_URL=${{ secrets.DATABASE_URL }}\" >> .env; echo \"AWS_PROFILE=${{ secrets.AWS_PROFILE }}\" >> .env; echo \"AWS_REGION=${{ secrets.AWS_REGION }}\" >> .env; echo \"APP_ENV=prod\" >> .env; docker-compose -f docker-compose.production.yaml down || true; docker-compose -f docker-compose.production.yaml up -d; docker-compose -f docker-compose.production.yaml ps'"
             ]
           }
           EOF
@@ -119,4 +226,4 @@ jobs:
       - name: Health check
         run: |
           sleep 10
-          curl -f http://${{ secrets.EC2_INSTANCE_ID }}:8080/health || echo "Health check failed"
+          curl -f http://${{ secrets.EC2_INSTANCE_ID }}/health || echo "Health check failed"

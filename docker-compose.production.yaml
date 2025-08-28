@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  restaurant-manager:
+    image: ${ECR_REGISTRY}/restaurant-app-dev-backend:${IMAGE_TAG}
+    container_name: restaurant-manager
+    restart: unless-stopped
+    expose:
+      - "8080"
+    environment:
+      - APP_ENV=prod
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_PRIVATE_KEY_PATH=/usr/local/bin/resources/private.key
+      - JWT_PUBLIC_KEY_PATH=/usr/local/bin/resources/public.key
+      - AWS_PROFILE=${AWS_PROFILE}
+      - AWS_REGION=${AWS_REGION}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - app-network
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - restaurant-manager
+    networks:
+      - app-network
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  app-network:
+    driver: bridge

@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"restaurant_manager/src/application/interfaces/handlers"
@@ -55,6 +56,13 @@ func SetupRoutes(userHandler *handlers.UserHandler,
 
 	//r.Use(logRequests)
 	r.Use(accessControlMiddleware)
+
+	// Health check endpoint
+	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{"status": "healthy"})
+	}).Methods("GET")
 
 	r.HandleFunc("/register", userHandler.RegisterUser).Methods("POST", "OPTIONS")
 	r.HandleFunc("/login", userHandler.LoginUser).Methods("POST", "OPTIONS")
