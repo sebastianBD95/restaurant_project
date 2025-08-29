@@ -39,35 +39,15 @@ locals {
   user_data = <<-EOF
     #!/bin/bash
     set -eux
-    
-    # Update system
     dnf update -y
-    
-    # Install Docker and other packages
-    dnf install -y docker awscli amazon-ssm-agent curl
-    
-    # Start and enable Docker
+    dnf install -y docker awscli amazon-ssm-agent
     systemctl enable --now docker
-    
-    # Install Docker Compose
-    curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    chmod +x /usr/local/bin/docker-compose
-    
-    # Create docker group and add ec2-user to it (to avoid sudo)
-    usermod -aG docker ec2-user
-    
-    # Start SSM agent
+    # ssm agent
     systemctl enable --now amazon-ssm-agent
-    
-    # Create application directory
-    mkdir -p /opt/restaurant-manager
-    chown ec2-user:ec2-user /opt/restaurant-manager
-    
-    # ECR login (will be done by deployment script)
-    # aws ecr get-login-password --region ${var.region} | docker login --username AWS --password-stdin ${aws_ecr_repository.backend.repository_url}
-    
-    # Note: The actual deployment will be handled by the GitHub Actions workflow
-    # which will pull the image and run docker-compose
+    # ECR login
+    aws ecr get-login-password --region ${var.region} | docker login --username AWS --password-stdin ${aws_ecr_repository.backend.repository_url}
+    curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+    chmod +x /usr/local/bin/docker-compose
   EOF
 }
 

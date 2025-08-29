@@ -37,7 +37,7 @@ func LoadConfig() *Properties {
 	env := os.Getenv("APP_ENV")
 	log.Info().Msg("APP_ENV: " + env)
 	if env == "" {
-		env = "prod"
+		env = "dev"
 	}
 
 	resourcePath := "resources/restaurant_manager." + env + ".yaml"
