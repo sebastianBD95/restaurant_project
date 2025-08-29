@@ -1,7 +1,9 @@
 import axios from 'axios';
 import { UserData } from '../interfaces/autho';
 
-const API_URL = 'http://localhost:8080';
+import config from '../config/config';
+
+const API_URL = config.API_URL;
 
 // Define the structure of the response (adjust according to your backend response)
 interface AuthResponse {

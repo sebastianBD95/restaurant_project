@@ -1,5 +1,7 @@
 import { CreateTableRequest, CreateTableResponse, Table } from '../interfaces/table';
-const API_BASE_URL = 'http://localhost:8080';
+import config from '../config/config';
+
+const API_BASE_URL = config.API_URL;
 
 
 export const createTable = async (data: CreateTableRequest): Promise<CreateTableResponse> => {

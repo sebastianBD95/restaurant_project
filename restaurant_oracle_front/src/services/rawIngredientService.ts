@@ -1,7 +1,8 @@
 import { getCookie } from '../pages/utils/cookieManager';
 import { RawIngredient } from '../interfaces/rawIngredients';
+import config from '../config/config';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+const API_BASE_URL = config.API_URL;
 
 
 

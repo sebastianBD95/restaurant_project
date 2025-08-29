@@ -1,7 +1,9 @@
 import axios from 'axios';
 import { ResturantDataRequest, ResturantDataResponse } from '../interfaces/restaurant';
+import config from '../config/config';
 
-const API_URL = 'http://localhost:8080';
+const API_URL = config.API_URL;
+
 export const addRestarurant = async (
   formData: ResturantDataRequest,
   token: string

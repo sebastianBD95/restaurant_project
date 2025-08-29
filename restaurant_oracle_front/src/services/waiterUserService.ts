@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { WaiterUser } from '../interfaces/waiter';
-const API_URL = 'http://localhost:8080';
+import config from '../config/config';
+
+const API_URL = config.API_URL;
 
 
 

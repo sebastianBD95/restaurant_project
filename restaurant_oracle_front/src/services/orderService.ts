@@ -1,5 +1,6 @@
 import { getCookie } from '../pages/utils/cookieManager';
 import { OrderRequest, OrderStatusUpdate, OrderItem } from '../interfaces/order';
+import config from '../config/config';
 
 export const placeOrder = async (orderData: OrderRequest) => {
   const token = getCookie(document.cookie, 'token');
@@ -7,7 +8,7 @@ export const placeOrder = async (orderData: OrderRequest) => {
     throw new Error('No authentication token found');
   }
 
-  const response = await fetch('http://localhost:8080/orders', {
+  const response = await fetch(`${config.API_URL}/orders`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -29,7 +30,7 @@ export const getOrdersByRestaurant = async (restaurantId: string, status: string
     throw new Error('No authentication token found');
   }
 
-  const response = await fetch(`http://localhost:8080/orders?restaurant_id=${restaurantId}&status=${status}`, {
+  const response = await fetch(`${config.API_URL}/orders?restaurant_id=${restaurantId}&status=${status}`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`
@@ -49,7 +50,7 @@ export const updateOrderStatus = async (orderData: OrderStatusUpdate) => {
     throw new Error('No authentication token found');
   }
 
-  const response = await fetch('http://localhost:8080/orders', {
+  const response = await fetch(`${config.API_URL}/orders`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -71,7 +72,7 @@ export const addItemsToOrder = async (orderId: string, items: OrderItem[]) => {
     throw new Error('No authentication token found');
   }
 
-  const response = await fetch(`http://localhost:8080/orders/${orderId}/items`, {
+  const response = await fetch(`${config.API_URL}/orders/${orderId}/items`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -93,7 +94,7 @@ export const updateOrderItem = async (orderId: string, menuItemId: string, obser
     throw new Error('No authentication token found');
   }
   
-  const response = await fetch(`http://localhost:8080/orders/${orderId}/items/${menuItemId}`, {
+  const response = await fetch(`${config.API_URL}/orders/${orderId}/items/${menuItemId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -110,7 +111,7 @@ export const cancelOrderItem = async (orderId: string, menuItemId: string, obser
     throw new Error('No authentication token found');
   }
 
-  const response = await fetch(`http://localhost:8080/orders/${orderId}/items/${menuItemId}`, {
+  const response = await fetch(`${config.API_URL}/orders/${orderId}/items/${menuItemId}`, {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}`
@@ -129,7 +130,7 @@ export const createVoidOrderItem = async (orderId: string, menuItemId: string, r
     throw new Error('No authentication token found');
   }
   
-  const response = await fetch(`http://localhost:8080/orders/${orderId}/items/${menuItemId}/void`, {
+  const response = await fetch(`${config.API_URL}/orders/${orderId}/items/${menuItemId}/void`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -145,7 +146,7 @@ export const getVoidOrders = async (restaurantId: string) => {
     throw new Error('No authentication token found');
   }
 
-  const response = await fetch(`http://localhost:8080/restaurants/${restaurantId}/order-items/void`, {
+  const response = await fetch(`${config.API_URL}/restaurants/${restaurantId}/order-items/void`, {
     method: 'GET',  
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -166,7 +167,7 @@ export const recoverVoidOrderItem = async (voidOrderItemId: string, targetOrderI
     throw new Error('No authentication token found');
   }
 
-  const response = await fetch(`http://localhost:8080/void-order-items/${voidOrderItemId}/recover`, {
+  const response = await fetch(`${config.API_URL}/void-order-items/${voidOrderItemId}/recover`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

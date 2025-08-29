@@ -1,7 +1,9 @@
 import { getCookie } from '../pages/utils/cookieManager';
 import { InventoryItem, InventoryResponse } from '../interfaces/inventory';  
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+import config from '../config/config';
+
+const API_BASE_URL = config.API_URL;
 
 
 
