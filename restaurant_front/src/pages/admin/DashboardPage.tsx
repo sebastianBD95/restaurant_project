@@ -17,9 +17,9 @@ const Dashboard: React.FC = () => {
   return (
     <Flex height="100vh" width="100vw" direction="row">
       {/* Barra lateral de navegación plegable */}
-      <Sidebar 
-        isSidebarOpen={isSidebarOpen} 
-        toggleSidebar={toggleSidebar} 
+      <Sidebar
+        isSidebarOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
         restaurantId={restaurantId}
       />
 

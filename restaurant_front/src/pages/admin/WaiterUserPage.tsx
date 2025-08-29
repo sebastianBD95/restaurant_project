@@ -1,13 +1,13 @@
 import React, { useState, FormEvent, useEffect } from 'react';
-import { 
-  Box, 
-  Button, 
-  Input, 
-  VStack, 
-  Heading, 
-  Text, 
-  Table,  
-  IconButton, 
+import {
+  Box,
+  Button,
+  Input,
+  VStack,
+  Heading,
+  Text,
+  Table,
+  IconButton,
   HStack,
   Field,
   Flex,
@@ -15,22 +15,30 @@ import {
 import { FiTrash2, FiEdit2 } from 'react-icons/fi';
 import { isAdmin } from '../utils/roleUtils';
 import { useNavigate, useParams } from 'react-router-dom';
-import { createWaiterUser, getWaiterUsers, updateWaiterUser, deleteWaiterUser } from '../../services/waiterUserService';
+import {
+  createWaiterUser,
+  getWaiterUsers,
+  updateWaiterUser,
+  deleteWaiterUser,
+} from '../../services/waiterUserService';
 import { WaiterUser } from '../../interfaces/waiter';
 import { Sidebar } from '../../components/ui/navegator';
 import { useSidebar } from '../../hooks/useSidebar';
-import { Toaster, toaster } from "../../components/ui/toaster"
+import { Toaster, toaster } from '../../components/ui/toaster';
 import WaiterUserForm from '../../components/waiters/WaiterUserForm';
 import { stat } from 'fs';
 
-
 // Custom toast function
-const showToast = (title: string, description: string, status: 'success' | 'error' | 'info' = 'info') => {
+const showToast = (
+  title: string,
+  description: string,
+  status: 'success' | 'error' | 'info' = 'info'
+) => {
   toaster.create({
     title: title,
     description: description,
     type: status,
-  })
+  });
 };
 
 interface WaiterFormData {
@@ -49,13 +57,13 @@ const WaiterUserPage: React.FC = () => {
     password: '',
     restaurant_id: '',
   });
-  const [waiters, setWaiters] = useState<Omit<WaiterUser, "password">[]>([]);
+  const [waiters, setWaiters] = useState<Omit<WaiterUser, 'password'>[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { restaurantId } = useParams();
   const { isSidebarOpen, toggleSidebar } = useSidebar();
-  
+
   const navigate = useNavigate();
 
   // Get token from cookie
@@ -69,7 +77,11 @@ const WaiterUserPage: React.FC = () => {
   // Check if user is admin
   useEffect(() => {
     if (!isAdmin()) {
-      showToast('Acceso denegado', 'Solo los administradores pueden acceder a esta página', 'error');
+      showToast(
+        'Acceso denegado',
+        'Solo los administradores pueden acceder a esta página',
+        'error'
+      );
       navigate('/');
     }
   }, [navigate]);
@@ -83,7 +95,7 @@ const WaiterUserPage: React.FC = () => {
         showToast('Error', 'No se encontró el token de autenticación', 'error');
         return;
       }
-      const data = await getWaiterUsers(token,restaurantId!);
+      const data = await getWaiterUsers(token, restaurantId!);
       setWaiters(data);
     } catch (error) {
       showToast('Error', 'No se pudieron cargar los usuarios meseros', 'error');
@@ -98,15 +110,12 @@ const WaiterUserPage: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const validateForm = (formData: WaiterFormData, isEditing: boolean) => {
     return (
-      formData.name &&
-      formData.email &&
-      formData.phone &&
-      (isEditing ? true : formData.password)
+      formData.name && formData.email && formData.phone && (isEditing ? true : formData.password)
     );
   };
 
@@ -130,7 +139,11 @@ const WaiterUserPage: React.FC = () => {
 
       if (isEditing && editingId) {
         await updateWaiterUser(editingId, formData, token);
-        showToast('Usuario actualizado', 'El usuario mesero ha sido actualizado correctamente', 'success');
+        showToast(
+          'Usuario actualizado',
+          'El usuario mesero ha sido actualizado correctamente',
+          'success'
+        );
         setIsEditing(false);
         setEditingId(null);
       } else {
@@ -143,7 +156,7 @@ const WaiterUserPage: React.FC = () => {
         email: '',
         phone: '',
         password: '',
-        restaurant_id: ''
+        restaurant_id: '',
       });
       fetchWaiters();
     } catch (error) {
@@ -153,16 +166,16 @@ const WaiterUserPage: React.FC = () => {
     }
   };
 
-  const handleEdit = (waiter: Omit<WaiterUser,  "password">) => {
-     setFormData({
+  const handleEdit = (waiter: Omit<WaiterUser, 'password'>) => {
+    setFormData({
       name: waiter.name,
       email: waiter.email,
       phone: waiter.phone,
       password: '', // Don't show password for security
-      restaurant_id: restaurantId!
+      restaurant_id: restaurantId!,
     });
     setIsEditing(true);
-    setEditingId(waiter.user_id); 
+    setEditingId(waiter.user_id);
   };
 
   const handleDelete = async (id: string) => {
@@ -173,10 +186,10 @@ const WaiterUserPage: React.FC = () => {
         showToast('Error', 'No se encontró el token de autenticación', 'error');
         return;
       }
-      
+
       await deleteWaiterUser(id, token);
       showToast('Usuario eliminado', 'El usuario mesero ha sido eliminado correctamente', 'info');
-      
+
       fetchWaiters();
     } catch (error) {
       showToast('Error', 'No se pudo eliminar el usuario mesero', 'error');
@@ -191,22 +204,22 @@ const WaiterUserPage: React.FC = () => {
       email: '',
       phone: '',
       password: '',
-      restaurant_id: ''
+      restaurant_id: '',
     });
     setIsEditing(false);
     setEditingId(null);
   };
 
   return (
-    <Flex height="100vh" direction={{ base: "column", md: "row" }}>
-      <Sidebar 
-        isSidebarOpen={isSidebarOpen} 
-        toggleSidebar={toggleSidebar} 
+    <Flex height="100vh" direction={{ base: 'column', md: 'row' }}>
+      <Sidebar
+        isSidebarOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
         restaurantId={restaurantId}
       />
       <Box flex={1} p={{ base: 2, md: 6 }} maxW="100vw" mx="auto">
         <Toaster />
-        <Heading mb={{ base: 4, md: 6 }} fontSize={{ base: "lg", md: "2xl" }}>
+        <Heading mb={{ base: 4, md: 6 }} fontSize={{ base: 'lg', md: '2xl' }}>
           Gestión de Usuarios Meseros
         </Heading>
         <Heading size="md" mb={4}>
@@ -228,7 +241,9 @@ const WaiterUserPage: React.FC = () => {
           overflowX="auto"
           w="100%"
         >
-          <Heading size="md" mb={4}>Lista de Usuarios Meseros</Heading>
+          <Heading size="md" mb={4}>
+            Lista de Usuarios Meseros
+          </Heading>
           <Box overflowX="auto" w="100%">
             <Table.Root minWidth="600px">
               <Table.Header>
@@ -242,14 +257,18 @@ const WaiterUserPage: React.FC = () => {
               <Table.Body>
                 {isLoading ? (
                   <Table.Row>
-                    <Table.Cell colSpan={4}><Text>Cargando usuarios...</Text></Table.Cell>
+                    <Table.Cell colSpan={4}>
+                      <Text>Cargando usuarios...</Text>
+                    </Table.Cell>
                   </Table.Row>
                 ) : waiters.length === 0 ? (
                   <Table.Row>
-                    <Table.Cell colSpan={4}><Text>No hay usuarios meseros registrados.</Text></Table.Cell>
+                    <Table.Cell colSpan={4}>
+                      <Text>No hay usuarios meseros registrados.</Text>
+                    </Table.Cell>
                   </Table.Row>
                 ) : (
-                  waiters.map(waiter => (
+                  waiters.map((waiter) => (
                     <Table.Row key={waiter.role}>
                       <Table.Cell>{waiter.name}</Table.Cell>
                       <Table.Cell>{waiter.email}</Table.Cell>
@@ -285,4 +304,4 @@ const WaiterUserPage: React.FC = () => {
   );
 };
 
-export default WaiterUserPage; 
+export default WaiterUserPage;

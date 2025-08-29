@@ -6,7 +6,16 @@ import { useParams } from 'react-router-dom';
 import TableDistribution from '../../components/orders/TableComponent';
 import { Sidebar } from '../../components/ui/navegator';
 import { useSidebar } from '../../hooks/useSidebar';
-import { getOrdersByRestaurant, updateOrderStatus as updateOrderStatusService, addItemsToOrder, cancelOrderItem, createVoidOrderItem, getVoidOrders, updateOrderItem, recoverVoidOrderItem } from '../../services/orderService';
+import {
+  getOrdersByRestaurant,
+  updateOrderStatus as updateOrderStatusService,
+  addItemsToOrder,
+  cancelOrderItem,
+  createVoidOrderItem,
+  getVoidOrders,
+  updateOrderItem,
+  recoverVoidOrderItem,
+} from '../../services/orderService';
 import OrderCard from '../../components/orders/OrderCard';
 import { toaster } from '../../components/ui/toaster';
 import { getMenus } from '../../services/menuService';
@@ -14,17 +23,16 @@ import { MenuItemResponse } from '../../interfaces/menuItems';
 import { useDisclosure } from '@chakra-ui/react';
 import { getCookie } from '../utils/cookieManager';
 import AddDishesDialog from '../../components/orders/AddDishesDialog';
-import { Order, VoidOrderItem, OrderStatusUpdate, OrderItem} from '../../interfaces/order';
+import { Order, VoidOrderItem, OrderStatusUpdate, OrderItem } from '../../interfaces/order';
 import { useTables } from '../../hooks/useTables';
 import VoidOrderItemCard from '../../components/orders/VoidOrderItemCard';
 import RecoverVoidItemDialog from '../../components/orders/RecoverVoidItemDialog';
 
-
 const statusMap: Record<string, string> = {
-  'ordered': 'Pedido',
-  'delivered': 'Entregado a la mesa',
-  'paid': 'Pagado',
-  'canceled': 'Cancelado'
+  ordered: 'Pedido',
+  delivered: 'Entregado a la mesa',
+  paid: 'Pagado',
+  canceled: 'Cancelado',
 };
 
 const Ordenes: React.FC = () => {
@@ -32,7 +40,12 @@ const Ordenes: React.FC = () => {
   const [voidOrders, setVoidOrders] = useState<VoidOrderItem[]>([]);
   const { restaurantId } = useParams();
   const { isSidebarOpen, toggleSidebar } = useSidebar();
-  const { tables: mesas, loading: tablesLoading, error: tablesError, fetchTables } = useTables(restaurantId);
+  const {
+    tables: mesas,
+    loading: tablesLoading,
+    error: tablesError,
+    fetchTables,
+  } = useTables(restaurantId);
   const [menuItems, setMenuItems] = useState<MenuItemResponse[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [selectedDishes, setSelectedDishes] = useState<{ [id: string]: number }>({});
@@ -40,17 +53,16 @@ const Ordenes: React.FC = () => {
   const [isRecoverDialogOpen, setIsRecoverDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedVoidItem, setSelectedVoidItem] = useState<VoidOrderItem | null>(null);
-  const categories = Array.from(new Set(menuItems.map(item => item.category)));
+  const categories = Array.from(new Set(menuItems.map((item) => item.category)));
 
   const fetchOrders = async () => {
     try {
       if (restaurantId) {
-        const orders = await getOrdersByRestaurant(restaurantId,"ordered");
-        const ordersPrepared = await getOrdersByRestaurant(restaurantId,"prepared");
-        const ordersDelivered = await getOrdersByRestaurant(restaurantId,"delivered");
-       
+        const orders = await getOrdersByRestaurant(restaurantId, 'ordered');
+        const ordersPrepared = await getOrdersByRestaurant(restaurantId, 'prepared');
+        const ordersDelivered = await getOrdersByRestaurant(restaurantId, 'delivered');
+
         setOrders(orders.concat(ordersPrepared).concat(ordersDelivered));
-        
       }
     } catch (error) {
       toaster.create({
@@ -74,7 +86,7 @@ const Ordenes: React.FC = () => {
     try {
       const token = getCookie(document.cookie, 'token');
       const items = await getMenus(token!, restaurantId);
-      setMenuItems(items.filter(item => item.available && !item.hidden));
+      setMenuItems(items.filter((item) => item.available && !item.hidden));
     } catch (error) {
       setMenuItems([]);
     }
@@ -90,21 +102,21 @@ const Ordenes: React.FC = () => {
     try {
       let orderStatusUpdate: OrderStatusUpdate = {
         order_id: orderId,
-        status: newStatus
+        status: newStatus,
       };
       if (newStatus === 'prepared') {
         duration = duration || 0;
         orderStatusUpdate.time_to_prepare = duration;
-      }else if (newStatus === 'delivered') {
+      } else if (newStatus === 'delivered') {
         duration = duration || 0;
         orderStatusUpdate.time_to_deliver = duration;
-      }else if (newStatus === 'paid') {
+      } else if (newStatus === 'paid') {
         duration = duration || 0;
         orderStatusUpdate.time_to_pay = duration;
       }
-      
+
       await updateOrderStatusService(orderStatusUpdate);
-      
+
       // Wait for the orders to be refreshed
       await fetchOrders();
       await fetchTables();
@@ -112,7 +124,6 @@ const Ordenes: React.FC = () => {
       console.error('Error updating order status:', error);
     }
   };
-
 
   const voidOrderItem = async (orderId: string, menuItemId: string, observation: string) => {
     // TODO: Call backend to void the item, then refresh orders
@@ -132,10 +143,14 @@ const Ordenes: React.FC = () => {
     }
   };
 
-  const cancelOrderItemAction = async (orderId: string, menuItemId: string, observation: string) => {
+  const cancelOrderItemAction = async (
+    orderId: string,
+    menuItemId: string,
+    observation: string
+  ) => {
     console.log('Cancel item', orderId, menuItemId, observation);
     try {
-      await cancelOrderItem(orderId,menuItemId, observation);
+      await cancelOrderItem(orderId, menuItemId, observation);
       await fetchOrders();
       await fetchTables();
       toaster.create({
@@ -153,7 +168,12 @@ const Ordenes: React.FC = () => {
     }
   };
 
-  const updateOrderItemAction = async (orderId: string, menuItemId: string, observation: string, status: string) => {
+  const updateOrderItemAction = async (
+    orderId: string,
+    menuItemId: string,
+    observation: string,
+    status: string
+  ) => {
     console.log('Update item', orderId, menuItemId, observation, status);
     try {
       await updateOrderItem(orderId, menuItemId, observation, status);
@@ -175,7 +195,7 @@ const Ordenes: React.FC = () => {
       const createdAt = new Date(voidItem.created_at).getTime();
       const now = new Date().getTime();
       const elapsedMinutes = Math.floor((now - createdAt) / 1000 / 60);
-      
+
       if (elapsedMinutes >= 20) {
         toaster.create({
           title: 'Tiempo Expirado',
@@ -185,14 +205,14 @@ const Ordenes: React.FC = () => {
         return;
       }
     }
-    
+
     setSelectedVoidItem(voidItem);
     setIsRecoverDialogOpen(true);
   };
 
   const recoverVoidOrderItemAction = async (voidOrderItemId: string, targetOrderId: string) => {
     console.log('Recover void item', voidOrderItemId, targetOrderId);
-    console.log('Available orders', orders);  
+    console.log('Available orders', orders);
     try {
       await recoverVoidOrderItem(voidOrderItemId, targetOrderId);
       await fetchOrders();
@@ -221,13 +241,13 @@ const Ordenes: React.FC = () => {
 
   const handleDishQuantityChange = (menu_item_id: string, quantity: number) => {
     if (!quantity || isNaN(quantity)) {
-      setSelectedDishes(prev => {
+      setSelectedDishes((prev) => {
         const updated = { ...prev };
         delete updated[menu_item_id];
         return updated;
       });
     } else {
-      setSelectedDishes(prev => ({ ...prev, [menu_item_id]: quantity }));
+      setSelectedDishes((prev) => ({ ...prev, [menu_item_id]: quantity }));
     }
   };
 
@@ -261,9 +281,9 @@ const Ordenes: React.FC = () => {
 
   return (
     <Flex height={{ base: 'auto', md: '100vh' }} direction={{ base: 'column', md: 'row' }}>
-      <Sidebar 
-        isSidebarOpen={isSidebarOpen} 
-        toggleSidebar={toggleSidebar} 
+      <Sidebar
+        isSidebarOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
         restaurantId={restaurantId}
       />
 
@@ -272,28 +292,31 @@ const Ordenes: React.FC = () => {
           <Heading textAlign="center" mb={6} fontSize={{ base: 'xl', md: '2xl' }}>
             Pedidos Realizados
           </Heading>
-          <Grid 
-            templateColumns={{ base: '1fr', md: '1fr 1fr' }} 
+          <Grid
+            templateColumns={{ base: '1fr', md: '1fr 1fr' }}
             gap={{ base: 4, md: 6 }}
             alignItems="stretch"
           >
-            <Box 
-              bg="white" 
-              p={{ base: 2, md: 4 }} 
-              borderRadius="md" 
-              boxShadow="md" 
-              h={{ base: 'auto', md: '550px' }} 
+            <Box
+              bg="white"
+              p={{ base: 2, md: 4 }}
+              borderRadius="md"
+              boxShadow="md"
+              h={{ base: 'auto', md: '550px' }}
               overflowY="auto"
               minW={0}
             >
-              <Heading size="md" mb={4}>Pedidos Activos</Heading>
-              {orders.filter(order => order.status !== 'paid' && order.status !== 'canceled').length === 0 ? (
+              <Heading size="md" mb={4}>
+                Pedidos Activos
+              </Heading>
+              {orders.filter((order) => order.status !== 'paid' && order.status !== 'canceled')
+                .length === 0 ? (
                 <Text textAlign="center">No hay pedidos registrados.</Text>
               ) : (
                 <VStack align="stretch" gap={4}>
                   {orders
-                    .filter(order => order.status !== 'paid' && order.status !== 'canceled')
-                    .map(order => (
+                    .filter((order) => order.status !== 'paid' && order.status !== 'canceled')
+                    .map((order) => (
                       <Box key={order.order_id} mb={4}>
                         <OrderCard
                           order={order}
@@ -310,50 +333,48 @@ const Ordenes: React.FC = () => {
               )}
             </Box>
 
-            <Box 
-              bg="white" 
-              p={{ base: 2, md: 4 }} 
-              borderRadius="md" 
-              boxShadow="md" 
-              h={{ base: 'auto', md: '550px' }} 
+            <Box
+              bg="white"
+              p={{ base: 2, md: 4 }}
+              borderRadius="md"
+              boxShadow="md"
+              h={{ base: 'auto', md: '550px' }}
               overflowY="auto"
               minW={0}
             >
-              <Heading size="md" mb={4}>Pedidos Anulados</Heading>
+              <Heading size="md" mb={4}>
+                Pedidos Anulados
+              </Heading>
               {voidOrders.length === 0 ? (
                 <Text textAlign="center">No hay pedidos anulados.</Text>
               ) : (
                 <VStack align="stretch" gap={4}>
-                    {voidOrders.map(item => (
-                      <VoidOrderItemCard
-                        key={item.void_order_item_id || item.menu_item_id + (item.created_at || '')}
-                        item={item}
-                        onRecoverClick={handleRecoverClick}
-                        availableOrders={orders
-                          .filter(order => order.status !== 'paid' && order.status !== 'canceled')
-                          .map(order => ({ order_id: order.order_id, table: order.table }))
-                        }
-                      />
-                    ))}
+                  {voidOrders.map((item) => (
+                    <VoidOrderItemCard
+                      key={item.void_order_item_id || item.menu_item_id + (item.created_at || '')}
+                      item={item}
+                      onRecoverClick={handleRecoverClick}
+                      availableOrders={orders
+                        .filter((order) => order.status !== 'paid' && order.status !== 'canceled')
+                        .map((order) => ({ order_id: order.order_id, table: order.table }))}
+                    />
+                  ))}
                 </VStack>
               )}
             </Box>
           </Grid>
 
-          <Box 
-            bg="white" 
-            p={{ base: 2, md: 4 }} 
-            borderRadius="md" 
-            boxShadow="md" 
+          <Box
+            bg="white"
+            p={{ base: 2, md: 4 }}
+            borderRadius="md"
+            boxShadow="md"
             mt={6}
-            overflowX="auto" 
+            overflowX="auto"
             overflowY="auto"
             minW={0}
           >
-            
-            
-          <TableDistribution mesas={mesas} fetchTables={fetchTables} />
-          
+            <TableDistribution mesas={mesas} fetchTables={fetchTables} />
           </Box>
         </Box>
       </Box>
@@ -378,9 +399,8 @@ const Ordenes: React.FC = () => {
         }}
         voidItem={selectedVoidItem}
         availableOrders={orders
-          .filter(order => order.status !== 'paid' && order.status !== 'canceled')
-          .map(order => ({ order_id: order.order_id, table: order.table }))
-        }
+          .filter((order) => order.status !== 'paid' && order.status !== 'canceled')
+          .map((order) => ({ order_id: order.order_id, table: order.table }))}
         onRecover={recoverVoidOrderItemAction}
       />
     </Flex>

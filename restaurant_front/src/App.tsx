@@ -14,11 +14,7 @@ import PaginaPagos from './pages/pagos';
 import WaiterUserPage from './pages/admin/WaiterUserPage';
 import './App.css';
 
-import {
-  ChakraProvider,
-  defaultSystem,
-  Box,
-} from '@chakra-ui/react';
+import { ChakraProvider, defaultSystem, Box } from '@chakra-ui/react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import IngredientPage from './pages/admin/IngredientPage';
 import EventsPage from './pages/admin/EventsPage';

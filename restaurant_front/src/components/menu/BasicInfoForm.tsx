@@ -28,7 +28,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   handleFileChange,
   errors,
   imagePreview,
-  initialData
+  initialData,
 }) => {
   return (
     <form onSubmit={(e) => e.preventDefault()}>
@@ -36,19 +36,14 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         <CustomField
           label="Nombre"
           required
-          errorText={errors.name ? "Este campo es obligatorio." : undefined}
+          errorText={errors.name ? 'Este campo es obligatorio.' : undefined}
         >
-          <Input
-            placeholder="Nombre"
-            value={formData.name}
-            onChange={handleChange}
-            name="name"
-          />
+          <Input placeholder="Nombre" value={formData.name} onChange={handleChange} name="name" />
         </CustomField>
         <CustomField
           label="Descripcion"
           required
-          errorText={errors.description ? "Este campo es obligatorio." : undefined}
+          errorText={errors.description ? 'Este campo es obligatorio.' : undefined}
         >
           <Input
             placeholder="Descripcion"
@@ -60,7 +55,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         <CustomField
           label="Precio"
           required
-          errorText={errors.price ? "Ingrese un precio válido mayor a 0." : undefined}
+          errorText={errors.price ? 'Ingrese un precio válido mayor a 0.' : undefined}
         >
           <Input
             placeholder="Precio"
@@ -74,7 +69,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         </CustomField>
         <CustomField
           label="Número de guarniciones"
-          errorText={errors.sideDishes ? "Ingrese un número válido." : undefined}
+          errorText={errors.sideDishes ? 'Ingrese un número válido.' : undefined}
         >
           <Input
             placeholder="Número de guarniciones"
@@ -89,18 +84,15 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         <CustomField
           label={`Imagen${initialData ? ' (opcional)' : ''}`}
           required={!initialData}
-          errorText={errors.image ? "Debe seleccionar una imagen." : undefined}
+          errorText={errors.image ? 'Debe seleccionar una imagen.' : undefined}
         >
-          <Input
-            type="file"
-            name="image"
-            accept="image/*"
-            onChange={handleFileChange}
-          />
+          <Input type="file" name="image" accept="image/*" onChange={handleFileChange} />
         </CustomField>
         {imagePreview && (
           <Box mt={4}>
-            <Box fontWeight="semibold" mb={2}>Pre-vista imagen</Box>
+            <Box fontWeight="semibold" mb={2}>
+              Pre-vista imagen
+            </Box>
             <Image
               border={1}
               src={imagePreview}
@@ -115,4 +107,4 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   );
 };
 
-export default BasicInfoForm; 
+export default BasicInfoForm;

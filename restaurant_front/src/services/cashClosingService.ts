@@ -105,22 +105,29 @@ interface MenuItem {
  * Obtiene los datos de cierre de caja para una fecha específica
  * Ahora usa el endpoint del backend
  */
-export const getCashClosingData = async (token: string, restaurantId: string, date: string): Promise<CashClosingData> => {
+export const getCashClosingData = async (
+  token: string,
+  restaurantId: string,
+  date: string
+): Promise<CashClosingData> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/cash-closings/data?restaurant_id=${restaurantId}&date=${date}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/cash-closings/data?restaurant_id=${restaurantId}&date=${date}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error('Failed to fetch cash closing data');
     }
 
     const data = await response.json();
-    
+
     return {
       date: data.closing_date,
       totalSales: data.total_sales,
@@ -145,12 +152,16 @@ export const getCashClosingData = async (token: string, restaurantId: string, da
  * Realiza el cierre de caja para una fecha específica
  * Ahora usa el endpoint del backend
  */
-export const performCashClosing = async (token: string, restaurantId: string, cashClosingData: CashClosingRequest): Promise<CashClosingResponse> => {
+export const performCashClosing = async (
+  token: string,
+  restaurantId: string,
+  cashClosingData: CashClosingRequest
+): Promise<CashClosingResponse> => {
   try {
     const response = await fetch(`${API_BASE_URL}/cash-closings?restaurant_id=${restaurantId}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -182,7 +193,12 @@ export const performCashClosing = async (token: string, restaurantId: string, ca
  * Obtiene el historial de cierres de caja para un restaurante
  * Ahora usa el endpoint del backend
  */
-export const getCashClosingHistory = async (token: string, restaurantId: string, startDate?: string, endDate?: string): Promise<CashClosingResponse[]> => {
+export const getCashClosingHistory = async (
+  token: string,
+  restaurantId: string,
+  startDate?: string,
+  endDate?: string
+): Promise<CashClosingResponse[]> => {
   try {
     let url = `${API_BASE_URL}/cash-closings/history?restaurant_id=${restaurantId}`;
     if (startDate) {
@@ -195,7 +211,7 @@ export const getCashClosingHistory = async (token: string, restaurantId: string,
     const response = await fetch(url, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     });
@@ -215,27 +231,35 @@ export const getCashClosingHistory = async (token: string, restaurantId: string,
  * Actualiza un cierre de caja existente
  * Ahora usa el endpoint del backend
  */
-export const updateCashClosing = async (token: string, cashClosingId: string, restaurantId: string, cashClosingData: Partial<CashClosingRequest>): Promise<CashClosingResponse> => {
+export const updateCashClosing = async (
+  token: string,
+  cashClosingId: string,
+  restaurantId: string,
+  cashClosingData: Partial<CashClosingRequest>
+): Promise<CashClosingResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/cash-closings/${cashClosingId}?restaurant_id=${restaurantId}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        closing_date: cashClosingData.date,
-        cash_in_register: cashClosingData.cashInRegister,
-        cash_withdrawn: cashClosingData.cashWithdrawn,
-        notes: cashClosingData.notes,
-        total_sales: cashClosingData.totalSales,
-        total_revenue: cashClosingData.totalRevenue,
-        total_costs: cashClosingData.totalCosts,
-        total_profit: cashClosingData.totalProfit,
-        order_count: cashClosingData.orderCount,
-        average_order_value: cashClosingData.averageOrderValue,
-      }),
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/cash-closings/${cashClosingId}?restaurant_id=${restaurantId}`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          closing_date: cashClosingData.date,
+          cash_in_register: cashClosingData.cashInRegister,
+          cash_withdrawn: cashClosingData.cashWithdrawn,
+          notes: cashClosingData.notes,
+          total_sales: cashClosingData.totalSales,
+          total_revenue: cashClosingData.totalRevenue,
+          total_costs: cashClosingData.totalCosts,
+          total_profit: cashClosingData.totalProfit,
+          order_count: cashClosingData.orderCount,
+          average_order_value: cashClosingData.averageOrderValue,
+        }),
+      }
+    );
 
     if (!response.ok) {
       throw new Error('Failed to update cash closing');
@@ -252,15 +276,22 @@ export const updateCashClosing = async (token: string, cashClosingId: string, re
  * Elimina un cierre de caja
  * Ahora usa el endpoint del backend
  */
-export const deleteCashClosing = async (token: string, cashClosingId: string, restaurantId: string): Promise<void> => {
+export const deleteCashClosing = async (
+  token: string,
+  cashClosingId: string,
+  restaurantId: string
+): Promise<void> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/cash-closings/${cashClosingId}?restaurant_id=${restaurantId}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/cash-closings/${cashClosingId}?restaurant_id=${restaurantId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error('Failed to delete cash closing');
@@ -275,15 +306,23 @@ export const deleteCashClosing = async (token: string, cashClosingId: string, re
  * Obtiene estadísticas resumidas de cierre de caja para un período
  * Ahora usa el endpoint del backend
  */
-export const getCashClosingStats = async (token: string, restaurantId: string, startDate: string, endDate: string) => {
+export const getCashClosingStats = async (
+  token: string,
+  restaurantId: string,
+  startDate: string,
+  endDate: string
+) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/cash-closings/stats?restaurant_id=${restaurantId}&start_date=${startDate}&end_date=${endDate}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/cash-closings/stats?restaurant_id=${restaurantId}&start_date=${startDate}&end_date=${endDate}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error('Failed to fetch cash closing stats');

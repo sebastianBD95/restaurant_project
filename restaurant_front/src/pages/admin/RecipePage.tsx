@@ -1,7 +1,19 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Box, Heading, Input, Button, Text, Table, VStack, Accordion, Stack, Badge, Flex } from '@chakra-ui/react';
+import {
+  Box,
+  Heading,
+  Input,
+  Button,
+  Text,
+  Table,
+  VStack,
+  Accordion,
+  Stack,
+  Badge,
+  Flex,
+} from '@chakra-ui/react';
 import { getMenus } from '../../services/menuService';
 import { getCookie } from '../utils/cookieManager';
 import { useParams } from 'react-router-dom';
@@ -51,10 +63,10 @@ const RecipePage: React.FC = () => {
 
   if (loading) {
     return (
-      <Flex height="100vh" direction={{ base: "column", md: "row" }}>
-        <Sidebar 
-          isSidebarOpen={isSidebarOpen} 
-          toggleSidebar={toggleSidebar} 
+      <Flex height="100vh" direction={{ base: 'column', md: 'row' }}>
+        <Sidebar
+          isSidebarOpen={isSidebarOpen}
+          toggleSidebar={toggleSidebar}
           restaurantId={restaurantId}
         />
         <Box flex={1} p={6}>
@@ -65,10 +77,10 @@ const RecipePage: React.FC = () => {
   }
 
   return (
-    <Flex height="100vh" direction={{ base: "column", md: "row" }}>
-      <Sidebar 
-        isSidebarOpen={isSidebarOpen} 
-        toggleSidebar={toggleSidebar} 
+    <Flex height="100vh" direction={{ base: 'column', md: 'row' }}>
+      <Sidebar
+        isSidebarOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
         restaurantId={restaurantId}
       />
       <Box flex={1} p={{ base: 2, md: 6 }} overflowY="auto">
@@ -81,7 +93,9 @@ const RecipePage: React.FC = () => {
                 <Accordion.ItemTrigger>
                   <Flex justify="space-between" align="center" p={4}>
                     <Box>
-                      <Text fontSize="lg" fontWeight="bold">{item.name}</Text>
+                      <Text fontSize="lg" fontWeight="bold">
+                        {item.name}
+                      </Text>
                       <Text color="gray.600">{item.description}</Text>
                     </Box>
                     <Badge colorScheme="green" fontSize="md">
@@ -93,7 +107,9 @@ const RecipePage: React.FC = () => {
                   <Box p={4} bg="gray.50" borderRadius="md">
                     <Stack gap={4}>
                       <Box>
-                        <Text fontWeight="semibold" mb={2}>Ingredientes</Text>
+                        <Text fontWeight="semibold" mb={2}>
+                          Ingredientes
+                        </Text>
                         <Table.Root size="sm">
                           <Table.Header>
                             <Table.Row>
@@ -109,7 +125,9 @@ const RecipePage: React.FC = () => {
                                 <Table.Cell>{ingredient.name}</Table.Cell>
                                 <Table.Cell>{ingredient.amount}</Table.Cell>
                                 <Table.Cell>{ingredient.unit}</Table.Cell>
-                                <Table.Cell textAlign="right">${(ingredient.price || 0).toFixed(2)}</Table.Cell>
+                                <Table.Cell textAlign="right">
+                                  ${(ingredient.price || 0).toFixed(2)}
+                                </Table.Cell>
                               </Table.Row>
                             ))}
                           </Table.Body>

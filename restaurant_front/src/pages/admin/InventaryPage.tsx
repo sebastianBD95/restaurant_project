@@ -1,30 +1,24 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { 
-  Box, 
-  Button, 
-  Flex, 
-  Heading,
-  Icon,
-  Spinner,
-  Text,
-  Stack,
-  Badge,
-} from '@chakra-ui/react';
+import { Box, Button, Flex, Heading, Icon, Spinner, Text, Stack, Badge } from '@chakra-ui/react';
 import { IoAddCircleOutline } from 'react-icons/io5';
 import { useParams } from 'react-router-dom';
 import { Sidebar } from '../../components/ui/navegator';
 import { useSidebar } from '../../hooks/useSidebar';
 import { getCookie } from '../utils/cookieManager';
-import { Toaster, toaster } from "../../components/ui/toaster";
+import { Toaster, toaster } from '../../components/ui/toaster';
 import { AddIngredientDialog } from '../../components/inventory/AddIngredientDialog';
 import { InventoryTable } from '../../components/inventory/InventoryTable';
 import { getIngredients, Ingredient } from '../../services/ingredientService';
 import { getRawIngredientsByCategory } from '../../services/rawIngredientService';
-import { deleteInventoryItem, getInventory, createInventoryItems, updateInventoryItems } from '../../services/inventoryService';
+import {
+  deleteInventoryItem,
+  getInventory,
+  createInventoryItems,
+  updateInventoryItems,
+} from '../../services/inventoryService';
 import type { InventoryItem, Inventory, InventoryResponse } from '../../interfaces/inventory';
-
 
 interface CustomIngredient {
   nombre: string;
@@ -34,22 +28,22 @@ interface CustomIngredient {
 type UnidadMedida = 'g' | 'ml' | 'kg' | 'l' | 'un';
 
 const CATEGORIAS = [
-  'Pollo', 
-  'Fruta', 
-  'Lácteo', 
-  'Res', 
-  'Cerdo', 
-  'Condimento', 
-  'Cereal', 
+  'Pollo',
+  'Fruta',
+  'Lácteo',
+  'Res',
+  'Cerdo',
+  'Condimento',
+  'Cereal',
   'Pescado',
-  'Grano', 
-  'Harina', 
-  'Hongo', 
-  'Grasa', 
-  'Legumbre', 
-  'Verdura', 
+  'Grano',
+  'Harina',
+  'Hongo',
+  'Grasa',
+  'Legumbre',
+  'Verdura',
   'Marisco',
-  'Otro'
+  'Otro',
 ];
 
 const UNIDADES: UnidadMedida[] = ['g', 'ml', 'kg', 'l', 'un'];
@@ -67,7 +61,7 @@ const Inventario: React.FC = () => {
   const [fetchError, setFetchError] = useState('');
   const [customIngredient, setCustomIngredient] = useState<CustomIngredient>({
     nombre: '',
-    categoria: ''
+    categoria: '',
   });
   const { restaurantId } = useParams();
   const { isSidebarOpen, toggleSidebar } = useSidebar();
@@ -78,9 +72,9 @@ const Inventario: React.FC = () => {
       try {
         setLoading(true);
         const inventoryData = await getInventory(restaurantId!);
-        
+
         // Transform inventory data to match our local format
-        const transformedInventory: Inventory[] = inventoryData.map(item => ({
+        const transformedInventory: Inventory[] = inventoryData.map((item) => ({
           id: item.inventory_id,
           raw_ingredient_id: item.raw_ingredient_id,
           nombre: item.raw_ingredient.name,
@@ -90,12 +84,11 @@ const Inventario: React.FC = () => {
           cantidad_minima: item.minimum_quantity,
           precio: item.price,
           merma: item.raw_ingredient.merma,
-          ultima_reposicion: item.last_restock_date ? new Date(item.last_restock_date) : undefined
+          ultima_reposicion: item.last_restock_date ? new Date(item.last_restock_date) : undefined,
         }));
 
         setInventario(transformedInventory);
       } catch (error) {
-      
         toaster.create({
           title: 'Error',
           description: 'No se pudo cargar el inventario.',
@@ -141,7 +134,7 @@ const Inventario: React.FC = () => {
   useEffect(() => {
     const fetchIngredientsByCategory = async () => {
       if (!selectedCategory) return;
-      
+
       try {
         setLoadingIngredients(true);
         setFetchError('');
@@ -172,8 +165,10 @@ const Inventario: React.FC = () => {
   };
 
   const seleccionarIngrediente = (ingredient: Ingredient) => {
-    const existingIngredient = inventario.find(item => item.raw_ingredient_id === ingredient.raw_ingredient_id);
-    
+    const existingIngredient = inventario.find(
+      (item) => item.raw_ingredient_id === ingredient.raw_ingredient_id
+    );
+
     if (existingIngredient) {
       toaster.create({
         title: 'Ingrediente ya existe',
@@ -186,8 +181,9 @@ const Inventario: React.FC = () => {
     }
 
     // Get the ingredient details from either suggested or category list
-    const ingredientDetails = suggestedIngredients.find(i => i.raw_ingredient_id === ingredient.raw_ingredient_id) || 
-                            categoryIngredients.find(i => i.raw_ingredient_id === ingredient.raw_ingredient_id);
+    const ingredientDetails =
+      suggestedIngredients.find((i) => i.raw_ingredient_id === ingredient.raw_ingredient_id) ||
+      categoryIngredients.find((i) => i.raw_ingredient_id === ingredient.raw_ingredient_id);
 
     if (!ingredientDetails) {
       toaster.create({
@@ -210,13 +206,12 @@ const Inventario: React.FC = () => {
       precio: 0,
       merma: 0,
       ultima_reposicion: new Date(),
-      isNew: true
+      isNew: true,
     };
 
-    setInventario(prev => [...prev, nuevo]);
+    setInventario((prev) => [...prev, nuevo]);
     setIsDialogOpen(false);
   };
-
 
   const eliminarAlimento = async (id: string) => {
     try {
@@ -240,11 +235,7 @@ const Inventario: React.FC = () => {
 
   const handleChange = (id: string, field: keyof Inventory, value: string | number) => {
     setInventario((prev) =>
-      prev.map((item) => 
-        item.id === id 
-          ? { ...item, [field]: value, isModified: true }
-          : item
-      )
+      prev.map((item) => (item.id === id ? { ...item, [field]: value, isModified: true } : item))
     );
   };
 
@@ -256,7 +247,7 @@ const Inventario: React.FC = () => {
     if (isLoading) {
       return <Spinner size="sm" />;
     }
-    
+
     if (error) {
       return <Text color="red.500">{error}</Text>;
     }
@@ -269,16 +260,16 @@ const Inventario: React.FC = () => {
       <Stack gap={2}>
         {ingredients.map((ingredient) => {
           const isAlreadyAdded = inventario.some(
-            item => item.raw_ingredient_id === ingredient.raw_ingredient_id
+            (item) => item.raw_ingredient_id === ingredient.raw_ingredient_id
           );
-          
+
           return (
             <Box
               key={ingredient.raw_ingredient_id}
               p={4}
               borderWidth="1px"
               borderRadius="md"
-              cursor={isAlreadyAdded ? "not-allowed" : "pointer"}
+              cursor={isAlreadyAdded ? 'not-allowed' : 'pointer'}
               opacity={isAlreadyAdded ? 0.5 : 1}
               _hover={{ bg: isAlreadyAdded ? undefined : 'gray.50' }}
               onClick={() => !isAlreadyAdded && seleccionarIngrediente(ingredient)}
@@ -286,13 +277,9 @@ const Inventario: React.FC = () => {
               <Flex justify="space-between" align="center">
                 <Box>
                   <Text fontWeight="bold">{ingredient.name}</Text>
-                  <Text color="gray.600">
-                    Categoría: {ingredient.category}
-                  </Text>
+                  <Text color="gray.600">Categoría: {ingredient.category}</Text>
                 </Box>
-                {isAlreadyAdded && (
-                  <Badge colorScheme="gray">Ya agregado</Badge>
-                )}
+                {isAlreadyAdded && <Badge colorScheme="gray">Ya agregado</Badge>}
               </Flex>
             </Box>
           );
@@ -310,8 +297,8 @@ const Inventario: React.FC = () => {
       }
 
       // Separate new and modified items
-      const newItems = inventario.filter(item => item.isNew);
-      const modifiedItems = inventario.filter(item => item.isModified && !item.isNew);
+      const newItems = inventario.filter((item) => item.isNew);
+      const modifiedItems = inventario.filter((item) => item.isModified && !item.isNew);
 
       if (newItems.length === 0 && modifiedItems.length === 0) {
         toaster.create({
@@ -326,15 +313,15 @@ const Inventario: React.FC = () => {
 
       // Process new items
       if (newItems.length > 0) {
-        const newInventoryItems = newItems.map(item => ({
+        const newInventoryItems = newItems.map((item) => ({
           raw_ingredient_id: item.raw_ingredient_id,
           quantity: item.cantidad,
           unit: item.unidad,
           minimum_quantity: item.cantidad_minima,
-          last_restock_date: item.ultima_reposicion 
+          last_restock_date: item.ultima_reposicion
             ? new Date(item.ultima_reposicion).toISOString()
             : new Date().toISOString(),
-          price: item.precio
+          price: item.precio,
         }));
 
         await createInventoryItems(restaurantId!, newInventoryItems, token);
@@ -342,27 +329,27 @@ const Inventario: React.FC = () => {
 
       // Process modified items
       if (modifiedItems.length > 0) {
-        const modifiedInventoryItems = modifiedItems.map(item => ({
+        const modifiedInventoryItems = modifiedItems.map((item) => ({
           inventory_id: item.id,
           raw_ingredient_id: item.raw_ingredient_id,
           quantity: item.cantidad,
           unit: item.unidad,
           minimum_quantity: item.cantidad_minima,
-          last_restock_date: item.ultima_reposicion 
+          last_restock_date: item.ultima_reposicion
             ? new Date(item.ultima_reposicion).toISOString()
             : new Date().toISOString(),
-          price: item.precio
+          price: item.precio,
         }));
 
         await updateInventoryItems(restaurantId!, modifiedInventoryItems, token);
       }
 
       // After successful save, clear the modified flags
-      setInventario(prev => 
-        prev.map(item => ({
+      setInventario((prev) =>
+        prev.map((item) => ({
           ...item,
           isModified: false,
-          isNew: false
+          isNew: false,
         }))
       );
 
@@ -375,7 +362,7 @@ const Inventario: React.FC = () => {
 
       // Refresh the inventory to get the updated data from the server
       const updatedInventory = await getInventory(restaurantId!);
-      const transformedInventory: Inventory[] = updatedInventory.map(item => ({
+      const transformedInventory: Inventory[] = updatedInventory.map((item) => ({
         id: item.inventory_id,
         raw_ingredient_id: item.raw_ingredient_id,
         nombre: item.raw_ingredient.name,
@@ -385,10 +372,9 @@ const Inventario: React.FC = () => {
         cantidad_minima: item.minimum_quantity,
         precio: item.price,
         merma: item.merma,
-        ultima_reposicion: item.last_restock_date ? new Date(item.last_restock_date) : undefined
+        ultima_reposicion: item.last_restock_date ? new Date(item.last_restock_date) : undefined,
       }));
       setInventario(transformedInventory);
-
     } catch (error) {
       toaster.create({
         title: 'Error al guardar',
@@ -402,10 +388,10 @@ const Inventario: React.FC = () => {
   };
 
   return (
-    <Flex height="100vh" direction={{ base: "column", md: "row" }}>
-      <Sidebar 
-        isSidebarOpen={isSidebarOpen} 
-        toggleSidebar={toggleSidebar} 
+    <Flex height="100vh" direction={{ base: 'column', md: 'row' }}>
+      <Sidebar
+        isSidebarOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
         restaurantId={restaurantId}
       />
       <Box flex={1} p={{ base: 2, md: 6 }} overflowY="auto">
@@ -415,10 +401,7 @@ const Inventario: React.FC = () => {
 
           <Flex justifyContent="space-between" alignItems="center" mb={4}>
             <Heading size="lg">Inventario</Heading>
-            <Button
-              onClick={agregarAlimento}
-              colorScheme="blue"
-            >
+            <Button onClick={agregarAlimento} colorScheme="blue">
               <Flex align="center" gap={2}>
                 <Icon as={IoAddCircleOutline} />
                 <Text>Agregar Ingrediente</Text>

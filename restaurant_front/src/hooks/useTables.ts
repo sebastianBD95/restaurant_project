@@ -23,4 +23,4 @@ export function useTables(restaurantId?: string) {
   }, [restaurantId]);
 
   return { tables, loading, error, fetchTables };
-} 
+}

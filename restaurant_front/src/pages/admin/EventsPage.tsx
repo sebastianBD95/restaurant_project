@@ -15,7 +15,6 @@ import {
   Image,
   Container,
   NativeSelect,
-
 } from '@chakra-ui/react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MenuItemResponse, MenuData } from '../../interfaces/menuItems';
@@ -119,13 +118,13 @@ const EventsPage: React.FC = () => {
       const response = await getMenus(token, restaurantId!);
       const menuItems = response as MenuItemResponse[];
 
-      const appetizers = menuItems.filter(item => item.category === 'Appetizer');
-      const mainCourses = menuItems.filter(item => item.category === 'Main');
-      const desserts = menuItems.filter(item => item.category === 'Desserts');
-      const drinks = menuItems.filter(item => item.category === 'Drinks');
-      const soups = menuItems.filter(item => item.category === 'Soup');
-      const salads = menuItems.filter(item => item.category === 'Salad');
-      const sides = menuItems.filter(item => item.category === 'Side');
+      const appetizers = menuItems.filter((item) => item.category === 'Appetizer');
+      const mainCourses = menuItems.filter((item) => item.category === 'Main');
+      const desserts = menuItems.filter((item) => item.category === 'Desserts');
+      const drinks = menuItems.filter((item) => item.category === 'Drinks');
+      const soups = menuItems.filter((item) => item.category === 'Soup');
+      const salads = menuItems.filter((item) => item.category === 'Salad');
+      const sides = menuItems.filter((item) => item.category === 'Side');
 
       setMenuData({
         entrada: appetizers,
@@ -202,15 +201,18 @@ const EventsPage: React.FC = () => {
 
   const getTotalCost = () => {
     if (!eventCalculation) return 0;
-    return eventCalculation.ingredientTotals.reduce((total: number, ingredient) => total + ingredient.totalPrice, 0);
+    return eventCalculation.ingredientTotals.reduce(
+      (total: number, ingredient) => total + ingredient.totalPrice,
+      0
+    );
   };
 
   if (isLoading) {
     return (
-      <Flex height="100vh" direction={{ base: "column", md: "row" }}>
-        <Sidebar 
-          isSidebarOpen={isSidebarOpen} 
-          toggleSidebar={toggleSidebar} 
+      <Flex height="100vh" direction={{ base: 'column', md: 'row' }}>
+        <Sidebar
+          isSidebarOpen={isSidebarOpen}
+          toggleSidebar={toggleSidebar}
           restaurantId={restaurantId}
         />
         <Box flex={1} display="flex" justifyContent="center" alignItems="center">
@@ -221,35 +223,26 @@ const EventsPage: React.FC = () => {
   }
 
   return (
-    <Flex height="100vh" direction={{ base: "column", md: "row" }}>
-      <Sidebar 
-        isSidebarOpen={isSidebarOpen} 
-        toggleSidebar={toggleSidebar} 
+    <Flex height="100vh" direction={{ base: 'column', md: 'row' }}>
+      <Sidebar
+        isSidebarOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
         restaurantId={restaurantId}
       />
 
       <Box flex={1} p={{ base: 4, md: 8 }} overflowY="auto" bg="gray.50">
         <Container maxW="container.xl">
           <VStack gap={6} align="stretch">
-            <Heading 
-              textAlign="center" 
-              size="2xl" 
-              color="gray.800"
-              mb={4}
-            >
+            <Heading textAlign="center" size="2xl" color="gray.800" mb={4}>
               Calculadora de Eventos
             </Heading>
 
-            <Text 
-              textAlign="center" 
-              fontSize="lg" 
-              color="gray.600"
-              mb={6}
-            >
-              Selecciona un plato del menú y especifica el número de personas para calcular la cantidad de ingredientes necesarios.
+            <Text textAlign="center" fontSize="lg" color="gray.600" mb={6}>
+              Selecciona un plato del menú y especifica el número de personas para calcular la
+              cantidad de ingredientes necesarios.
             </Text>
 
-            <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={8}>
+            <Grid templateColumns={{ base: '1fr', lg: '1fr 1fr' }} gap={8}>
               {/* Left Column - Menu Selection */}
               <GridItem>
                 <Box bg="white" borderRadius="md" boxShadow="md" mb={4}>
@@ -262,7 +255,9 @@ const EventsPage: React.FC = () => {
                         <NativeSelect.Root size="sm">
                           <NativeSelect.Field
                             value={selectedCategory}
-                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedCategory(e.target.value)}
+                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                              setSelectedCategory(e.target.value)
+                            }
                           >
                             {Object.entries(categoryLabels).map(([key, label]) => (
                               <option key={key} value={key}>
@@ -292,11 +287,19 @@ const EventsPage: React.FC = () => {
                               key={item.menu_item_id}
                               cursor="pointer"
                               onClick={() => setSelectedMenuItem(item)}
-                              bg={selectedMenuItem?.menu_item_id === item.menu_item_id ? "blue.50" : "white"}
-                              borderColor={selectedMenuItem?.menu_item_id === item.menu_item_id ? "blue.200" : "gray.200"}
+                              bg={
+                                selectedMenuItem?.menu_item_id === item.menu_item_id
+                                  ? 'blue.50'
+                                  : 'white'
+                              }
+                              borderColor={
+                                selectedMenuItem?.menu_item_id === item.menu_item_id
+                                  ? 'blue.200'
+                                  : 'gray.200'
+                              }
                               borderWidth="1px"
                               borderRadius="md"
-                              _hover={{ bg: "gray.50" }}
+                              _hover={{ bg: 'gray.50' }}
                               p={3}
                             >
                               <HStack gap={3}>
@@ -316,7 +319,9 @@ const EventsPage: React.FC = () => {
                                   </Text>
                                   <HStack>
                                     <Badge colorScheme="blue" fontSize="0.8em">
-                                      {Object.entries(categoryMap).find(([_, value]) => value === item.category)?.[0] || item.category}
+                                      {Object.entries(categoryMap).find(
+                                        ([_, value]) => value === item.category
+                                      )?.[0] || item.category}
                                     </Badge>
                                     <Text fontSize="xs" color="gray.500">
                                       {copFormatter.format(item.price)}
@@ -330,19 +335,15 @@ const EventsPage: React.FC = () => {
                       </Box>
 
                       <HStack gap={3}>
-                        <Button 
-                          colorScheme="blue" 
+                        <Button
+                          colorScheme="blue"
                           onClick={calculateIngredients}
                           disabled={!selectedMenuItem || peopleCount <= 0}
                           flex={1}
                         >
                           Calcular Ingredientes
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          onClick={resetCalculation}
-                          flex={1}
-                        >
+                        <Button variant="outline" onClick={resetCalculation} flex={1}>
                           Limpiar
                         </Button>
                       </HStack>
@@ -372,7 +373,6 @@ const EventsPage: React.FC = () => {
                           </Text>
                         </Box>
 
-
                         <Box>
                           <Text fontSize="md" fontWeight="semibold" mb={3}>
                             Ingredientes Necesarios:
@@ -401,7 +401,6 @@ const EventsPage: React.FC = () => {
                           </Table.Root>
                         </Box>
 
-
                         <Box p={4} bg="green.50" borderRadius="md">
                           <HStack justify="space-between">
                             <Text fontSize="lg" fontWeight="bold">
@@ -412,7 +411,8 @@ const EventsPage: React.FC = () => {
                             </Text>
                           </HStack>
                           <Text fontSize="sm" color="gray.600" mt={1}>
-                            Precio por persona: {copFormatter.format(getTotalCost() / eventCalculation.peopleCount)}
+                            Precio por persona:{' '}
+                            {copFormatter.format(getTotalCost() / eventCalculation.peopleCount)}
                           </Text>
                         </Box>
                       </VStack>
@@ -422,7 +422,8 @@ const EventsPage: React.FC = () => {
                           No hay cálculos disponibles
                         </Text>
                         <Text fontSize="sm">
-                          Selecciona un plato y especifica el número de personas para ver los resultados.
+                          Selecciona un plato y especifica el número de personas para ver los
+                          resultados.
                         </Text>
                       </Box>
                     )}

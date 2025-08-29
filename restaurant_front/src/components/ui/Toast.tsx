@@ -25,13 +25,10 @@ export const Toast: React.FC<ToastProps> = ({ title, description, status, onClos
         boxShadow="lg"
         maxW="sm"
       >
-        <CloseButton
-          position="absolute"
-          right={2}
-          top={2}
-          onClick={onClose}
-        />
-        <Text fontWeight="bold" mb={1}>{title}</Text>
+        <CloseButton position="absolute" right={2} top={2} onClick={onClose} />
+        <Text fontWeight="bold" mb={1}>
+          {title}
+        </Text>
         <Text>{description}</Text>
       </Box>
     </Portal>
@@ -41,7 +38,7 @@ export const Toast: React.FC<ToastProps> = ({ title, description, status, onClos
 export const useToast = () => {
   const [isVisible, setIsVisible] = React.useState(false);
   const [toastProps, setToastProps] = React.useState<Omit<ToastProps, 'onClose'> | null>(null);
-  
+
   const showToast = (props: Omit<ToastProps, 'onClose'>) => {
     setToastProps(props);
     setIsVisible(true);
@@ -57,6 +54,6 @@ export const useToast = () => {
 
   return {
     showToast,
-    ToastComponent
+    ToastComponent,
   };
-}; 
+};

@@ -8,7 +8,11 @@ interface VoidOrderItemCardProps {
   availableOrders?: Array<{ order_id: string; table: number }>;
 }
 
-const VoidOrderItemCard: React.FC<VoidOrderItemCardProps> = ({ item, onRecoverClick, availableOrders }) => {
+const VoidOrderItemCard: React.FC<VoidOrderItemCardProps> = ({
+  item,
+  onRecoverClick,
+  availableOrders,
+}) => {
   const [timeElapsed, setTimeElapsed] = useState<number>(0);
   const [canRecover, setCanRecover] = useState<boolean>(true);
 
@@ -18,25 +22,21 @@ const VoidOrderItemCard: React.FC<VoidOrderItemCardProps> = ({ item, onRecoverCl
     }
 
     const calculateTimeElapsed = () => {
-    
-      
       // The timestamp is now properly saved in UTC
       // Remove microseconds for proper parsing, keep Z for UTC
       const cleanTimestamp = item.created_at!.split('.')[0] + 'Z';
       const createdAt = new Date(cleanTimestamp).getTime();
-      
+
       // Get current time in UTC milliseconds
       const now = new Date();
       const nowUTC = now.toISOString();
       const nowTime = new Date(nowUTC).getTime();
-      
-    
-      
+
       if (isNaN(createdAt)) {
         console.error('Invalid date:', item.created_at);
         return;
       }
-      
+
       const elapsed = Math.floor((nowTime - createdAt) / 1000 / 60); // Convert to minutes
       setTimeElapsed(Math.max(0, elapsed));
       setCanRecover(elapsed < 20); // 20 minutes limit
@@ -72,8 +72,12 @@ const VoidOrderItemCard: React.FC<VoidOrderItemCardProps> = ({ item, onRecoverCl
             />
           )}
           <VStack align="start" gap={1} flex="1">
-            <Text fontWeight="bold" fontSize="lg">{item.name}</Text>
-            <Text color="gray.600" fontSize="md">Precio: ${item.price.toLocaleString()}</Text>
+            <Text fontWeight="bold" fontSize="lg">
+              {item.name}
+            </Text>
+            <Text color="gray.600" fontSize="md">
+              Precio: ${item.price.toLocaleString()}
+            </Text>
             {item.observation && (
               <Text color="gray.500" fontSize="sm" fontStyle="italic">
                 Observación: {item.observation}
@@ -86,12 +90,12 @@ const VoidOrderItemCard: React.FC<VoidOrderItemCardProps> = ({ item, onRecoverCl
         </Flex>
         {onRecoverClick && availableOrders && availableOrders.length > 0 && (
           <Button
-            colorScheme={canRecover ? "green" : "red"}
+            colorScheme={canRecover ? 'green' : 'red'}
             size="sm"
             onClick={() => onRecoverClick(item)}
             disabled={!canRecover}
           >
-            {canRecover ? "Recuperar" : "Cancelar"}
+            {canRecover ? 'Recuperar' : 'Cancelar'}
           </Button>
         )}
       </Flex>
@@ -99,4 +103,4 @@ const VoidOrderItemCard: React.FC<VoidOrderItemCardProps> = ({ item, onRecoverCl
   );
 };
 
-export default VoidOrderItemCard; 
+export default VoidOrderItemCard;

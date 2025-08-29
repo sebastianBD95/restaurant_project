@@ -1,5 +1,17 @@
 import React, { useState, useMemo } from 'react';
-import { Box, Image, Text, Button, Textarea, Stack, Portal, createListCollection, Wrap, Badge, Select } from '@chakra-ui/react';
+import {
+  Box,
+  Image,
+  Text,
+  Button,
+  Textarea,
+  Stack,
+  Portal,
+  createListCollection,
+  Wrap,
+  Badge,
+  Select,
+} from '@chakra-ui/react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,13 +23,17 @@ import { isWaiter } from '../../pages/utils/roleUtils';
 const formSchema = z.object({
   quantity: z
     .string()
-    .refine(val => Number(val) > 0, { message: 'Debe ingresar una cantidad positiva.' }),
+    .refine((val) => Number(val) > 0, { message: 'Debe ingresar una cantidad positiva.' }),
 });
-
 
 interface MenuItemProps {
   item: MenuItemResponse;
-  onAdd: (item: MenuItemResponse, quantity: number, observation: string, selectedSides: string[]) => void;
+  onAdd: (
+    item: MenuItemResponse,
+    quantity: number,
+    observation: string,
+    selectedSides: string[]
+  ) => void;
   orderPlaced: boolean;
   disabled: boolean;
   onEdit?: (item: MenuItemResponse) => void;
@@ -26,7 +42,16 @@ interface MenuItemProps {
   allMenuItems: MenuItemResponse[];
 }
 
-const MenuItem: React.FC<MenuItemProps> = ({ item, onAdd, orderPlaced, disabled, onEdit, onDelete, onHide, allMenuItems }) => {
+const MenuItem: React.FC<MenuItemProps> = ({
+  item,
+  onAdd,
+  orderPlaced,
+  disabled,
+  onEdit,
+  onDelete,
+  onHide,
+  allMenuItems,
+}) => {
   const {
     control,
     handleSubmit,
@@ -38,9 +63,9 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onAdd, orderPlaced, disabled,
   const [selectedSides, setSelectedSides] = useState<string[]>(Array(item.side_dishes).fill(''));
 
   // Get available side dishes
-  const availableSides = allMenuItems.filter(mi => mi.category === 'Side');
+  const availableSides = allMenuItems.filter((mi) => mi.category === 'Side');
 
-  const allSideItems = availableSides.map(side => ({
+  const allSideItems = availableSides.map((side) => ({
     label: side.name,
     value: side.menu_item_id,
   }));
@@ -140,7 +165,10 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onAdd, orderPlaced, disabled,
                         <Select.Positioner>
                           <Select.Content>
                             {allSideItems.length === 0 ? (
-                              <Select.Item item={{ label: 'No hay guarniciones', value: 'none' }} key="none">
+                              <Select.Item
+                                item={{ label: 'No hay guarniciones', value: 'none' }}
+                                key="none"
+                              >
                                 No hay guarniciones
                               </Select.Item>
                             ) : (
@@ -173,7 +201,9 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onAdd, orderPlaced, disabled,
           <Button
             mt={3}
             colorScheme="blue"
-            onClick={handleSubmit((data) => onAdd(item, Number(data.quantity), observation, selectedSides))}
+            onClick={handleSubmit((data) =>
+              onAdd(item, Number(data.quantity), observation, selectedSides)
+            )}
           >
             Agregar al Pedido
           </Button>
@@ -182,13 +212,19 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onAdd, orderPlaced, disabled,
 
       {!isWaiter() && (
         <Stack mt={2} direction="row" gap={2}>
-          <Button size="sm" colorScheme="blue" onClick={() => onEdit && onEdit(item)}>Editar</Button>
-          <Button size="sm" colorScheme="red" onClick={() => onDelete && onDelete(item)}>Eliminar</Button>
-          <Button size="sm" colorScheme="gray" onClick={() => onHide && onHide(item)}>Ocultar</Button>
+          <Button size="sm" colorScheme="blue" onClick={() => onEdit && onEdit(item)}>
+            Editar
+          </Button>
+          <Button size="sm" colorScheme="red" onClick={() => onDelete && onDelete(item)}>
+            Eliminar
+          </Button>
+          <Button size="sm" colorScheme="gray" onClick={() => onHide && onHide(item)}>
+            Ocultar
+          </Button>
         </Stack>
       )}
     </Box>
   );
 };
 
-export default MenuItem; 
+export default MenuItem;

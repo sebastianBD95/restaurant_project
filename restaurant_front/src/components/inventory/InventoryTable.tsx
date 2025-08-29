@@ -31,7 +31,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
   onEdit,
   onDelete,
   handleChange,
-  isLoading
+  isLoading,
 }) => {
   if (isLoading) {
     return <Text>Cargando inventario...</Text>;
@@ -43,13 +43,21 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeader>Nombre</Table.ColumnHeader>
-            <Table.ColumnHeader display={{ base: 'none', md: 'table-cell' }}>Categoría</Table.ColumnHeader>
+            <Table.ColumnHeader display={{ base: 'none', md: 'table-cell' }}>
+              Categoría
+            </Table.ColumnHeader>
             <Table.ColumnHeader>Cantidad</Table.ColumnHeader>
-            <Table.ColumnHeader display={{ base: 'none', md: 'table-cell' }}>Unidad</Table.ColumnHeader>
-            <Table.ColumnHeader display={{ base: 'none', lg: 'table-cell' }}>Cantidad Mínima</Table.ColumnHeader>
+            <Table.ColumnHeader display={{ base: 'none', md: 'table-cell' }}>
+              Unidad
+            </Table.ColumnHeader>
+            <Table.ColumnHeader display={{ base: 'none', lg: 'table-cell' }}>
+              Cantidad Mínima
+            </Table.ColumnHeader>
             <Table.ColumnHeader>Precio</Table.ColumnHeader>
             <Table.ColumnHeader>Merma</Table.ColumnHeader>
-            <Table.ColumnHeader display={{ base: 'none', lg: 'table-cell' }}>Última Reposición</Table.ColumnHeader>
+            <Table.ColumnHeader display={{ base: 'none', lg: 'table-cell' }}>
+              Última Reposición
+            </Table.ColumnHeader>
             <Table.ColumnHeader textAlign="center">Acciones</Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
@@ -77,7 +85,9 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                   <Table.Cell display={{ base: 'none', md: 'table-cell' }}>
                     <select
                       value={item.unidad}
-                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleChange(item.id, 'unidad', e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                        handleChange(item.id, 'unidad', e.target.value)
+                      }
                       className="chakra-select"
                       style={{
                         width: '100%',
@@ -88,7 +98,9 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                       }}
                     >
                       {UNIDADES.map((unidad) => (
-                        <option key={unidad} value={unidad}>{unidad}</option>
+                        <option key={unidad} value={unidad}>
+                          {unidad}
+                        </option>
                       ))}
                     </select>
                   </Table.Cell>
@@ -176,4 +188,4 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
       </Table.Root>
     </Box>
   );
-}; 
+};

@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, Button, Image, Flex } from '@chakra-ui/react';
-import { DialogRoot, DialogContent, DialogHeader, DialogBody, DialogFooter, DialogCloseTrigger } from '../ui/dialog';
+import {
+  DialogRoot,
+  DialogContent,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+  DialogCloseTrigger,
+} from '../ui/dialog';
 import { CustomField } from '../ui/field';
 import { VoidOrderItem } from '../../interfaces/order';
 
@@ -47,7 +54,7 @@ const RecoverVoidItemDialog: React.FC<RecoverVoidItemDialogProps> = ({
 
   const handleRecover = () => {
     if (selectedOrderId && voidItem) {
-      onRecover(voidItem.void_order_item_id, selectedOrderId);  
+      onRecover(voidItem.void_order_item_id, selectedOrderId);
       onClose();
       setSelectedOrderId('');
     }
@@ -59,7 +66,12 @@ const RecoverVoidItemDialog: React.FC<RecoverVoidItemDialogProps> = ({
   };
 
   return (
-    <DialogRoot open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
+    <DialogRoot
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) handleClose();
+      }}
+    >
       <DialogContent>
         <DialogHeader>Recuperar Plato Anulado</DialogHeader>
         <DialogCloseTrigger />
@@ -79,7 +91,9 @@ const RecoverVoidItemDialog: React.FC<RecoverVoidItemDialogProps> = ({
                     />
                   )}
                   <Box flex="1">
-                    <Text fontWeight="bold" fontSize="lg">{voidItem.name}</Text>
+                    <Text fontWeight="bold" fontSize="lg">
+                      {voidItem.name}
+                    </Text>
                     <Text color="gray.600" fontSize="md">
                       Precio: ${voidItem.price.toLocaleString()}
                     </Text>
@@ -88,7 +102,11 @@ const RecoverVoidItemDialog: React.FC<RecoverVoidItemDialogProps> = ({
                         Observación: {voidItem.observation}
                       </Text>
                     )}
-                    <Text color={timeRemaining <= 5 ? "red.500" : "gray.400"} fontSize="sm" fontWeight="medium">
+                    <Text
+                      color={timeRemaining <= 5 ? 'red.500' : 'gray.400'}
+                      fontSize="sm"
+                      fontWeight="medium"
+                    >
                       Tiempo restante: {formatTime(timeRemaining)}
                     </Text>
                   </Box>
@@ -99,13 +117,15 @@ const RecoverVoidItemDialog: React.FC<RecoverVoidItemDialogProps> = ({
             <CustomField label="Seleccionar Mesa para Recuperar" required>
               <select
                 value={selectedOrderId}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedOrderId(e.target.value)}
-                style={{ 
-                  width: '100%', 
-                  padding: '8px', 
-                  borderRadius: '4px', 
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  setSelectedOrderId(e.target.value)
+                }
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '4px',
                   border: '1px solid #CBD5E0',
-                  backgroundColor: 'white'
+                  backgroundColor: 'white',
                 }}
               >
                 <option value="">Selecciona una mesa</option>
@@ -134,7 +154,7 @@ const RecoverVoidItemDialog: React.FC<RecoverVoidItemDialogProps> = ({
             onClick={handleRecover}
             disabled={!selectedOrderId || availableOrders.length === 0 || timeRemaining <= 0}
           >
-            {timeRemaining <= 0 ? "Tiempo Expirado" : "Recuperar"}
+            {timeRemaining <= 0 ? 'Tiempo Expirado' : 'Recuperar'}
           </Button>
         </DialogFooter>
       </DialogContent>

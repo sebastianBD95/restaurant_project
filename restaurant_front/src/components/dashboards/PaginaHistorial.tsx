@@ -37,7 +37,9 @@ const Historial: React.FC = () => {
         if (Array.isArray(pedidos)) {
           const cleanedHistorial = pedidos.map((pedido) => ({
             ...pedido,
-            total: pedido.total_price ?? pedido.items.reduce((sum: number, p: any) => sum + p.price * p.quantity, 0),
+            total:
+              pedido.total_price ??
+              pedido.items.reduce((sum: number, p: any) => sum + p.price * p.quantity, 0),
             items: pedido.items ?? [],
           }));
           setHistorial(cleanedHistorial);

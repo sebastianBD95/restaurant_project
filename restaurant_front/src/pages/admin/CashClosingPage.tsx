@@ -27,7 +27,12 @@ import { Toaster, toaster } from '../../components/ui/toaster';
 import { CustomField } from '../../components/ui/field';
 import { NumberInputRoot, NumberInputField } from '../../components/ui/number-input';
 import { getCookie } from '../utils/cookieManager';
-import { getCashClosingData, performCashClosing, CashClosingData, CashClosingRequest } from '../../services/cashClosingService';
+import {
+  getCashClosingData,
+  performCashClosing,
+  CashClosingData,
+  CashClosingRequest,
+} from '../../services/cashClosingService';
 
 const CashClosingPage: React.FC = () => {
   const { restaurantId } = useParams<{ restaurantId: string }>();
@@ -53,7 +58,7 @@ const CashClosingPage: React.FC = () => {
   // Memoize fetchCashClosingData to prevent unnecessary re-renders
   const fetchCashClosingData = useCallback(async () => {
     if (!restaurantId) return;
-    
+
     setIsLoading(true);
     setError('');
     try {
@@ -140,7 +145,6 @@ const CashClosingPage: React.FC = () => {
 
       // Refresh data after successful closing
       await fetchCashClosingData();
-      
     } catch (error) {
       toaster.create({
         title: 'Error',
@@ -191,10 +195,10 @@ Notas: ${notes}
 
   if (isLoading) {
     return (
-      <Flex height="100vh" direction={{ base: "column", md: "row" }}>
-        <Sidebar 
-          isSidebarOpen={isSidebarOpen} 
-          toggleSidebar={toggleSidebar} 
+      <Flex height="100vh" direction={{ base: 'column', md: 'row' }}>
+        <Sidebar
+          isSidebarOpen={isSidebarOpen}
+          toggleSidebar={toggleSidebar}
           restaurantId={restaurantId}
         />
         <Box flex={1} display="flex" justifyContent="center" alignItems="center">
@@ -205,31 +209,21 @@ Notas: ${notes}
   }
 
   return (
-    <Flex height="100vh" direction={{ base: "column", md: "row" }}>
-      <Sidebar 
-        isSidebarOpen={isSidebarOpen} 
-        toggleSidebar={toggleSidebar} 
+    <Flex height="100vh" direction={{ base: 'column', md: 'row' }}>
+      <Sidebar
+        isSidebarOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
         restaurantId={restaurantId}
       />
 
       <Box flex={1} p={{ base: 4, md: 8 }} overflowY="auto" bg="gray.50">
         <Container maxW="container.xl">
           <VStack gap={6} align="stretch">
-            <Heading 
-              textAlign="center" 
-              size="2xl" 
-              color="gray.800"
-              mb={4}
-            >
+            <Heading textAlign="center" size="2xl" color="gray.800" mb={4}>
               💰 Cierre de Caja
             </Heading>
 
-            <Text 
-              textAlign="center" 
-              fontSize="lg" 
-              color="gray.600"
-              mb={6}
-            >
+            <Text textAlign="center" fontSize="lg" color="gray.600" mb={6}>
               Balance diario de ventas, ingresos, costos y ganancias del restaurante.
             </Text>
 
@@ -245,14 +239,14 @@ Notas: ${notes}
                     padding: '8px',
                     borderRadius: '6px',
                     border: '1px solid #E2E8F0',
-                    fontSize: '14px'
+                    fontSize: '14px',
                   }}
                 />
               </CustomField>
             </Box>
 
             {cashClosingData ? (
-              <Grid templateColumns={{ base: "1fr", lg: "2fr 1fr" }} gap={8}>
+              <Grid templateColumns={{ base: '1fr', lg: '2fr 1fr' }} gap={8}>
                 {/* Left Column - Summary and Details */}
                 <GridItem>
                   <VStack gap={6} align="stretch">
@@ -264,25 +258,33 @@ Notas: ${notes}
                       <Box p={4}>
                         <Grid templateColumns="repeat(2, 1fr)" gap={4}>
                           <Box p={4} bg="blue.50" borderRadius="md">
-                            <Text fontSize="sm" color="blue.600" fontWeight="medium">Ventas Totales</Text>
+                            <Text fontSize="sm" color="blue.600" fontWeight="medium">
+                              Ventas Totales
+                            </Text>
                             <Text fontSize="xl" fontWeight="bold" color="blue.700">
                               {copFormatter.format(cashClosingData.totalSales)}
                             </Text>
                           </Box>
                           <Box p={4} bg="green.50" borderRadius="md">
-                            <Text fontSize="sm" color="green.600" fontWeight="medium">Ingresos</Text>
+                            <Text fontSize="sm" color="green.600" fontWeight="medium">
+                              Ingresos
+                            </Text>
                             <Text fontSize="xl" fontWeight="bold" color="green.700">
                               {copFormatter.format(cashClosingData.totalRevenue)}
                             </Text>
                           </Box>
                           <Box p={4} bg="red.50" borderRadius="md">
-                            <Text fontSize="sm" color="red.600" fontWeight="medium">Costos</Text>
+                            <Text fontSize="sm" color="red.600" fontWeight="medium">
+                              Costos
+                            </Text>
                             <Text fontSize="xl" fontWeight="bold" color="red.700">
                               {copFormatter.format(cashClosingData.totalCosts)}
                             </Text>
                           </Box>
                           <Box p={4} bg="purple.50" borderRadius="md">
-                            <Text fontSize="sm" color="purple.600" fontWeight="medium">Ganancias</Text>
+                            <Text fontSize="sm" color="purple.600" fontWeight="medium">
+                              Ganancias
+                            </Text>
                             <Text fontSize="xl" fontWeight="bold" color="purple.700">
                               {copFormatter.format(cashClosingData.totalProfit)}
                             </Text>
@@ -302,13 +304,17 @@ Notas: ${notes}
                             <Text fontSize="2xl" fontWeight="bold" color="blue.600">
                               {cashClosingData.orderCount}
                             </Text>
-                            <Text fontSize="sm" color="gray.600">Total de Pedidos</Text>
+                            <Text fontSize="sm" color="gray.600">
+                              Total de Pedidos
+                            </Text>
                           </Box>
                           <Box textAlign="center" p={4}>
                             <Text fontSize="2xl" fontWeight="bold" color="green.600">
                               {copFormatter.format(cashClosingData.averageOrderValue)}
                             </Text>
-                            <Text fontSize="sm" color="gray.600">Promedio por Pedido</Text>
+                            <Text fontSize="sm" color="gray.600">
+                              Promedio por Pedido
+                            </Text>
                           </Box>
                         </Grid>
                       </Box>
@@ -363,7 +369,9 @@ Notas: ${notes}
                             <Table.Header>
                               <Table.Row>
                                 <Table.ColumnHeader>Método</Table.ColumnHeader>
-                                <Table.ColumnHeader textAlign="center">Transacciones</Table.ColumnHeader>
+                                <Table.ColumnHeader textAlign="center">
+                                  Transacciones
+                                </Table.ColumnHeader>
                                 <Table.ColumnHeader textAlign="right">Monto</Table.ColumnHeader>
                               </Table.Row>
                             </Table.Header>
@@ -435,25 +443,21 @@ Notas: ${notes}
                               border: '1px solid #E2E8F0',
                               fontSize: '14px',
                               minHeight: '80px',
-                              resize: 'vertical'
+                              resize: 'vertical',
                             }}
                           />
                         </CustomField>
 
                         <HStack gap={3}>
-                          <Button 
-                            colorScheme="blue" 
+                          <Button
+                            colorScheme="blue"
                             onClick={handleCashClosing}
                             disabled={isClosing}
                             flex={1}
                           >
                             {isClosing ? 'Cerrando...' : 'Realizar Cierre'}
                           </Button>
-                          <Button 
-                            variant="outline" 
-                            onClick={generateReport}
-                            flex={1}
-                          >
+                          <Button variant="outline" onClick={generateReport} flex={1}>
                             Generar Reporte
                           </Button>
                         </HStack>

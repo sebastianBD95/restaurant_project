@@ -42,7 +42,12 @@ const Cart: React.FC<CartProps> = ({
   allMenuItems,
 }) => {
   const { restaurantId } = useParams();
-  const { tables, loading: tablesLoading, error: tablesError, fetchTables } = useTables(restaurantId);
+  const {
+    tables,
+    loading: tablesLoading,
+    error: tablesError,
+    fetchTables,
+  } = useTables(restaurantId);
   const totalCost = cart.reduce((total, item) => total + item.price * item.quantity, 0);
   useEffect(() => {
     fetchTables(); // Fetch tables on mount and when restaurantId changes
@@ -51,7 +56,6 @@ const Cart: React.FC<CartProps> = ({
   if (!isWaiter()) {
     return null;
   }
-
 
   return (
     <Box mt={6} p={4} bg="white" borderRadius="md" boxShadow="md">
@@ -68,11 +72,13 @@ const Cart: React.FC<CartProps> = ({
           value={tableNumber}
           onChange={(e) => setTableNumber(e.target.value)}
         >
-          {tables.filter((table) => table.status === 'available').map((table) => (
-            <option key={table.table_id} value={table.table_id}>
-              {table.table_number}
-            </option>
-          ))}
+          {tables
+            .filter((table) => table.status === 'available')
+            .map((table) => (
+              <option key={table.table_id} value={table.table_id}>
+                {table.table_number}
+              </option>
+            ))}
         </NativeSelect.Field>
         <NativeSelect.Indicator />
       </NativeSelect.Root>
@@ -92,14 +98,15 @@ const Cart: React.FC<CartProps> = ({
       ) : (
         cart.map((item) => {
           // Get side dish names if present
-          const sideDishes = item.selectedSides && item.selectedSides.length > 0
-            ? item.selectedSides
-                .map((sideId: string) => {
-                  const side = allMenuItems.find(mi => mi.menu_item_id === sideId);
-                  return side ? side.name : null;
-                })
-                .filter(Boolean)
-            : [];
+          const sideDishes =
+            item.selectedSides && item.selectedSides.length > 0
+              ? item.selectedSides
+                  .map((sideId: string) => {
+                    const side = allMenuItems.find((mi) => mi.menu_item_id === sideId);
+                    return side ? side.name : null;
+                  })
+                  .filter(Boolean)
+              : [];
 
           return (
             <Box
@@ -118,7 +125,9 @@ const Cart: React.FC<CartProps> = ({
                       key={item.menu_item_id}
                       name={item.menu_item_id}
                       value={item.quantity.toString()}
-                      onValueChange={(e: { value: string }) => updateCartQuantity(item.menu_item_id, Number(e.value))}
+                      onValueChange={(e: { value: string }) =>
+                        updateCartQuantity(item.menu_item_id, Number(e.value))
+                      }
                     />
                   </Box>
                 )}
@@ -150,4 +159,4 @@ const Cart: React.FC<CartProps> = ({
   );
 };
 
-export default Cart; 
+export default Cart;

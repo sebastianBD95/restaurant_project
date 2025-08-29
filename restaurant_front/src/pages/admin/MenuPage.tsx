@@ -16,7 +16,7 @@ import {
   AbsoluteCenter,
   GridItem,
   Flex,
-  Spinner
+  Spinner,
 } from '@chakra-ui/react';
 import { useEffect, useState, useRef } from 'react';
 import { z } from 'zod';
@@ -26,13 +26,13 @@ import { MenuData, MenuItemRequest, MenuItemResponse } from '../../interfaces/me
 import { Ingredient } from '../../interfaces/ingredients';
 import { addMenu, getMenus, editMenuItem } from '../../services/menuService';
 import { getCookie } from '../utils/cookieManager';
-import {useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Sidebar } from '../../components/ui/navegator';
 import { useSidebar } from '../../hooks/useSidebar';
 import MenuCategory from '../../components/menu/MenuCategory';
 import Cart from '../../components/menu/Cart';
 import { placeOrder as placeOrderService } from '../../services/orderService';
-import { Toaster, toaster } from "../../components/ui/toaster"
+import { Toaster, toaster } from '../../components/ui/toaster';
 import { useTables } from '../../hooks/useTables';
 
 const formSchema = z.object({
@@ -43,7 +43,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 const categoryMap: Record<string, string> = {
   entrada: 'Appetizer',
-  'platoFuerte': 'Main',
+  platoFuerte: 'Main',
   postres: 'Desserts',
   bebidas: 'Drinks',
   extras: 'Side',
@@ -84,7 +84,12 @@ const MenuPage: React.FC = () => {
   const navigate = useNavigate();
 
   // Use the useTables hook at the top level
-  const { tables, loading: tablesLoading, error: tablesError, fetchTables } = useTables(restaurantId);
+  const {
+    tables,
+    loading: tablesLoading,
+    error: tablesError,
+    fetchTables,
+  } = useTables(restaurantId);
 
   useEffect(() => {
     fetchMenuItems();
@@ -100,18 +105,18 @@ const MenuPage: React.FC = () => {
         setError('No authentication token found');
         return;
       }
-      
+
       const response = await getMenus(token, restaurantId!);
-      
+
       let menuItems = response as MenuItemResponse[];
-      const appetizers = menuItems.filter(item => item.category === 'Appetizer');
-      const mainCourses = menuItems.filter(item => item.category === 'Main');
-      const desserts = menuItems.filter(item => item.category === 'Desserts');
-      const drinks = menuItems.filter(item => item.category === 'Drinks');
-      const soups = menuItems.filter(item => item.category === 'Soup');
-      const salads = menuItems.filter(item => item.category === 'Salad');
-      const sides = menuItems.filter(item => item.category === 'Side');
-      
+      const appetizers = menuItems.filter((item) => item.category === 'Appetizer');
+      const mainCourses = menuItems.filter((item) => item.category === 'Main');
+      const desserts = menuItems.filter((item) => item.category === 'Desserts');
+      const drinks = menuItems.filter((item) => item.category === 'Drinks');
+      const soups = menuItems.filter((item) => item.category === 'Soup');
+      const salads = menuItems.filter((item) => item.category === 'Salad');
+      const sides = menuItems.filter((item) => item.category === 'Side');
+
       setMenuData({
         entrada: appetizers,
         platoFuerte: mainCourses,
@@ -124,7 +129,6 @@ const MenuPage: React.FC = () => {
 
       // After menuData is set, create a flat array of all menu items
       const allMenuItems: MenuItemResponse[] = Object.values(menuData).flat();
-
     } catch (error) {
       toaster.create({
         title: 'Error',
@@ -142,7 +146,6 @@ const MenuPage: React.FC = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let selectedFile = e.target.files?.[0];
     if (selectedFile) {
@@ -157,7 +160,12 @@ const MenuPage: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent, category: string, ingredients: Ingredient[], editingItem?: MenuItemResponse) => {
+  const handleSubmit = async (
+    e: React.FormEvent,
+    category: string,
+    ingredients: Ingredient[],
+    editingItem?: MenuItemResponse
+  ) => {
     e.preventDefault();
 
     if (!formData.name || !formData.description || (!file && !editingItem) || formData.price <= 0) {
@@ -177,7 +185,7 @@ const MenuPage: React.FC = () => {
       price: Number(formData.price),
       side_dishes: Number(formData.sideDishes),
       category: categoryMap[category],
-      ingredients: ingredients
+      ingredients: ingredients,
     };
 
     try {
@@ -196,7 +204,7 @@ const MenuPage: React.FC = () => {
       } else {
         await addMenu(menuData, token, restaurantId!);
       }
-      
+
       // Reset form state
       setFile(null);
       setImagePreview(null);
@@ -206,15 +214,19 @@ const MenuPage: React.FC = () => {
         price: 0,
         sideDishes: 0,
       });
-      
+
       await fetchMenuItems();
-      
     } catch (error: any) {
       setError(error.message);
     }
   };
 
-  const addToCart = (item: MenuItemResponse, quantity: number, observation: string, selectedSides: string[] = []) => {
+  const addToCart = (
+    item: MenuItemResponse,
+    quantity: number,
+    observation: string,
+    selectedSides: string[] = []
+  ) => {
     const obs = observation.trim() === '' ? 'No observation' : observation.trim();
     if (quantity > 0) {
       setCart((prevCart) => {
@@ -245,7 +257,7 @@ const MenuPage: React.FC = () => {
       setCart((prevCart) => {
         return prevCart
           .map((item) => (item.menu_item_id === id ? { ...item, quantity: newQuantity } : item))
-          .filter((item) => item.quantity > 0)
+          .filter((item) => item.quantity > 0);
       });
     }
   };
@@ -273,20 +285,20 @@ const MenuPage: React.FC = () => {
 
     try {
       // Build the order items array
-      const items = cart.flatMap(item => {
+      const items = cart.flatMap((item) => {
         // Main dish
         const main = {
           menu_item_id: item.menu_item_id,
           quantity: item.quantity,
           observation: item.observation,
-          price: item.price
+          price: item.price,
         };
         // Side dishes (each as a separate item, price 0)
         const sides = (item.selectedSides || []).map((sideId: string) => ({
           menu_item_id: sideId,
           quantity: item.quantity,
           observation: `Guarnición de ${item.name}`,
-          price: 0
+          price: 0,
         }));
         return [main, ...sides];
       });
@@ -296,7 +308,7 @@ const MenuPage: React.FC = () => {
         restaurant_id: restaurantId,
         status: 'ordered',
         items,
-        total_price: totalCost // This will still be the sum of main dishes only
+        total_price: totalCost, // This will still be the sum of main dishes only
       };
 
       await placeOrderService(orderData);
@@ -309,7 +321,6 @@ const MenuPage: React.FC = () => {
       setObservations('');
       setOrderPlaced(false);
       fetchTables();
-
     } catch (error) {
       console.error('Error placing order:', error);
       toaster.create({
@@ -331,39 +342,28 @@ const MenuPage: React.FC = () => {
     });
   };
 
-  
   return (
-    <Flex height="100vh" direction={{ base: "column", md: "row" }}>
+    <Flex height="100vh" direction={{ base: 'column', md: 'row' }}>
       {/* Barra lateral de navegación plegable */}
-      <Sidebar 
-        isSidebarOpen={isSidebarOpen} 
-        toggleSidebar={toggleSidebar} 
+      <Sidebar
+        isSidebarOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
         restaurantId={restaurantId}
       />
 
       {/* Contenido Principal */}
       <Box flex={1} p={{ base: 2, md: 6 }} overflowY="auto">
         <Box p={{ base: 4, md: 8 }} bg="gray.100" minH="100vh">
-          <Heading 
-            textAlign="center" 
-            mb={6}
-            fontSize={{ base: "xl", md: "2xl", lg: "3xl" }}
-          >
+          <Heading textAlign="center" mb={6} fontSize={{ base: 'xl', md: '2xl', lg: '3xl' }}>
             Menú
           </Heading>
-          
+
           {isLoading ? (
             <Box display="flex" justifyContent="center" alignItems="center" minH="200px">
               <Spinner size="xl" />
             </Box>
           ) : error ? (
-            <Box 
-              textAlign="center" 
-              p={4} 
-              bg="red.50" 
-              color="red.600" 
-              borderRadius="md"
-            >
+            <Box textAlign="center" p={4} bg="red.50" color="red.600" borderRadius="md">
               {error || 'An unexpected error occurred'}
             </Box>
           ) : (

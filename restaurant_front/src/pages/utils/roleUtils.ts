@@ -13,4 +13,4 @@ export const isWaiter = (): boolean => {
 export const isAdmin = (): boolean => {
   const role = getUserRole();
   return role === 'admin';
-}; 
+};

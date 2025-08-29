@@ -1,20 +1,22 @@
 import { getCookie } from '../pages/utils/cookieManager';
-import { InventoryItem, InventoryResponse } from '../interfaces/inventory';  
+import { InventoryItem, InventoryResponse } from '../interfaces/inventory';
 
 import config from '../config/config';
 
 const API_BASE_URL = config.API_URL;
 
-
-
-export const createInventoryItems = async (restaurantId: string, items: InventoryItem[], token: string): Promise<void> => {
+export const createInventoryItems = async (
+  restaurantId: string,
+  items: InventoryItem[],
+  token: string
+): Promise<void> => {
   const response = await fetch(`${API_BASE_URL}/inventory?restaurant_id=${restaurantId}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(items)
+    body: JSON.stringify(items),
   });
 
   if (!response.ok) {
@@ -22,14 +24,18 @@ export const createInventoryItems = async (restaurantId: string, items: Inventor
   }
 };
 
-export const updateInventoryItems = async (restaurantId: string, items: InventoryItem[], token: string): Promise<void> => {
+export const updateInventoryItems = async (
+  restaurantId: string,
+  items: InventoryItem[],
+  token: string
+): Promise<void> => {
   const response = await fetch(`${API_BASE_URL}/inventory`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(items)
+    body: JSON.stringify(items),
   });
 
   if (!response.ok) {
@@ -45,7 +51,7 @@ export const getInventory = async (restaurantId: string): Promise<InventoryRespo
 
   const response = await fetch(`${API_BASE_URL}/inventory?restaurant_id=${restaurantId}`, {
     headers: {
-      'Authorization': `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
     },
   });
 
@@ -56,18 +62,21 @@ export const getInventory = async (restaurantId: string): Promise<InventoryRespo
   return response.json();
 };
 
-export const deleteInventoryItem = async (inventoryId: string, restaurantId: string): Promise<void> => {
+export const deleteInventoryItem = async (
+  inventoryId: string,
+  restaurantId: string
+): Promise<void> => {
   const token = getCookie(document.cookie, 'token');
   if (!token) {
     throw new Error('No authentication token found');
   }
 
   const response = await fetch(
-    `${API_BASE_URL}/inventory/${inventoryId}?restaurant_id=${restaurantId}`, 
+    `${API_BASE_URL}/inventory/${inventoryId}?restaurant_id=${restaurantId}`,
     {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     }
   );
@@ -75,4 +84,4 @@ export const deleteInventoryItem = async (inventoryId: string, restaurantId: str
   if (!response.ok) {
     throw new Error('Failed to delete inventory item');
   }
-}; 
+};

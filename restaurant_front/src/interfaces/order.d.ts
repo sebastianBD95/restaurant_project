@@ -34,7 +34,7 @@ export interface VoidOrderItem {
   void_reason: string;
   status: string;
   created_at?: string;
-} 
+}
 
 interface OrderItem {
   menu_item_id: string;

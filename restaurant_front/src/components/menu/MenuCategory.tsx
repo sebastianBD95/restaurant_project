@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { Box, Grid, GridItem, Image, Text, Accordion, AbsoluteCenter, Button, ButtonGroup } from '@chakra-ui/react';
+import {
+  Box,
+  Grid,
+  GridItem,
+  Image,
+  Text,
+  Accordion,
+  AbsoluteCenter,
+  Button,
+  ButtonGroup,
+} from '@chakra-ui/react';
 import { MenuItemResponse } from '../../interfaces/menuItems';
 import MenuItem from './MenuItem';
 import MenuForm from './MenuForm';
@@ -13,10 +23,20 @@ interface MenuCategoryProps {
   category: string;
   items: MenuItemResponse[];
   categoryMap: Record<string, string>;
-  onSubmit: (e: React.FormEvent, category: string, ingredients: Ingredient[], item?: MenuItemResponse) => Promise<void>;
+  onSubmit: (
+    e: React.FormEvent,
+    category: string,
+    ingredients: Ingredient[],
+    item?: MenuItemResponse
+  ) => Promise<void>;
   error: string;
   MAX_FILE_SIZE: number;
-  onAddToCart: (item: MenuItemResponse, quantity: number, observation: string, selectedSides: string[]) => void;
+  onAddToCart: (
+    item: MenuItemResponse,
+    quantity: number,
+    observation: string,
+    selectedSides: string[]
+  ) => void;
   orderPlaced: boolean;
   platoDisponible: (platoName: string) => boolean;
   formData: {
@@ -25,7 +45,12 @@ interface MenuCategoryProps {
     price: number;
     sideDishes: number;
   };
-  setFormData: (data: { name: string; description: string; price: number; sideDishes: number }) => void;
+  setFormData: (data: {
+    name: string;
+    description: string;
+    price: number;
+    sideDishes: number;
+  }) => void;
   file: File | null;
   setFile: (file: File | null) => void;
   onMenuUpdate: () => Promise<void>;
@@ -51,10 +76,11 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
   onMenuUpdate,
   ingredients,
   setIngredients,
-  allMenuItems
+  allMenuItems,
 }) => {
   const token = getCookie(document.cookie, 'token');
-  const restaurantId = window.location.pathname.split('/').find((v, i, arr) => arr[i-1] === 'menu') || '';
+  const restaurantId =
+    window.location.pathname.split('/').find((v, i, arr) => arr[i - 1] === 'menu') || '';
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItemResponse | undefined>(undefined);
 
@@ -62,7 +88,7 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
     console.log(item);
     setEditingItem(item);
     setFormData({
-      name: item.name,  
+      name: item.name,
       description: item.description,
       price: item.price,
       sideDishes: item.side_dishes,
@@ -118,11 +144,11 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
             alignItems="center"
             justifyContent="space-between"
             py={{ base: 2, md: 3 }}
-            w="100%" 
+            w="100%"
           >
             <Box
               textAlign="left"
-              fontSize={{ base: "md", md: "lg" }}
+              fontSize={{ base: 'md', md: 'lg' }}
               fontWeight="bold"
               textTransform="capitalize"
             >
@@ -132,8 +158,8 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
               <Button
                 colorScheme="blue"
                 onClick={() => setIsFormOpen(true)}
-                size={{ base: "sm", md: "md" }}
-                fontSize={{ base: "sm", md: "md" }}
+                size={{ base: 'sm', md: 'md' }}
+                fontSize={{ base: 'sm', md: 'md' }}
                 ml="auto"
               >
                 Añadir Plato
@@ -161,16 +187,16 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
         </AbsoluteCenter>
       </Box>
       <Accordion.ItemContent>
-        <Grid 
-          templateColumns={{ 
-            base: '1fr', 
-            sm: 'repeat(2, 1fr)', 
+        <Grid
+          templateColumns={{
+            base: '1fr',
+            sm: 'repeat(2, 1fr)',
             md: 'repeat(2, 1fr)',
-            lg: 'repeat(3, 1fr)'
-          }} 
+            lg: 'repeat(3, 1fr)',
+          }}
           gap={{ base: 4, md: 6 }}
         >
-          {items.length > 0 && 
+          {items.length > 0 &&
             items.map((item: MenuItemResponse) => (
               <MenuItem
                 key={item.menu_item_id}
@@ -183,10 +209,13 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
                 onHide={handleHide}
                 allMenuItems={allMenuItems}
               />
-            ))
-          }
+            ))}
           {items.length === 0 && (
-            <GridItem colSpan={{ base: 1, sm: 2, md: 2, lg: 3 }} display="flex" justifyContent="center">
+            <GridItem
+              colSpan={{ base: 1, sm: 2, md: 2, lg: 3 }}
+              display="flex"
+              justifyContent="center"
+            >
               <Box
                 display="flex"
                 flexDirection="column"
@@ -202,10 +231,10 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
                 mx="auto"
                 w="100%"
               >
-                <Text 
-                  fontSize={{ base: "lg", md: "xl" }} 
-                  fontWeight="semibold" 
-                  mb={4} 
+                <Text
+                  fontSize={{ base: 'lg', md: 'xl' }}
+                  fontWeight="semibold"
+                  mb={4}
                   color="gray.700"
                 >
                   No has agregado ningún plato aún
@@ -213,7 +242,7 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
                 <Image
                   src="/images/plate.png"
                   alt="Chef tasting plate"
-                  boxSize={{ base: "200px", md: "250px" }}
+                  boxSize={{ base: '200px', md: '250px' }}
                   objectFit="contain"
                   borderRadius="md"
                 />
@@ -226,4 +255,4 @@ const MenuCategory: React.FC<MenuCategoryProps> = ({
   );
 };
 
-export default MenuCategory; 
+export default MenuCategory;

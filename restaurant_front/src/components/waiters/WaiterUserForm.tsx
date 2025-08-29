@@ -24,17 +24,13 @@ const WaiterUserForm: React.FC<WaiterUserFormProps> = ({
   };
 
   return (
-    <Box
-      bg={isEditing ? "blue.50" : "white"}
-      p={6}
-      borderRadius="md"
-      boxShadow="md"
-      mb={6}
-    >
+    <Box bg={isEditing ? 'blue.50' : 'white'} p={6} borderRadius="md" boxShadow="md" mb={6}>
       <form onSubmit={onSubmit}>
         <VStack align="stretch">
           <Box>
-            <Text fontWeight="bold" mb={1}>Nombre Completo *</Text>
+            <Text fontWeight="bold" mb={1}>
+              Nombre Completo *
+            </Text>
             <Input
               name="name"
               value={formData.name}
@@ -44,7 +40,9 @@ const WaiterUserForm: React.FC<WaiterUserFormProps> = ({
             />
           </Box>
           <Box>
-            <Text fontWeight="bold" mb={1}>Correo Electrónico *</Text>
+            <Text fontWeight="bold" mb={1}>
+              Correo Electrónico *
+            </Text>
             <Input
               name="email"
               type="email"
@@ -55,7 +53,9 @@ const WaiterUserForm: React.FC<WaiterUserFormProps> = ({
             />
           </Box>
           <Box>
-            <Text fontWeight="bold" mb={1}>Teléfono *</Text>
+            <Text fontWeight="bold" mb={1}>
+              Teléfono *
+            </Text>
             <Input
               name="phone"
               value={formData.phone}
@@ -65,13 +65,19 @@ const WaiterUserForm: React.FC<WaiterUserFormProps> = ({
             />
           </Box>
           <Box>
-            <Text fontWeight="bold" mb={1}>Contraseña *</Text>
+            <Text fontWeight="bold" mb={1}>
+              Contraseña *
+            </Text>
             <Input
               name="password"
               type="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder={isEditing ? "Dejar en blanco para mantener la contraseña actual" : "Ingrese la contraseña"}
+              placeholder={
+                isEditing
+                  ? 'Dejar en blanco para mantener la contraseña actual'
+                  : 'Ingrese la contraseña'
+              }
               required={!isEditing}
             />
           </Box>
@@ -91,4 +97,4 @@ const WaiterUserForm: React.FC<WaiterUserFormProps> = ({
   );
 };
 
-export default WaiterUserForm; 
+export default WaiterUserForm;

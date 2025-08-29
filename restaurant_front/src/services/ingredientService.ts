@@ -18,7 +18,7 @@ export const getIngredients = async (restaurantId: string): Promise<Ingredient[]
 
   const response = await fetch(`${API_BASE_URL}/ingredients?restaurant_id=${restaurantId}`, {
     headers: {
-      'Authorization': `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
     },
   });
 
@@ -27,5 +27,4 @@ export const getIngredients = async (restaurantId: string): Promise<Ingredient[]
   }
 
   return response.json();
-}; 
-
+};

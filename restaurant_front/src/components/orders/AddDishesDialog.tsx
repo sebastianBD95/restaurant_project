@@ -27,23 +27,40 @@ const AddDishesDialog: React.FC<AddDishesDialogProps> = ({
   handleDishQuantityChange,
   handleAddDishesSubmit,
 }) => {
-  const filteredDishes = menuItems.filter(item => item.category === selectedCategory);
+  const filteredDishes = menuItems.filter((item) => item.category === selectedCategory);
 
   return (
-    <DialogRoot open={open} onOpenChange={open => { if (!open) onClose(); }}>
+    <DialogRoot
+      open={open}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <DialogContent>
         <DialogHeader>Agregar Platos al Pedido</DialogHeader>
         <DialogBody>
           <Box mb={4}>
-            <Text mb={1} fontWeight="bold">Categoría</Text>
+            <Text mb={1} fontWeight="bold">
+              Categoría
+            </Text>
             <select
               value={selectedCategory}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedCategory(e.target.value)}
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', marginBottom: '8px', border: '1px solid #CBD5E0' }}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                setSelectedCategory(e.target.value)
+              }
+              style={{
+                width: '100%',
+                padding: '8px',
+                borderRadius: '4px',
+                marginBottom: '8px',
+                border: '1px solid #CBD5E0',
+              }}
             >
               <option value="">Selecciona una categoría</option>
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
               ))}
             </select>
           </Box>
@@ -59,7 +76,7 @@ const AddDishesDialog: React.FC<AddDishesDialogProps> = ({
             </Text>
           ) : (
             <Box>
-              {filteredDishes.map(item => (
+              {filteredDishes.map((item) => (
                 <Flex
                   key={item.menu_item_id}
                   align="center"
@@ -67,7 +84,7 @@ const AddDishesDialog: React.FC<AddDishesDialogProps> = ({
                   p={2}
                   borderRadius="md"
                   bg="gray.50"
-                  _hover={{ bg: "gray.100" }}
+                  _hover={{ bg: 'gray.100' }}
                   boxShadow="sm"
                 >
                   {item.image_url && (
@@ -82,14 +99,18 @@ const AddDishesDialog: React.FC<AddDishesDialogProps> = ({
                   )}
                   <Box flex={1}>
                     <Text fontWeight="medium">{item.name}</Text>
-                    <Text fontSize="sm" color="gray.600">${item.price}</Text>
+                    <Text fontSize="sm" color="gray.600">
+                      ${item.price}
+                    </Text>
                   </Box>
                   <NumberInputRoot
                     min={0}
                     max={99}
                     width="80px"
                     value={selectedDishes[item.menu_item_id]?.toString() || ''}
-                    onValueChange={({ value }) => handleDishQuantityChange(item.menu_item_id, Number(value))}
+                    onValueChange={({ value }) =>
+                      handleDishQuantityChange(item.menu_item_id, Number(value))
+                    }
                   >
                     <NumberInputField />
                   </NumberInputRoot>
@@ -103,7 +124,7 @@ const AddDishesDialog: React.FC<AddDishesDialogProps> = ({
             colorScheme="blue"
             mr={3}
             onClick={handleAddDishesSubmit}
-            disabled={Object.values(selectedDishes).filter(qty => qty > 0).length === 0}
+            disabled={Object.values(selectedDishes).filter((qty) => qty > 0).length === 0}
           >
             Agregar
           </Button>
@@ -114,4 +135,4 @@ const AddDishesDialog: React.FC<AddDishesDialogProps> = ({
   );
 };
 
-export default AddDishesDialog; 
+export default AddDishesDialog;

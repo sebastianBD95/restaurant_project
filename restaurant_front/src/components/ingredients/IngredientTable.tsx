@@ -1,13 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Table,
-  Text,
-  Button,
-  IconButton,
-  Input,
-  Box,
-  Stack,
-} from '@chakra-ui/react';
+import { Table, Text, Button, IconButton, Input, Box, Stack } from '@chakra-ui/react';
 import { FiTrash2 } from 'react-icons/fi';
 
 interface IngredientRow {
@@ -29,12 +21,28 @@ interface IngredientTableProps {
 }
 
 const CATEGORIES = [
-  'Pollo', 'Fruta', 'Lácteo', 'Res', 'Cerdo', 'Condimento', 'Cereal', 'Pescado',
-  'Grano', 'Harina', 'Hongo', 'Grasa', 'Legumbre', 'Verdura', 'Marisco', 'Otro'
+  'Pollo',
+  'Fruta',
+  'Lácteo',
+  'Res',
+  'Cerdo',
+  'Condimento',
+  'Cereal',
+  'Pescado',
+  'Grano',
+  'Harina',
+  'Hongo',
+  'Grasa',
+  'Legumbre',
+  'Verdura',
+  'Marisco',
+  'Otro',
 ];
 
-const CATEGORY_OPTIONS = CATEGORIES.map(cat => (
-  <option key={cat} value={cat}>{cat}</option>
+const CATEGORY_OPTIONS = CATEGORIES.map((cat) => (
+  <option key={cat} value={cat}>
+    {cat}
+  </option>
 ));
 
 export const IngredientTable: React.FC<IngredientTableProps> = ({
@@ -45,7 +53,7 @@ export const IngredientTable: React.FC<IngredientTableProps> = ({
   handleChange,
   isLoading,
   handleBulkSave,
-  hasEdited
+  hasEdited,
 }) => {
   const [page, setPage] = useState(0);
   const pageSize = 25;
@@ -80,14 +88,23 @@ export const IngredientTable: React.FC<IngredientTableProps> = ({
                     <Input
                       size="sm"
                       value={ingredient.name}
-                      onChange={e => handleChange(ingredient.raw_ingredient_id, 'name', e.target.value)}
+                      onChange={(e) =>
+                        handleChange(ingredient.raw_ingredient_id, 'name', e.target.value)
+                      }
                     />
                   </Table.Cell>
                   <Table.Cell>
                     <select
-                      style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #E2E8F0' }}
+                      style={{
+                        width: '100%',
+                        padding: '6px',
+                        borderRadius: '6px',
+                        border: '1px solid #E2E8F0',
+                      }}
                       value={ingredient.category}
-                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleChange(ingredient.raw_ingredient_id, 'category', e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                        handleChange(ingredient.raw_ingredient_id, 'category', e.target.value)
+                      }
                     >
                       {CATEGORY_OPTIONS}
                     </select>
@@ -100,7 +117,13 @@ export const IngredientTable: React.FC<IngredientTableProps> = ({
                       max={1}
                       step={0.01}
                       value={ingredient.merma ?? ''}
-                      onChange={e => handleChange(ingredient.raw_ingredient_id, 'merma', parseFloat(e.target.value))}
+                      onChange={(e) =>
+                        handleChange(
+                          ingredient.raw_ingredient_id,
+                          'merma',
+                          parseFloat(e.target.value)
+                        )
+                      }
                     />
                   </Table.Cell>
                   <Table.Cell>
@@ -129,7 +152,11 @@ export const IngredientTable: React.FC<IngredientTableProps> = ({
                     <Text>{ingredient.category}</Text>
                   </Table.Cell>
                   <Table.Cell>
-                    <Text>{ingredient.merma !== undefined ? `${(ingredient.merma * 100).toFixed(0)}%` : '-'}</Text>
+                    <Text>
+                      {ingredient.merma !== undefined
+                        ? `${(ingredient.merma * 100).toFixed(0)}%`
+                        : '-'}
+                    </Text>
                   </Table.Cell>
                   <Table.Cell>
                     <Stack direction="row" gap={2} justify="center">
@@ -155,11 +182,7 @@ export const IngredientTable: React.FC<IngredientTableProps> = ({
       </Table.Root>
       {/* Pagination controls */}
       <Box display="flex" justifyContent="center" alignItems="center" mt={4} gap={2}>
-        <Button
-          size="sm"
-          onClick={() => setPage((p) => Math.max(0, p - 1))}
-          disabled={page === 0}
-        >
+        <Button size="sm" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}>
           Anterior
         </Button>
         <Text>
@@ -174,14 +197,10 @@ export const IngredientTable: React.FC<IngredientTableProps> = ({
         </Button>
       </Box>
       <Box display="flex" justifyContent="center" mt={4}>
-        <Button
-          colorScheme="green"
-          onClick={handleBulkSave}
-          disabled={!hasEdited}
-        >
+        <Button colorScheme="green" onClick={handleBulkSave} disabled={!hasEdited}>
           Guardar cambios
         </Button>
       </Box>
     </Box>
   );
-}; 
+};

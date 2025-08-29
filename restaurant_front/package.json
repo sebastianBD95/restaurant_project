@@ -52,7 +52,10 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "format": "prettier --write \"**/*.{ts,tsx}\""
+    "format": "prettier --write \"**/*.{ts,tsx}\"",
+    "clean": "eslint src --ext .ts,.tsx --fix",
+    "remove-unused": "unimported --write",
+    "clean-imports": "npx ts-unused-exports tsconfig.json --excludePathsFromReport=node_modules"
   },
   "eslintConfig": {
     "extends": [
@@ -74,6 +77,8 @@
   },
   "devDependencies": {
     "@types/react-slick": "^0.23.13",
-    "prettier": "^3.5.3"
+    "prettier": "^3.5.3",
+    "ts-unused-exports": "^11.0.1",
+    "unimported": "^1.31.0"
   }
 }

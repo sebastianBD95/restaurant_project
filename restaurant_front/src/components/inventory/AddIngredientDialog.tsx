@@ -1,17 +1,6 @@
 import React, { useState } from 'react';
-import {
-  Stack,
-  Button,
-  Text,
-  Spinner,
-  Box,
-} from '@chakra-ui/react';
-import {
-  DialogRoot,
-  DialogContent,
-  DialogBody,
-  DialogTitle,
-} from '../ui/dialog';
+import { Stack, Button, Text, Spinner, Box } from '@chakra-ui/react';
+import { DialogRoot, DialogContent, DialogBody, DialogTitle } from '../ui/dialog';
 import { Ingredient } from '../../services/ingredientService';
 
 interface AddIngredientDialogProps {
@@ -52,10 +41,14 @@ export const AddIngredientDialog: React.FC<AddIngredientDialogProps> = ({
   }, [search]);
 
   // Always show search input, and allow searching all ingredients if no category is selected
-  const allIngredients = suggestedIngredients.concat(categoryIngredients.filter(i => !suggestedIngredients.some(j => j.raw_ingredient_id === i.raw_ingredient_id)));
+  const allIngredients = suggestedIngredients.concat(
+    categoryIngredients.filter(
+      (i) => !suggestedIngredients.some((j) => j.raw_ingredient_id === i.raw_ingredient_id)
+    )
+  );
   const ingredientsToSearch = selectedCategory === '' ? allIngredients : categoryIngredients;
 
-  const filteredIngredients = ingredientsToSearch.filter(ingredient =>
+  const filteredIngredients = ingredientsToSearch.filter((ingredient) =>
     ingredient.name.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -112,7 +105,9 @@ export const AddIngredientDialog: React.FC<AddIngredientDialogProps> = ({
               <Text fontWeight="bold">Por Categoría</Text>
               <select
                 value={selectedCategory}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedCategory(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  setSelectedCategory(e.target.value)
+                }
                 className="chakra-select"
                 style={{
                   width: '100%',
@@ -134,7 +129,7 @@ export const AddIngredientDialog: React.FC<AddIngredientDialogProps> = ({
                 type="text"
                 placeholder="Buscar ingrediente..."
                 value={search}
-                onChange={e => setSearch(e.target.value)}
+                onChange={(e) => setSearch(e.target.value)}
                 style={{
                   width: '100%',
                   marginBottom: '12px',
@@ -143,17 +138,13 @@ export const AddIngredientDialog: React.FC<AddIngredientDialogProps> = ({
                   border: '1px solid #CBD5E0',
                 }}
               />
-              <Box
-                border="1px solid #E2E8F0"
-                borderRadius="md"
-                p={3}
-                minH="60px"
-                bg="gray.50"
-              >
+              <Box border="1px solid #E2E8F0" borderRadius="md" p={3} minH="60px" bg="gray.50">
                 {/* Show filtered and paginated ingredients regardless of category selection */}
                 {filteredIngredients.length === 0 ? (
                   <Text color="gray.400">
-                    {search ? 'No se encontraron ingredientes.' : 'No hay ingredientes disponibles.'}
+                    {search
+                      ? 'No se encontraron ingredientes.'
+                      : 'No hay ingredientes disponibles.'}
                   </Text>
                 ) : (
                   <>
@@ -188,4 +179,4 @@ export const AddIngredientDialog: React.FC<AddIngredientDialogProps> = ({
       </DialogContent>
     </DialogRoot>
   );
-}; 
+};

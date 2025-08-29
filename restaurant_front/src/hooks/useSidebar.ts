@@ -16,6 +16,6 @@ export const useSidebar = () => {
   return {
     isSidebarOpen,
     toggleSidebar,
-    handleHomeClick
+    handleHomeClick,
   };
-}; 
+};

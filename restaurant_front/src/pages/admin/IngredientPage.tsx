@@ -1,5 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Box, Heading, Spinner, Text, Flex, Button , Select, createListCollection, Portal} from '@chakra-ui/react';
+import {
+  Box,
+  Heading,
+  Spinner,
+  Text,
+  Flex,
+  Button,
+  Select,
+  createListCollection,
+  Portal,
+} from '@chakra-ui/react';
 import { useParams } from 'react-router-dom';
 import { getIngredients } from '../../services/ingredientService';
 import { Sidebar } from '../../components/ui/navegator';
@@ -17,15 +27,29 @@ interface IngredientRow {
 }
 
 const CATEGORIES = [
-  'Pollo', 'Fruta', 'Lácteo', 'Res', 'Cerdo', 'Condimento', 'Cereal', 'Pescado',
-  'Grano', 'Harina', 'Hongo', 'Grasa', 'Legumbre', 'Verdura', 'Marisco', 'Otro'
+  'Pollo',
+  'Fruta',
+  'Lácteo',
+  'Res',
+  'Cerdo',
+  'Condimento',
+  'Cereal',
+  'Pescado',
+  'Grano',
+  'Harina',
+  'Hongo',
+  'Grasa',
+  'Legumbre',
+  'Verdura',
+  'Marisco',
+  'Otro',
 ];
 
 const categoryCollection = createListCollection({
   items: [
     { label: 'Todas las categorías', value: '' },
-    ...CATEGORIES.map(cat => ({ label: cat, value: cat }))
-  ]
+    ...CATEGORIES.map((cat) => ({ label: cat, value: cat })),
+  ],
 });
 
 const IngredientPage: React.FC = () => {
@@ -39,7 +63,6 @@ const IngredientPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editMode, setEditMode] = useState<{ [id: string]: boolean }>({});
   const [editedIngredients, setEditedIngredients] = useState<{ [id: string]: IngredientRow }>({});
-  
 
   useEffect(() => {
     const fetchIngredients = async () => {
@@ -120,22 +143,20 @@ const IngredientPage: React.FC = () => {
   };
 
   const handleEdit = (id: string) => {
-    setEditMode(prev => ({ ...prev, [id]: !prev[id] }));
+    setEditMode((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   const handleEditChange = (id: string, field: keyof IngredientRow, value: any) => {
-    setEditedIngredients(prev => ({
+    setEditedIngredients((prev) => ({
       ...prev,
       [id]: {
-        ...ingredients.find(i => i.raw_ingredient_id === id)!,
+        ...ingredients.find((i) => i.raw_ingredient_id === id)!,
         ...prev[id],
         [field]: field === 'merma' ? (value === '' ? 0 : Number(value)) : value,
-      }
+      },
     }));
-    setIngredients(prev =>
-      prev.map(i =>
-        i.raw_ingredient_id === id ? { ...i, [field]: value } : i
-      )
+    setIngredients((prev) =>
+      prev.map((i) => (i.raw_ingredient_id === id ? { ...i, [field]: value } : i))
     );
   };
 
@@ -144,9 +165,12 @@ const IngredientPage: React.FC = () => {
     if (!toUpdate) return;
     try {
       // Ensure merma is a number for backend
-      const payload = { ...toUpdate, merma: typeof toUpdate.merma === 'number' ? toUpdate.merma : 0 };
+      const payload = {
+        ...toUpdate,
+        merma: typeof toUpdate.merma === 'number' ? toUpdate.merma : 0,
+      };
       await updateRawIngredients([payload], restaurantId!);
-      setEditedIngredients(prev => {
+      setEditedIngredients((prev) => {
         const { [id]: _, ...rest } = prev;
         return rest;
       });
@@ -154,22 +178,22 @@ const IngredientPage: React.FC = () => {
         title: 'Éxito',
         description: 'Ingrediente actualizado correctamente',
         type: 'success',
-        duration: 3000
+        duration: 3000,
       });
     } catch (error) {
       toaster.create({
         title: 'Error',
         description: 'No se pudo actualizar el ingrediente',
         type: 'error',
-        duration: 3000
+        duration: 3000,
       });
     }
   };
 
-  const handleDelete =  async (id: string) => {
+  const handleDelete = async (id: string) => {
     try {
       await deleteRawIngredient(id, restaurantId!);
-      setIngredients(prev => prev.filter(i => i.raw_ingredient_id !== id));
+      setIngredients((prev) => prev.filter((i) => i.raw_ingredient_id !== id));
       toaster.create({
         title: 'Eliminado',
         description: 'El ingrediente ha sido eliminado del inventario.',
@@ -189,9 +213,9 @@ const IngredientPage: React.FC = () => {
   const hasEdited = Object.keys(editedIngredients).length > 0;
 
   const handleBulkSave = async () => {
-    const toUpdate = Object.values(editedIngredients).map(ingredient => ({
+    const toUpdate = Object.values(editedIngredients).map((ingredient) => ({
       ...ingredient,
-      merma: typeof ingredient.merma === 'number' ? ingredient.merma : 0
+      merma: typeof ingredient.merma === 'number' ? ingredient.merma : 0,
     }));
     if (toUpdate.length === 0) return;
     try {
@@ -201,30 +225,35 @@ const IngredientPage: React.FC = () => {
         title: 'Éxito',
         description: 'Ingredientes actualizados correctamente',
         type: 'success',
-        duration: 3000
+        duration: 3000,
       });
     } catch (error) {
       toaster.create({
         title: 'Error',
         description: 'No se pudieron actualizar los ingredientes',
         type: 'error',
-        duration: 3000
+        duration: 3000,
       });
     }
   };
 
   return (
-    <Flex height="100vh" direction={{ base: "column", md: "row" }}>
-      <Sidebar 
-        isSidebarOpen={isSidebarOpen} 
-        toggleSidebar={toggleSidebar} 
+    <Flex height="100vh" direction={{ base: 'column', md: 'row' }}>
+      <Sidebar
+        isSidebarOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
         restaurantId={restaurantId}
       />
       <Box flex={1} p={{ base: 2, md: 6 }} overflowY="auto">
         <Box p={{ base: 4, md: 8 }} bg="gray.100" minH="100vh">
           <Heading mb={6}>Ingredientes del Restaurante</Heading>
           <Box mb={4} width="100%">
-            <Flex direction={{ base: 'column', sm: 'row' }} gap={3} align="center" justify="space-between">
+            <Flex
+              direction={{ base: 'column', sm: 'row' }}
+              gap={3}
+              align="center"
+              justify="space-between"
+            >
               <Box flex="1" width="100%">
                 <CustomField label="Filtrar por categoría">
                   <Select.Root

@@ -41,18 +41,21 @@ const TableDistribution: React.FC<TableDistributionProps> = ({ mesas, fetchTable
     let positions: { [key: string]: { x: number; y: number } } = {};
     if (savedLayout) {
       const savedMesas = JSON.parse(savedLayout);
-      positions = savedMesas.reduce((acc: { [key: string]: { x: number; y: number } }, mesa: Mesa) => {
-        acc[mesa.table_id] = { x: mesa.x, y: mesa.y };
-        return acc;
-      }, {});
+      positions = savedMesas.reduce(
+        (acc: { [key: string]: { x: number; y: number } }, mesa: Mesa) => {
+          acc[mesa.table_id] = { x: mesa.x, y: mesa.y };
+          return acc;
+        },
+        {}
+      );
     }
     const newLayout = mesas.map((table: Table, index: number) => ({
       table_id: table.table_id,
       x: positions[table.table_id]?.x ?? 100 + (index % 5) * 100,
       y: positions[table.table_id]?.y ?? 100 + Math.floor(index / 5) * 100,
       shape: 'rect' as const,
-      isOccupied: table.status === "occupied",
-      isProcessingPayment: table.status === "processing_payment",
+      isOccupied: table.status === 'occupied',
+      isProcessingPayment: table.status === 'processing_payment',
       table_number: table.table_number,
       qr_code: table.qr_code,
     }));
@@ -67,10 +70,10 @@ const TableDistribution: React.FC<TableDistributionProps> = ({ mesas, fetchTable
 
   const handleCreateTable = async () => {
     const table: CreateTableRequest = {
-      status: "available",
+      status: 'available',
       restaurant_id: restaurantId!,
       table_number: layout.length + 1,
-      qr_code: `/tables/${layout.length + 1}`
+      qr_code: `/tables/${layout.length + 1}`,
     };
     await createTable(table);
     await fetchTables();
@@ -109,13 +112,19 @@ const TableDistribution: React.FC<TableDistributionProps> = ({ mesas, fetchTable
 
   return (
     <Box className="container" p={{ base: 2, md: 6 }} width="100%" height="100%">
-      <Flex direction={{ base: 'column', sm: 'row' }} justify="space-between" align={{ base: 'stretch', sm: 'center' }} mb={6} gap={2}>
+      <Flex
+        direction={{ base: 'column', sm: 'row' }}
+        justify="space-between"
+        align={{ base: 'stretch', sm: 'center' }}
+        mb={6}
+        gap={2}
+      >
         <Heading className="heading" fontSize={{ base: 'lg', md: 'xl' }}>
           📍 Distribución de Mesas
         </Heading>
         <Stack direction={{ base: 'column', sm: 'row' }} gap={2}>
-          <Button 
-            onClick={toggleLock} 
+          <Button
+            onClick={toggleLock}
             colorScheme={isLocked ? 'red' : 'blue'}
             className="button"
             fontSize={{ base: 'sm', md: 'md' }}
@@ -123,8 +132,8 @@ const TableDistribution: React.FC<TableDistributionProps> = ({ mesas, fetchTable
             <Icon as={isLocked ? FaUnlock : FaLock} className="button-icon" />
             {isLocked ? 'Desbloquear' : 'Bloquear'}
           </Button>
-          <Button 
-            onClick={handleCreateTable} 
+          <Button
+            onClick={handleCreateTable}
             colorScheme="green"
             className="button"
             fontSize={{ base: 'sm', md: 'md' }}
@@ -137,11 +146,11 @@ const TableDistribution: React.FC<TableDistributionProps> = ({ mesas, fetchTable
       <Flex justify="center" width="100%">
         <Stage width={stageWidth} height={stageHeight} className="stage" style={{ width: '100%' }}>
           <Layer>
-            <Text 
+            <Text
               className="instruction-text"
-              text="Arrastra las mesas y haz clic para cambiar su forma" 
-              x={20} 
-              y={20} 
+              text="Arrastra las mesas y haz clic para cambiar su forma"
+              x={20}
+              y={20}
               fontSize={14}
             />
             {layout.map((mesa) => (
@@ -164,7 +173,7 @@ const TableDistribution: React.FC<TableDistributionProps> = ({ mesas, fetchTable
                     className={`table-rect ${hoveredTable === mesa.table_number ? 'table-hover' : ''}`}
                   />
                 ) : (
-                  <Circle 
+                  <Circle
                     id={mesa.table_id}
                     radius={35}
                     fill={getMesaColor(mesa)}

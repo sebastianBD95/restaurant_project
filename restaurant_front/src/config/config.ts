@@ -10,11 +10,11 @@ interface Config {
 const getConfig = (): Config => {
   const env = process.env.NODE_ENV || 'development';
   const envConfig = environment[env as keyof typeof environment] || environment.development;
-  
+
   return {
     ...envConfig,
     API_URL: envConfig.API_URL,
-    ENVIRONMENT: envConfig.ENVIRONMENT
+    ENVIRONMENT: envConfig.ENVIRONMENT,
   };
 };
 
