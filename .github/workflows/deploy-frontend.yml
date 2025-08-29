@@ -1,11 +1,12 @@
 name: Frontend Deploy
 on:
   push:
-    branches: [ main ]
+    tags:
+      - "restaurant_front/v*"
     paths:
-      - "frontend/**"
+      - "restaurant_front/**"
       - "package*.json"
-      - ".github/workflows/frontend-deploy.yml"
+      - ".github/workflows/deploy-frontend.yml"
   workflow_dispatch:
 
 jobs:
@@ -22,7 +23,8 @@ jobs:
 
       - name: Install & build
         run: |
-          npm ci
+          cd restaurant_front
+          npm install
           NODE_ENV=production npm run build
 
       - name: Configure AWS credentials (OIDC)
