@@ -94,6 +94,15 @@ jobs:
           
           # Get ECR registry from build job
           ECR_REGISTRY="${{ needs.build.outputs.registry }}"
+          # Fallback: Construct image name if output is empty
+          if [ -z "${{ needs.build.outputs.image }}" ]; then
+            DOCKER_TAG=$(echo ${{ github.ref_name }} | sed 's/restaurant_front\//restaurant_front_/')
+            IMAGE_NAME="${{ needs.build.outputs.registry }}/restaurant-app-dev-backend:$DOCKER_TAG"
+            echo "Using fallback image name: $IMAGE_NAME"
+          else
+            IMAGE_NAME="${{ needs.build.outputs.image }}"
+            echo "Using build job output: $IMAGE_NAME"
+          fi
           
           # Create deployment command
           cat > deploy-frontend.json << EOF
