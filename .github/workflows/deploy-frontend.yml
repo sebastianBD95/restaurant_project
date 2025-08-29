@@ -42,7 +42,7 @@ jobs:
           DOCKER_TAG=$(echo ${{ github.ref_name }} | sed 's/restaurant_front\//restaurant_front_/')
           
           # Build the Docker image
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG ./restaurant_front/Dockerfile
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG .
           
           # Push the image
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG

@@ -2,12 +2,12 @@ version: "3.9"
 
 services:
   frontend:
-    image: node:20-alpine
+    image: ${ECR_REGISTRY}/restaurant-app-frontend:${IMAGE_TAG}
     working_dir: /app
     restart: always
     volumes:
-      - ./frontend:/app                # or bake your own image
-    command: sh -c "npm ci && npm run build && npm start"  # Next.js runs on 3000
+      - ./restaurant_front:/app
+    command: sh -c "npm ci && npm run build && npm start"
     environment:
       NODE_ENV: production
     expose:
