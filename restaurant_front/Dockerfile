@@ -1,0 +1,35 @@
+# Multi-stage build for React frontend
+FROM node:20-alpine AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN npm run build
+
+# Production stage with simple static server
+FROM node:20-alpine
+
+# Install serve package globally
+RUN npm install -g serve
+
+# Copy built files from builder stage
+COPY --from=builder /app/build /app/build
+
+# Set working directory
+WORKDIR /app
+
+# Expose port 3000
+EXPOSE 3000
+
+# Start serve
+CMD ["serve", "-s", "build", "-l", "3000"]

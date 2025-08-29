@@ -1,6 +1,17 @@
 version: "3.9"
 
 services:
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    restart: always
+    volumes:
+      - ./frontend:/app                # or bake your own image
+    command: sh -c "npm ci && npm run build && npm start"  # Next.js runs on 3000
+    environment:
+      NODE_ENV: production
+    expose:
+      - "3000"
   restaurant-manager:
     image: ${ECR_REGISTRY}/restaurant-app-dev-backend:${IMAGE_TAG}
     container_name: restaurant-manager
