@@ -1,13 +1,14 @@
 name: Frontend Deploy
 on:
-  push:
-    tags:
-      - "restaurant_front/v*"
-    paths:
-      - "restaurant_front/**"
-      - "package*.json"
-      - ".github/workflows/deploy-frontend.yml"
-  workflow_dispatch:
+    workflow_dispatch:
+    push:
+      tags:
+        - "restaurant_front/v*"
+      paths:
+        - "restaurant_front/**"
+        - "package*.json"
+        - ".github/workflows/deploy-frontend.yml"
+
 
 jobs:
   build:
