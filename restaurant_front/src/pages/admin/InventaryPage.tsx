@@ -18,7 +18,7 @@ import {
   createInventoryItems,
   updateInventoryItems,
 } from '../../services/inventoryService';
-import type { InventoryItem, Inventory, InventoryResponse } from '../../interfaces/inventory';
+import type { Inventory } from '../../interfaces/inventory';
 
 interface CustomIngredient {
   nombre: string;

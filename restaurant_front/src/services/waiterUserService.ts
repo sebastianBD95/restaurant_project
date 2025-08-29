@@ -7,9 +7,9 @@ const API_URL = config.API_URL;
 export const createWaiterUser = async (
   userData: Omit<WaiterUser, 'user_id' | 'role'>,
   token: string
-): Promise<String> => {
+): Promise<string> => {
   try {
-    const response = await axios.post<String>(
+    const response = await axios.post<string>(
       `${API_URL}/register`,
       { ...userData, role: 'waiter' },
       {

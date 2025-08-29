@@ -1,23 +1,4 @@
-import {
-  Box,
-  Grid,
-  Image,
-  Text,
-  Button,
-  Heading,
-  NativeSelect,
-  Textarea,
-  Field,
-  Dialog,
-  Portal,
-  Stack,
-  Input,
-  Accordion,
-  AbsoluteCenter,
-  GridItem,
-  Flex,
-  Spinner,
-} from '@chakra-ui/react';
+import { Box, Heading, Accordion, Flex, Spinner } from '@chakra-ui/react';
 import { useEffect, useState, useRef } from 'react';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
@@ -32,14 +13,12 @@ import { useSidebar } from '../../hooks/useSidebar';
 import MenuCategory from '../../components/menu/MenuCategory';
 import Cart from '../../components/menu/Cart';
 import { placeOrder as placeOrderService } from '../../services/orderService';
-import { Toaster, toaster } from '../../components/ui/toaster';
+import { toaster } from '../../components/ui/toaster';
 import { useTables } from '../../hooks/useTables';
 
 const formSchema = z.object({
   quantity: z.string({ message: 'Debe seleccionar una cantidad válida.' }),
 });
-
-type FormValues = z.infer<typeof formSchema>;
 
 const categoryMap: Record<string, string> = {
   entrada: 'Appetizer',
@@ -66,9 +45,7 @@ const MenuPage: React.FC = () => {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [tableNumber, setTableNumber] = useState('');
   const [observations, setObservations] = useState('');
-  const [recetas, setRecetas] = useState<any[]>([]);
-  const [inventario, setInventario] = useState<any[]>([]);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
   const [file, setFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -100,7 +77,7 @@ const MenuPage: React.FC = () => {
     setIsLoading(true);
     setError('');
     try {
-      let token = getCookie(document.cookie, 'token');
+      const token = getCookie(document.cookie, 'token');
       if (!token) {
         setError('No authentication token found');
         return;
@@ -108,7 +85,7 @@ const MenuPage: React.FC = () => {
 
       const response = await getMenus(token, restaurantId!);
 
-      let menuItems = response as MenuItemResponse[];
+      const menuItems = response as MenuItemResponse[];
       const appetizers = menuItems.filter((item) => item.category === 'Appetizer');
       const mainCourses = menuItems.filter((item) => item.category === 'Main');
       const desserts = menuItems.filter((item) => item.category === 'Desserts');
@@ -147,7 +124,7 @@ const MenuPage: React.FC = () => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let selectedFile = e.target.files?.[0];
+    const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       // Check if the file exceeds the maximum size
       if (selectedFile.size > MAX_FILE_SIZE) {
@@ -178,7 +155,7 @@ const MenuPage: React.FC = () => {
       return;
     }
 
-    let menuData: MenuItemRequest = {
+    const menuData: MenuItemRequest = {
       name: formData.name,
       description: formData.description,
       image: file || new File([], ''),
@@ -189,7 +166,7 @@ const MenuPage: React.FC = () => {
     };
 
     try {
-      let token = getCookie(document.cookie, 'token');
+      const token = getCookie(document.cookie, 'token');
       if (!token) {
         setError('No authentication token found');
         return;
@@ -207,7 +184,6 @@ const MenuPage: React.FC = () => {
 
       // Reset form state
       setFile(null);
-      setImagePreview(null);
       setFormData({
         name: '',
         description: '',
@@ -333,15 +309,6 @@ const MenuPage: React.FC = () => {
 
   const totalCost = cart.reduce((total, item) => total + item.price * item.quantity, 0);
 
-  const platoDisponible = (platoName: string) => {
-    const receta = recetas.find((r) => r.nombre === platoName);
-    if (!receta) return true;
-    return receta.ingredientes.every((ing: any) => {
-      const encontrado = inventario.find((i) => i.id === ing.alimentoId);
-      return encontrado && encontrado.cantidad >= ing.cantidad;
-    });
-  };
-
   return (
     <Flex height="100vh" direction={{ base: 'column', md: 'row' }}>
       {/* Barra lateral de navegación plegable */}
@@ -380,7 +347,6 @@ const MenuPage: React.FC = () => {
                     MAX_FILE_SIZE={MAX_FILE_SIZE}
                     onAddToCart={addToCart}
                     orderPlaced={orderPlaced}
-                    platoDisponible={platoDisponible}
                     formData={formData}
                     setFormData={setFormData}
                     file={file}

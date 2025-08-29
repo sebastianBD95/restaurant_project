@@ -8,12 +8,11 @@ import {
   Accordion,
   AbsoluteCenter,
   Button,
-  ButtonGroup,
 } from '@chakra-ui/react';
 import { MenuItemResponse } from '../../interfaces/menuItems';
 import MenuItem from './MenuItem';
 import MenuForm from './MenuForm';
-import { editMenuItem, hideMenuItem, deleteMenuItem } from '../../services/menuService';
+import { hideMenuItem, deleteMenuItem } from '../../services/menuService';
 import { getCookie } from '../../pages/utils/cookieManager';
 import { isAdmin } from '../../pages/utils/roleUtils';
 import { Ingredient } from '../../interfaces/ingredients';

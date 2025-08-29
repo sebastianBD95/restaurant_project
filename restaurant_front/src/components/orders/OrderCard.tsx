@@ -42,7 +42,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
   const [elapsedTime, setElapsedTime] = useState(0);
 
   useEffect(() => {
-    let initialTime = new Date(order.created_at).getTime();
+    const initialTime = new Date(order.created_at).getTime();
     const timer = setInterval(() => {
       const now = new Date().getTime();
       const elapsed = Math.floor((now - initialTime) / 1000);
@@ -89,7 +89,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
   };
 
   // Timer display logic
-  let timerDisplay = formatTime(elapsedTime);
+  const timerDisplay = formatTime(elapsedTime);
 
   return (
     <Box className={`card${highlight ? ' card-highlight' : ''}`}>

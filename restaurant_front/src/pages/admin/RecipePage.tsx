@@ -1,19 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Heading,
-  Input,
-  Button,
-  Text,
-  Table,
-  VStack,
-  Accordion,
-  Stack,
-  Badge,
-  Flex,
-} from '@chakra-ui/react';
+import { Box, Heading, Text, Table, Accordion, Stack, Badge, Flex } from '@chakra-ui/react';
 import { getMenus } from '../../services/menuService';
 import { getCookie } from '../utils/cookieManager';
 import { useParams } from 'react-router-dom';

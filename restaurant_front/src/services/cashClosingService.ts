@@ -1,4 +1,3 @@
-import { getCookie } from '../pages/utils/cookieManager';
 import config from '../config/config';
 
 const API_BASE_URL = config.API_URL;
@@ -65,20 +64,6 @@ interface OrderItem {
   status: string;
   observation: string;
   image: string;
-}
-
-interface Order {
-  order_id: string;
-  table_id: string;
-  table: number;
-  restaurant_id: string;
-  items: OrderItem[];
-  status: string;
-  total_price: number;
-  time_to_prepare: number;
-  time_to_deliver: number;
-  time_to_pay: number;
-  created_at: string;
 }
 
 interface MenuItem {

@@ -9,7 +9,6 @@ import {
   Spinner,
   Text,
   Select as ChakraSelect,
-  Portal,
   createListCollection,
 } from '@chakra-ui/react';
 import { CustomField } from '../ui/field';

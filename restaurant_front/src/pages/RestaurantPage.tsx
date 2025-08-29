@@ -1,19 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Box,
-  Input,
-  Button,
-  VStack,
-  Text,
-  Image,
-  Dialog,
-  useDisclosure,
-  Portal,
-  CloseButton,
-  Stack,
-  Field,
-} from '@chakra-ui/react';
+import { Box, Input, Button, Text, Image, Dialog, Portal, Stack, Field } from '@chakra-ui/react';
 import Slider from 'react-slick';
 import { addRestarurant, getRestaurants } from '../services/restaurantService';
 import { ResturantDataRequest, ResturantDataResponse } from '../interfaces/restaurant';
@@ -28,13 +15,12 @@ const RestaurantPage: React.FC = () => {
   const [restaurants, setRestaurants] = useState<ResturantDataResponse[]>([]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
-  const [error, setError] = useState('');
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
   const fetchRestaurants = async () => {
     try {
-      let token = getCookie(document.cookie, 'token');
+      const token = getCookie(document.cookie, 'token');
       console.log('token', token);
       if (!token) {
         toaster.create({
@@ -68,14 +54,18 @@ const RestaurantPage: React.FC = () => {
 
   // Handle file input change
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let selectedFile = e.target.files?.[0];
+    const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       // Check if the file exceeds the maximum size
       if (selectedFile.size > MAX_FILE_SIZE) {
-        setError('File size exceeds 10 MB. Please upload a smaller file.');
+        toaster.create({
+          title: 'Error',
+          description: 'File size exceeds 10 MB. Please upload a smaller file.',
+          type: 'error',
+          duration: 5000,
+        });
         setFile(null); // Clear the selected file
       } else {
-        setError(''); // Clear any previous error
         setFile(selectedFile); // Set the selected file
       }
     }
@@ -96,25 +86,35 @@ const RestaurantPage: React.FC = () => {
     }
 
     try {
-      let restaurantData: ResturantDataRequest = {
+      const restaurantData: ResturantDataRequest = {
         name: formData.name,
         description: formData.description,
         image: file!,
       };
-      let token = getCookie(document.cookie, 'token');
+      const token = getCookie(document.cookie, 'token');
       if (!token) {
-        setError('No authentication token found');
+        toaster.create({
+          title: 'Error',
+          description: 'No authentication token found',
+          type: 'error',
+          duration: 5000,
+        });
         return;
       }
-      const results = addRestarurant(restaurantData, token);
+      addRestarurant(restaurantData, token);
 
       // Clear form fields after adding
       setFormData({ name: '', description: '' });
       setFile(null);
       setImagePreview(null);
       getRestaurants(token);
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      toaster.create({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'An error occurred',
+        type: 'error',
+        duration: 5000,
+      });
     }
   };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Box, Heading, VStack, Grid, Flex } from '@chakra-ui/react';
+import { Box, Heading, Grid, Flex } from '@chakra-ui/react';
 import DailyRevenue from '../../components/dashboards/DailyRevenue';
 import TrendingMenu from '../../components/dashboards/TrendingMenu';
 import DailyOrders from '../../components/dashboards/DailyOrders';

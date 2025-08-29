@@ -1,12 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Box, Text, Button, NativeSelect, Textarea } from '@chakra-ui/react';
 import { StepperInput } from '../ui/stepper-input';
 import { MenuItemResponse } from '../../interfaces/menuItems';
 import { isWaiter } from '../../pages/utils/roleUtils';
-import { getTables } from '../../services/tableService';
 import { useParams } from 'react-router-dom';
-import { Table } from '../../interfaces/table';
-import { toaster } from '../ui/toaster';
 import { useTables } from '../../hooks/useTables';
 
 interface CartItem {
@@ -42,12 +39,7 @@ const Cart: React.FC<CartProps> = ({
   allMenuItems,
 }) => {
   const { restaurantId } = useParams();
-  const {
-    tables,
-    loading: tablesLoading,
-    error: tablesError,
-    fetchTables,
-  } = useTables(restaurantId);
+  const { tables, fetchTables } = useTables(restaurantId);
   const totalCost = cart.reduce((total, item) => total + item.price * item.quantity, 0);
   useEffect(() => {
     fetchTables(); // Fetch tables on mount and when restaurantId changes

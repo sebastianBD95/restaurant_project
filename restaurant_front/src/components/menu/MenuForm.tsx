@@ -117,7 +117,7 @@ const MenuForm: React.FC<MenuFormProps> = ({
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let selectedFile = e.target.files?.[0];
+    const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       if (selectedFile.size > MAX_FILE_SIZE) {
         toaster.create({

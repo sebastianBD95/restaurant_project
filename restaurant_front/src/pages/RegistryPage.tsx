@@ -17,7 +17,6 @@ const Register: React.FC = () => {
   });
 
   const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,11 +30,11 @@ const Register: React.FC = () => {
       return;
     }
     try {
-      const data = await registerUser(formData);
+      await registerUser(formData);
       toast.success('Usuario registrado exitosamente');
       navigate('/restaurantes');
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      setMessage(error instanceof Error ? error.message : 'An error occurred');
       navigate('/');
     }
   };

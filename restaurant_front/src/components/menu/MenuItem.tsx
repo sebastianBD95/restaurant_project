@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Image,
@@ -8,8 +8,6 @@ import {
   Stack,
   Portal,
   createListCollection,
-  Wrap,
-  Badge,
   Select,
 } from '@chakra-ui/react';
 import { useForm, Controller } from 'react-hook-form';

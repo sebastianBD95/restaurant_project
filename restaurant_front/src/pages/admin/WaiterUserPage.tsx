@@ -1,17 +1,5 @@
 import React, { useState, FormEvent, useEffect } from 'react';
-import {
-  Box,
-  Button,
-  Input,
-  VStack,
-  Heading,
-  Text,
-  Table,
-  IconButton,
-  HStack,
-  Field,
-  Flex,
-} from '@chakra-ui/react';
+import { Box, Heading, Text, Table, IconButton, HStack, Flex } from '@chakra-ui/react';
 import { FiTrash2, FiEdit2 } from 'react-icons/fi';
 import { isAdmin } from '../utils/roleUtils';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -26,7 +14,6 @@ import { Sidebar } from '../../components/ui/navegator';
 import { useSidebar } from '../../hooks/useSidebar';
 import { Toaster, toaster } from '../../components/ui/toaster';
 import WaiterUserForm from '../../components/waiters/WaiterUserForm';
-import { stat } from 'fs';
 
 // Custom toast function
 const showToast = (

@@ -12,13 +12,7 @@ import {
   Badge,
   Flex,
   Table,
-  Image,
   Container,
-  NativeSelect,
-  Divider,
-  Card,
-  CardHeader,
-  CardBody,
 } from '@chakra-ui/react';
 import { useParams } from 'react-router-dom';
 import { Sidebar } from '../../components/ui/navegator';

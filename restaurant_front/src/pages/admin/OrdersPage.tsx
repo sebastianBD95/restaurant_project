@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Heading, Text, Button, VStack, Grid, Flex } from '@chakra-ui/react';
+import { Box, Heading, Text, VStack, Grid, Flex } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import TableDistribution from '../../components/orders/TableComponent';
@@ -100,7 +100,7 @@ const Ordenes: React.FC = () => {
 
   const updateOrderStatus = async (orderId: string, newStatus: string, duration?: number) => {
     try {
-      let orderStatusUpdate: OrderStatusUpdate = {
+      const orderStatusUpdate: OrderStatusUpdate = {
         order_id: orderId,
         status: newStatus,
       };

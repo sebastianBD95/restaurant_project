@@ -1,16 +1,5 @@
 import React from 'react';
-import {
-  Table,
-  Text,
-  Button,
-  IconButton,
-  Input,
-  Box,
-  Badge,
-  Select as ChakraSelect,
-  Stack,
-  Icon,
-} from '@chakra-ui/react';
+import { Table, Text, Button, IconButton, Input, Box, Stack, Icon } from '@chakra-ui/react';
 import { MdDeleteForever } from 'react-icons/md';
 import type { Inventory } from '../../interfaces/inventory';
 

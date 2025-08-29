@@ -12,13 +12,6 @@ const LoginForm: React.FC = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  function getCookie(name: string): string | null {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-    return null;
-  }
-
   // Manejo del envío del formulario
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -37,13 +30,13 @@ const LoginForm: React.FC = () => {
       document.cookie = `token=${data.token}; ${cookieOptions}`;
       document.cookie = `role=${data.role}; ${cookieOptions}`;
 
-      if (data.role == 'admin') {
+      if (data.role === 'admin') {
         navigate('/restaurantes');
-      } else if (data.role == 'waiter') {
+      } else if (data.role === 'waiter') {
         navigate(`/menu/${data.restaurant_id}`);
       }
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'An error occurred');
       navigate('/');
     }
   };
@@ -118,10 +111,7 @@ const LoginForm: React.FC = () => {
 
 // Componente principal de Login
 const LogIn: React.FC = () => {
-  const [authorized, setAuthorized] = useState<boolean>(false);
-  const navigate = useNavigate();
-
-  return <>{!authorized ? <LoginForm /> : null}</>;
+  return <LoginForm />;
 };
 
 export default LogIn;

@@ -1,4 +1,4 @@
-import { Box, Text, Badge, Image, Flex, Button, VStack } from '@chakra-ui/react';
+import { Box, Text, Image, Flex, Button, VStack } from '@chakra-ui/react';
 import { VoidOrderItem } from '../../interfaces/order';
 import { useState, useEffect } from 'react';
 
