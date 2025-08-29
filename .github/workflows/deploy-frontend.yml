@@ -42,7 +42,7 @@ jobs:
           DOCKER_TAG=$(echo $IMAGE_TAG | sed 's/restaurant_front\//restaurant_front_/')
           
           # Build the Docker image
-          docker build --platform linux/arm64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG .
+          docker build --platform linux/amd64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG .
           
           # Push the image
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG
