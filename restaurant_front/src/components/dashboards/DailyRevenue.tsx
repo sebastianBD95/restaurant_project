@@ -46,7 +46,7 @@ const DailyRevenue = ({ data }: { data: RevenueEntry[] }) => {
           name="Costos"
         />
         <Tooltip
-          formatter={(value: number, name: string) =>
+          formatter={(value: number, _name: string) =>
             new Intl.NumberFormat('es-CO', {
               style: 'currency',
               currency: 'COP',

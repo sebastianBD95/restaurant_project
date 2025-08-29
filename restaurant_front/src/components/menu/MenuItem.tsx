@@ -43,7 +43,7 @@ interface MenuItemProps {
 const MenuItem: React.FC<MenuItemProps> = ({
   item,
   onAdd,
-  orderPlaced,
+  _orderPlaced,
   disabled,
   onEdit,
   onDelete,

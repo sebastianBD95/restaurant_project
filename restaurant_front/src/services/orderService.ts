@@ -101,7 +101,7 @@ export const updateOrderItem = async (
     throw new Error('No authentication token found');
   }
 
-  const response = await fetch(`${config.API_URL}/orders/${orderId}/items/${menuItemId}`, {
+  await fetch(`${config.API_URL}/orders/${orderId}/items/${menuItemId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -142,7 +142,7 @@ export const createVoidOrderItem = async (
     throw new Error('No authentication token found');
   }
 
-  const response = await fetch(`${config.API_URL}/orders/${orderId}/items/${menuItemId}/void`, {
+  await fetch(`${config.API_URL}/orders/${orderId}/items/${menuItemId}/void`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

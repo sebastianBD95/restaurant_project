@@ -56,7 +56,7 @@ export interface CashClosingResponse {
 }
 
 // Interfaces for existing data
-interface OrderItem {
+interface _OrderItem {
   menu_item_id: string;
   name: string;
   quantity: number;
@@ -66,7 +66,7 @@ interface OrderItem {
   image: string;
 }
 
-interface MenuItem {
+interface _MenuItem {
   menu_item_id: string;
   name: string;
   description: string;

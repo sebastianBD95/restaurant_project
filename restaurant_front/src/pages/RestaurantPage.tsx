@@ -75,7 +75,7 @@ const RestaurantPage: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.description || file == undefined) {
+    if (!formData.name || !formData.description || file === undefined) {
       toaster.create({
         title: 'Error',
         description: 'Please complete all fields.',

@@ -16,7 +16,7 @@ import { placeOrder as placeOrderService } from '../../services/orderService';
 import { toaster } from '../../components/ui/toaster';
 import { useTables } from '../../hooks/useTables';
 
-const formSchema = z.object({
+const _formSchema = z.object({
   quantity: z.string({ message: 'Debe seleccionar una cantidad válida.' }),
 });
 
@@ -55,16 +55,16 @@ const MenuPage: React.FC = () => {
   });
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
-  const dialogRef = useRef<HTMLButtonElement>(null);
+  const _dialogRef = useRef<HTMLButtonElement>(null);
   const { isSidebarOpen, toggleSidebar, handleHomeClick } = useSidebar();
 
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   // Use the useTables hook at the top level
   const {
-    tables,
-    loading: tablesLoading,
-    error: tablesError,
+    _tables,
+    loading: _tablesLoading,
+    error: _tablesError,
     fetchTables,
   } = useTables(restaurantId);
 
