@@ -39,7 +39,7 @@ jobs:
           cd restaurant_front
           
           # Convert tag format (restaurant_front/v1.0.0 -> restaurant_front_v1.0.0)
-          DOCKER_TAG=$(echo ${{ github.ref_name }} | sed 's/restaurant_front\//restaurant_front_/')
+          DOCKER_TAG=$(echo $IMAGE_TAG | sed 's/restaurant_front\//restaurant_front_/')
           
           # Build the Docker image
           docker build --platform linux/arm64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG .
