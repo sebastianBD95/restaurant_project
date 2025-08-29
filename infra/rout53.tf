@@ -3,7 +3,7 @@ resource "aws_route53_zone" "root" {
   name = var.root_domain
 }
 
-# ACM cert for CloudFront (must be in us-east-1)
+# Temporary: Adding back ACM certificate to destroy it
 resource "aws_acm_certificate" "cdn" {
   provider                  = aws.us_east_1
   domain_name               = "${var.frontend_subdomain}.${var.root_domain}"
@@ -34,16 +34,13 @@ resource "aws_acm_certificate_validation" "cdn" {
   validation_record_fqdns = [for r in aws_route53_record.cdn_validation : r.fqdn]
 }
 
-# Frontend: app.<domain> -> CloudFront (alias/ALIAS)
-resource "aws_route53_record" "frontend_alias" {
+# Frontend: app.<domain> -> EC2 public IP (for Docker container)
+resource "aws_route53_record" "frontend_a" {
   zone_id = aws_route53_zone.root.zone_id
   name    = "${var.frontend_subdomain}.${var.root_domain}"
   type    = "A"
-  alias {
-    name                   = aws_cloudfront_distribution.cdn.domain_name
-    zone_id                = aws_cloudfront_distribution.cdn.hosted_zone_id
-    evaluate_target_health = false
-  }
+  ttl     = 60
+  records = [aws_eip.app.public_ip] # uses EIP from step 4
 }
 
 # API: api.<domain> -> EC2 public IP (we'll add an Elastic IP in step 4)
