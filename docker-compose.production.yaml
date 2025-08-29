@@ -7,13 +7,6 @@ services:
     restart: unless-stopped
     expose:
       - "8080"
-    environment:
-      - APP_ENV=prod
-      - DATABASE_URL=${DATABASE_URL}
-      - JWT_PRIVATE_KEY_PATH=/usr/local/bin/resources/private.key
-      - JWT_PUBLIC_KEY_PATH=/usr/local/bin/resources/public.key
-      - AWS_PROFILE=${AWS_PROFILE}
-      - AWS_REGION=${AWS_REGION}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
