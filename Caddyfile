@@ -1,13 +1,6 @@
-# Caddyfile for Restaurant Manager API
 api.servu.com.co {
     # Reverse proxy to the Go application
-    reverse_proxy restaurant-manager:8080 {
-        # Health check
-        health_uri /health
-        health_interval 30s
-        health_timeout 10s
-        health_status 200
-    }
+    reverse_proxy restaurant-manager:8080
 
     # Logging
     log {
@@ -30,18 +23,12 @@ api.servu.com.co {
         Access-Control-Allow-Headers "Content-Type, Authorization"
     }
 
-    # Handle preflight requests
-    @options {
-        method OPTIONS
-    }
-    respond @options 200 {
-        header Access-Control-Allow-Origin *
+    # Handle preflight requests (CORS)
+    @preflight method OPTIONS
+    handle @preflight {
+        header Access-Control-Allow-Origin "*"
         header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
         header Access-Control-Allow-Headers "Content-Type, Authorization"
+        respond 204
     }
 }
-
-# Redirect HTTP to HTTPS (optional - remove if you want HTTP only)
-# :80 {
-#     redir https://api.servu.com.co{uri} permanent
-# }
