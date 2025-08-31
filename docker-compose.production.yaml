@@ -2,9 +2,9 @@ version: "3.9"
 
 services:
   frontend:
-    image: ${ECR_REGISTRY}/restaurant-frontend:${IMAGE_TAG}
+    image: ${ECR_REGISTRY}/restaurant-app-dev-backend:${IMAGE_TAG_FRONTEND}
     working_dir: /app
-    restart: always
+    restart: always 
     volumes:
       - ./restaurant_front:/app
     command: sh -c "npm ci && npm run build && npm start"
@@ -13,7 +13,7 @@ services:
     expose:
       - "3000"
   restaurant-manager:
-    image: ${ECR_REGISTRY}/restaurant-app-dev-backend:${IMAGE_TAG}
+    image: ${ECR_REGISTRY}/restaurant-app-dev-backend:${IMAGE_TAG_BACKEND}
     container_name: restaurant-manager
     restart: unless-stopped
     expose:

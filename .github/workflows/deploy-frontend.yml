@@ -72,13 +72,23 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Get latest backend image tag
+        id: get-backend-tag
+        run: |
+          BACKEND_TAG=$(aws ecr describe-images \
+            --repository-name restaurant-app-dev-backend \
+            --query 'reverse(sort_by(imageDetails,&imagePushedAt))[0].imageTags[0]' \
+            --output text)
+          echo "Latest backend tag: $BACKEND_TAG"
+          echo "backend_tag=$BACKEND_TAG" >> $GITHUB_OUTPUT
+
       - name: Build SSM deployment command JSON
         id: build
         shell: bash
         run: |
           # Debug: Print the image variable
           echo "Image from build job: ${{ needs.build.outputs.image }}"
-          
+
           # Fallback: Construct image name if output is empty
           if [ -z "${{ needs.build.outputs.image }}" ]; then
             DOCKER_TAG=$(echo ${{ github.ref_name }} | sed 's/restaurant_front\//restaurant_front_/')
@@ -88,16 +98,30 @@ jobs:
             IMAGE_NAME="${{ needs.build.outputs.image }}"
             echo "Using build job output: $IMAGE_NAME"
           fi
-          
+
           # Extract registry and tag from image name
-          ECR_REGISTRY=$(echo $IMAGE_NAME | cut -d'/' -f1)
-          IMAGE_TAG=$(echo $IMAGE_NAME | cut -d':' -f2)
-          
+          ECR_REGISTRY=$(echo "$IMAGE_NAME" | cut -d'/' -f1)
+          IMAGE_TAG_FRONTEND=$(echo "$IMAGE_NAME" | cut -d':' -f2)
+          IMAGE_TAG_BACKEND="${{ steps.get-backend-tag.outputs.backend_tag }}"
+
           # Create JSON file for deployment command
           cat > deploy-frontend.json << EOF
           {
             "commands": [
-              "bash -lc 'set -euo pipefail; echo \"Starting frontend deployment...\"; aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}; echo \"Pulling image: $IMAGE_NAME\"; docker pull \"$IMAGE_NAME\"; mkdir -p /opt/restaurant-manager; cd /opt/restaurant-manager; aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/docker-compose.production.yaml .; echo \"ECR_REGISTRY=$ECR_REGISTRY\" > .env; echo \"IMAGE_TAG=$IMAGE_TAG\" >> .env; docker-compose -f docker-compose.production.yaml down || true; docker-compose -f docker-compose.production.yaml up -d; docker-compose -f docker-compose.production.yaml ps'"
+              "bash -lc 'set -euo pipefail; \
+               echo \"Starting frontend deployment...\"; \
+               aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin $ECR_REGISTRY; \
+               echo \"Pulling frontend image: $IMAGE_NAME\"; \
+               docker pull \"$IMAGE_NAME\"; \
+               mkdir -p /opt/restaurant-manager; \
+               cd /opt/restaurant-manager; \
+               aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/docker-compose.production.yaml .; \
+               echo \"ECR_REGISTRY=$ECR_REGISTRY\" > .env; \
+               echo \"IMAGE_TAG=$IMAGE_TAG\" >> .env; \
+               echo \"IMAGE_TAG_BACKEND=$BACKEND_TAG\" >> .env; \
+               docker-compose -f docker-compose.production.yaml down || true; \
+               docker-compose -f docker-compose.production.yaml up -d; \
+               docker-compose -f docker-compose.production.yaml ps'"
             ]
           }
           EOF
@@ -123,4 +147,3 @@ jobs:
             --command-id "${{ steps.deploy.outputs.cmd_id }}" \
             --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
             --query 'Status' --output text
-
