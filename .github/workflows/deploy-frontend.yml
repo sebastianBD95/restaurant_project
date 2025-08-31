@@ -61,31 +61,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Create Docker Compose file
-        run: |
-          cat > docker-compose.frontend.yaml << 'EOF'
-          version: "3.9"
-          
-          services:
-            restaurant-frontend:
-              image: ${{ needs.build.outputs.image }}
-              container_name: restaurant-frontend
-              restart: unless-stopped
-              expose:
-                - "3000"
-              healthcheck:
-                test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-                interval: 30s
-                timeout: 10s
-                retries: 3
-                start_period: 40s
-              networks:
-                - frontend-network
-          
-          networks:
-            frontend-network:
-              driver: bridge
-          EOF
+
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -116,7 +92,7 @@ jobs:
           cat > deploy-frontend.json << EOF
           {
             "commands": [
-              "bash -lc 'set -euo pipefail; echo \"Starting frontend deployment...\"; aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}; echo \"Pulling image: $IMAGE_NAME\"; docker pull \"$IMAGE_NAME\"; mkdir -p /opt/restaurant-frontend; cd /opt/restaurant-frontend; aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/docker-compose.frontend.yaml .; echo \"ECR_REGISTRY=$ECR_REGISTRY\" > .env; echo \"IMAGE_TAG=$IMAGE_TAG\" >> .env; docker-compose -f docker-compose.frontend.yaml down || true; docker-compose -f docker-compose.frontend.yaml up -d; docker-compose -f docker-compose.frontend.yaml ps'"
+              "bash -lc 'set -euo pipefail; echo \"Starting frontend deployment...\"; aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}; echo \"Pulling image: $IMAGE_NAME\"; docker pull \"$IMAGE_NAME\"; mkdir -p /opt/restaurant-manager; cd /opt/restaurant-manager; aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/docker-compose.production.yaml .; echo \"ECR_REGISTRY=$ECR_REGISTRY\" > .env; echo \"IMAGE_TAG=$IMAGE_TAG\" >> .env; docker-compose -f docker-compose.production.yaml down || true; docker-compose -f docker-compose.production.yaml up -d; docker-compose -f docker-compose.production.yaml ps'"
             ]
           }
           EOF
@@ -143,6 +119,3 @@ jobs:
             --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
             --query 'Status' --output text
 
-      - name: Upload Docker Compose to S3
-        run: |
-          aws s3 cp docker-compose.frontend.yaml s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/docker-compose.frontend.yaml
