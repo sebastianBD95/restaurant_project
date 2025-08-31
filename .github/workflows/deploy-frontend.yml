@@ -87,54 +87,61 @@ jobs:
               driver: bridge
           EOF
 
-      - name: Deploy to EC2
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build SSM deployment command JSON
+        id: build
+        shell: bash
         run: |
-          # Get the image name from build job
-          IMAGE_NAME="${{ needs.build.outputs.image }}"
+          # Debug: Print the image variable
+          echo "Image from build job: ${{ needs.build.outputs.image }}"
           
-          # Get ECR registry from build job
-          ECR_REGISTRY="${{ needs.build.outputs.registry }}"
           # Fallback: Construct image name if output is empty
           if [ -z "${{ needs.build.outputs.image }}" ]; then
             DOCKER_TAG=$(echo ${{ github.ref_name }} | sed 's/restaurant_front\//restaurant_front_/')
-            IMAGE_NAME="${{ needs.build.outputs.registry }}/restaurant-app-dev-backend:$DOCKER_TAG"
+            IMAGE_NAME="${{ steps.login-ecr.outputs.registry }}/restaurant-app-dev-backend:$DOCKER_TAG"
             echo "Using fallback image name: $IMAGE_NAME"
           else
             IMAGE_NAME="${{ needs.build.outputs.image }}"
             echo "Using build job output: $IMAGE_NAME"
           fi
           
-          # Create deployment command
+          # Extract registry and tag from image name
+          ECR_REGISTRY=$(echo $IMAGE_NAME | cut -d'/' -f1)
+          IMAGE_TAG=$(echo $IMAGE_NAME | cut -d':' -f2)
+          
+          # Create JSON file for deployment command
           cat > deploy-frontend.json << EOF
           {
             "commands": [
-              "bash -lc 'set -euo pipefail; echo \"Starting frontend deployment...\"; aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin $ECR_REGISTRY; echo \"Pulling image: $IMAGE_NAME\"; docker pull \"$IMAGE_NAME\"; mkdir -p /opt/restaurant-frontend; cd /opt/restaurant-frontend; aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/docker-compose.frontend.yaml .; echo \"IMAGE_NAME=$IMAGE_NAME\" > .env; docker-compose -f docker-compose.frontend.yaml down || true; docker-compose -f docker-compose.frontend.yaml up -d; docker-compose -f docker-compose.frontend.yaml ps'"
+              "bash -lc 'set -euo pipefail; echo \"Starting frontend deployment...\"; aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}; echo \"Pulling image: $IMAGE_NAME\"; docker pull \"$IMAGE_NAME\"; mkdir -p /opt/restaurant-frontend; cd /opt/restaurant-frontend; aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/docker-compose.frontend.yaml .; echo \"ECR_REGISTRY=$ECR_REGISTRY\" > .env; echo \"IMAGE_TAG=$IMAGE_TAG\" >> .env; docker-compose -f docker-compose.frontend.yaml down || true; docker-compose -f docker-compose.frontend.yaml up -d; docker-compose -f docker-compose.frontend.yaml ps'"
             ]
           }
           EOF
-          
-          # Send command to EC2
+
+      - name: Deploy to EC2
+        id: deploy
+        run: |
           CMD_ID=$(aws ssm send-command \
-            --instance-ids ${{ secrets.EC2_INSTANCE_ID }} \
             --document-name "AWS-RunShellScript" \
+            --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
+            --comment "Deploy frontend $GITHUB_SHA" \
             --parameters file://deploy-frontend.json \
-            --region ${{ secrets.AWS_REGION }} \
             --query 'Command.CommandId' \
             --output text)
-          
-          echo "Command ID: $CMD_ID"
-          
-          # Wait for command completion
-          aws ssm wait command-executed \
-            --command-id "$CMD_ID" \
-            --instance-id ${{ secrets.EC2_INSTANCE_ID }} \
-            --region ${{ secrets.AWS_REGION }}
-          
-          # Get command output
+          echo "cmd_id=$CMD_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for deployment completion
+        run: aws ssm wait command-executed --command-id "${{ steps.deploy.outputs.cmd_id }}" --instance-id "${{ secrets.EC2_INSTANCE_ID }}"
+
+      - name: Report deployment status
+        run: |
           aws ssm get-command-invocation \
-            --command-id "$CMD_ID" \
-            --instance-id ${{ secrets.EC2_INSTANCE_ID }} \
-            --region ${{ secrets.AWS_REGION }}
+            --command-id "${{ steps.deploy.outputs.cmd_id }}" \
+            --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
+            --query 'Status' --output text
 
       - name: Upload Docker Compose to S3
         run: |
