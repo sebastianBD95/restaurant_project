@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   frontend:
-    image: ${ECR_REGISTRY}/restaurant-app-frontend:${IMAGE_TAG}
+    image: ${ECR_REGISTRY}/restaurant-frontend:${IMAGE_TAG}
     working_dir: /app
     restart: always
     volumes:
