@@ -12,6 +12,9 @@ services:
       NODE_ENV: production
     expose:
       - "3000"
+    networks:
+      - app-network
+      
   restaurant-manager:
     image: ${ECR_REGISTRY}/restaurant-app-dev-backend:${IMAGE_TAG_BACKEND}
     container_name: restaurant-manager

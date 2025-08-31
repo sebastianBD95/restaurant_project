@@ -75,12 +75,19 @@ jobs:
       - name: Get latest backend image tag
         id: get-backend-tag
         run: |
-          BACKEND_TAG=$(aws ecr describe-images \
+          # List all tags sorted by push time and pick the latest backend tag only
+          IMAGE_TAG_BACKEND=$(aws ecr describe-images \
             --repository-name restaurant-app-dev-backend \
-            --query 'reverse(sort_by(imageDetails,&imagePushedAt))[0].imageTags[0]' \
-            --output text)
-          echo "Latest backend tag: $BACKEND_TAG"
-          echo "backend_tag=$BACKEND_TAG" >> $GITHUB_OUTPUT
+            --query "sort_by(imageDetails,&imagePushedAt)[].imageTags[]" \
+            --output text | tr '\t' '\n' | grep '^restaurant_manager_' | tail -n 1)
+
+          if [ -z "$IMAGE_TAG_BACKEND" ]; then
+            echo "ERROR: Could not find a backend tag (prefix: restaurant_manager_) in repository restaurant-app-dev-backend" >&2
+            exit 1
+          fi
+
+          echo "Latest backend tag: $IMAGE_TAG_BACKEND"
+          echo "backend_tag=$IMAGE_TAG_BACKEND" >> $GITHUB_OUTPUT
 
       - name: Build SSM deployment command JSON
         id: build
@@ -117,8 +124,8 @@ jobs:
                cd /opt/restaurant-manager; \
                aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/docker-compose.production.yaml .; \
                echo \"ECR_REGISTRY=$ECR_REGISTRY\" > .env; \
-               echo \"IMAGE_TAG=$IMAGE_TAG\" >> .env; \
-               echo \"IMAGE_TAG_BACKEND=$BACKEND_TAG\" >> .env; \
+               echo \"IMAGE_TAG_FRONTEND=$IMAGE_TAG_FRONTEND\" >> .env; \
+               echo \"IMAGE_TAG_BACKEND=$IMAGE_TAG_BACKEND\" >> .env; \
                docker-compose -f docker-compose.production.yaml down || true; \
                docker-compose -f docker-compose.production.yaml up -d; \
                docker-compose -f docker-compose.production.yaml ps'"
