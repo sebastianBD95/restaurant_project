@@ -1,5 +1,5 @@
 # Multi-stage build for React frontend
-FROM --platform=$BUILDPLATFORM node:20-alpine AS builder
+FROM --platform=$BUILDPLATFORM node:20-alpine AS builderfix
 
 # Set working directory
 WORKDIR /app
@@ -20,7 +20,7 @@ RUN npm run build
 FROM --platform=linux/arm64 node:20-alpine
 
 # Install serve package globally
-RUN npm install -g serve
+RUN npm install -g serve --unsafe-perm
 
 # Copy built files from builder stage
 COPY --from=builder /app/build /app/build
