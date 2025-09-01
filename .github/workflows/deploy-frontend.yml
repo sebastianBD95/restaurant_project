@@ -54,7 +54,8 @@ jobs:
       - name: Copy deployment files to EC2
         run: |
           # Upload to S3 for deployment
-          aws s3 cp docker-compose.production.yaml s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/docker-compose.production.yaml    
+          aws s3 cp docker-compose.production.yaml s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/docker-compose.production.yaml  
+          aws s3 cp Caddyfile s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/Caddyfile
 
   deploy:
     needs: build
@@ -122,7 +123,8 @@ jobs:
                docker pull \"$IMAGE_NAME\"; \
                mkdir -p /opt/restaurant-manager; \
                cd /opt/restaurant-manager; \
-               aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/docker-compose.production.yaml .; \
+               aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/docker-compose.production.yaml docker-compose.yaml; \
+               aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/Caddyfile .; \
                echo \"ECR_REGISTRY=$ECR_REGISTRY\" > .env; \
                echo \"IMAGE_TAG_FRONTEND=$IMAGE_TAG_FRONTEND\" >> .env; \
                echo \"IMAGE_TAG_BACKEND=$IMAGE_TAG_BACKEND\" >> .env; \

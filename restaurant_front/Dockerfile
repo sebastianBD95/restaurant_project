@@ -1,5 +1,5 @@
 # Multi-stage build for React frontend
-FROM --platform=linux/amd64 node:20-alpine AS builder
+FROM --platform=$BUILDPLATFORM node:20-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 # Production stage with simple static server
-FROM --platform=linux/amd64 node:20-alpine
+FROM --platform=linux/arm64 node:20-alpine
 
 # Install serve package globally
 RUN npm install -g serve

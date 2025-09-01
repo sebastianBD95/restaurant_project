@@ -2,19 +2,16 @@ version: "3.9"
 
 services:
   frontend:
-    image: ${ECR_REGISTRY}/restaurant-app-dev-backend:${IMAGE_TAG_FRONTEND}
-    working_dir: /app
+    image: front
+    container_name: restaurant-frontend
     restart: always 
-    volumes:
-      - ./restaurant_front:/app
-    command: sh -c "npm ci && npm run build && npm start"
     environment:
       NODE_ENV: production
     expose:
       - "3000"
     networks:
       - app-network
-      
+
   restaurant-manager:
     image: ${ECR_REGISTRY}/restaurant-app-dev-backend:${IMAGE_TAG_BACKEND}
     container_name: restaurant-manager
