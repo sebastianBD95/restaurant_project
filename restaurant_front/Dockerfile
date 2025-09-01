@@ -19,9 +19,6 @@ RUN npm run build
 # Production stage with simple static server
 FROM --platform=linux/arm64 node:20-alpine
 
-# Install http-server package globally
-RUN npm install -g http-server --unsafe-perm
-
 # Copy built files from builder stage
 COPY --from=builder /app/build /app/build
 
@@ -32,4 +29,4 @@ WORKDIR /app
 EXPOSE 3000
 
 # Start http-server
-CMD ["http-server", "build", "-p", "3000"]
+CMD ["npm", "run", "start"]
