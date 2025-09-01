@@ -1,5 +1,5 @@
 # Multi-stage build for React frontend
-FROM --platform=$BUILDPLATFORM node:20-alpine AS builderfix
+FROM --platform=$BUILDPLATFORM node:20-alpine AS builder
 
 # Set working directory
 WORKDIR /app
