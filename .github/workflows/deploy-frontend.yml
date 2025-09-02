@@ -128,9 +128,9 @@ jobs:
                echo \"ECR_REGISTRY=$ECR_REGISTRY\" > .env; \
                echo \"IMAGE_TAG_FRONTEND=$IMAGE_TAG_FRONTEND\" >> .env; \
                echo \"IMAGE_TAG_BACKEND=$IMAGE_TAG_BACKEND\" >> .env; \
-               docker-compose -f docker-compose.production.yaml down || true; \
-               docker-compose -f docker-compose.production.yaml up -d; \
-               docker-compose -f docker-compose.production.yaml ps'"
+               docker-compose down || true; \
+               docker-compose up -d; \
+               docker-compose ps'"
             ]
           }
           EOF

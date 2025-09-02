@@ -22,6 +22,9 @@ FROM --platform=linux/arm64 node:20-alpine
 # Copy built files from builder stage
 COPY --from=builder /app/build /app/build
 
+COPY --from=builder /app/package.json /app/package.json
+COPY --from=builder /app/package-lock.json /app/package-lock.json
+
 # Set working directory
 WORKDIR /app
 
