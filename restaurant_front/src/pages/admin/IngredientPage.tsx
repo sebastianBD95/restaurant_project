@@ -18,6 +18,7 @@ import { toaster } from '../../components/ui/toaster';
 import { CustomField } from '../../components/ui/field';
 import { IngredientTable } from '../../components/ingredients/IngredientTable';
 import { deleteRawIngredient, updateRawIngredients } from '../../services/rawIngredientService';
+import config from '../../config/config';
 
 interface IngredientRow {
   raw_ingredient_id: string;
@@ -110,7 +111,7 @@ const IngredientPage: React.FC = () => {
       const formData = new FormData();
       formData.append('file', file);
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL || 'http://localhost:8080'}/raw-ingredients/upload?restaurant_id=${restaurantId}`,
+        `${config.API_URL}/raw-ingredients/upload?restaurant_id=${restaurantId}`,
         {
           method: 'POST',
           body: formData,

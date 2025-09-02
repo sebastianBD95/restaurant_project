@@ -38,7 +38,6 @@
     "react-konva": "^19.0.3",
     "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.1.5",
-    "react-scripts": "^5.0.1",
     "react-slick": "^0.30.3",
     "recharts": "^2.15.1",
     "slick-carousel": "^1.8.1",
@@ -48,10 +47,9 @@
     "zod": "^3.24.2"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 3000",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "clean": "eslint src --ext .ts,.tsx --fix"
   },
@@ -74,6 +72,8 @@
     ]
   },
   "devDependencies": {
+    "@vitejs/plugin-react-swc": "^3.7.2",
+    "vite": "^6.0.0",
     "@types/react-slick": "^0.23.13",
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",

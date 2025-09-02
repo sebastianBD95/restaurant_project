@@ -8,12 +8,15 @@ interface Config {
 }
 
 const getConfig = (): Config => {
-  const env = process.env.NODE_ENV || 'development';
-  const envConfig = environment[env as keyof typeof environment] || environment.development;
+  const envMode = (import.meta as any).env?.MODE || 'development';
+  const envKey = (envMode as keyof typeof environment) || 'development';
+  const envConfig = environment[envKey] || environment.development;
+
+  const apiUrlFromEnv = (import.meta as any).env?.VITE_API_URL as string | undefined;
 
   return {
     ...envConfig,
-    API_URL: envConfig.API_URL,
+    API_URL: apiUrlFromEnv ?? envConfig.API_URL,
     ENVIRONMENT: envConfig.ENVIRONMENT,
   };
 };
