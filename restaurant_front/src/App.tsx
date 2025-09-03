@@ -11,6 +11,7 @@ import Dashboard from './pages/admin/DashboardPage';
 import Inventario from './pages/admin/InventaryPage';
 import PaginaReceta from './pages/admin/RecipePage';
 import PaginaPagos from './pages/pagos';
+import PaymentHistoryDashboard from './pages/admin/PaymentHistoryDashboard';
 import WaiterUserPage from './pages/admin/WaiterUserPage';
 import './App.css';
 
@@ -42,6 +43,8 @@ function App() {
             <Route path="/receta/:restaurantId" element={<PaginaReceta />} />
             <Route path="/pagos" element={<PaginaPagos />} />
             <Route path="/pagos/:restaurantId" element={<PaginaPagos />} />
+            <Route path="/historial-pagos" element={<PaymentHistoryDashboard />} />
+            <Route path="/historial-pagos/:restaurantId" element={<PaymentHistoryDashboard />} />
             <Route path="/usuarios/:restaurantId" element={<WaiterUserPage />} />
             <Route path="/ingredientes" element={<IngredientPage />} />
             <Route path="/ingredientes/:restaurantId" element={<IngredientPage />} />

@@ -108,7 +108,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar, 
               Pedidos
             </Link>
             <Link
-              to={currentRestaurantId ? `/pagos/${currentRestaurantId}` : '/pagos'}
+              to={currentRestaurantId ? `/historial-pagos/${currentRestaurantId}` : '/historial-pagos'}
               style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}
             >
               <Icon as={MdPayment} />
