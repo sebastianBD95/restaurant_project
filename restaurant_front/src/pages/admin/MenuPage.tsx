@@ -62,9 +62,9 @@ const MenuPage: React.FC = () => {
 
   // Use the useTables hook at the top level
   const {
-    _tables,
-    loading: _tablesLoading,
-    error: _tablesError,
+    tables,
+    loading: tablesLoading,
+    error: tablesError,
     fetchTables,
   } = useTables(restaurantId);
 
@@ -309,6 +309,13 @@ const MenuPage: React.FC = () => {
 
   const totalCost = cart.reduce((total, item) => total + item.price * item.quantity, 0);
 
+  // Function to check if a dish is available for ordering
+  const platoDisponible = (platoName: string): boolean => {
+    // For now, assume all dishes are available
+    // You can implement more complex logic here based on inventory, time, etc.
+    return true;
+  };
+
   return (
     <Flex height="100vh" direction={{ base: 'column', md: 'row' }}>
       {/* Barra lateral de navegación plegable */}
@@ -355,6 +362,7 @@ const MenuPage: React.FC = () => {
                     ingredients={ingredients}
                     setIngredients={setIngredients}
                     allMenuItems={Object.values(menuData).flat()}
+                    platoDisponible={platoDisponible}
                   />
                 ))}
               </Accordion.Root>
