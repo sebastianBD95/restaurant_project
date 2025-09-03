@@ -11,8 +11,11 @@ import {
   Select,
   Portal,
   createListCollection,
+  HStack,
+  Spacer,
 } from '@chakra-ui/react';
 import { toast as sonner } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 export function useToast() {
   return sonner;
@@ -33,6 +36,7 @@ const PaginaPagos: React.FC = () => {
   const [metodoPago, setMetodoPago] = useState('efectivo');
   const [facturacion, setFacturacion] = useState({ nombre: '', cedula: '', correo: '' });
   const toast = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const storedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
@@ -70,7 +74,18 @@ const PaginaPagos: React.FC = () => {
 
   return (
     <Box p={6}>
-      <Heading mb={4}>💳 Página de Pagos</Heading>
+      <HStack mb={4}>
+        <Heading>💳 Página de Pagos</Heading>
+        <Spacer />
+        <Button
+          colorScheme="blue"
+          variant="outline"
+          onClick={() => navigate('/historial-pagos')}
+          size="sm"
+        >
+          📊 Ver Historial de Pagos
+        </Button>
+      </HStack>
 
       <VStack align="start" mb={6}>
         <Text fontWeight="bold">Selecciona la mesa</Text>
