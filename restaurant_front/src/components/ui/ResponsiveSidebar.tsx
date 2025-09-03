@@ -32,7 +32,7 @@ import { isWaiter } from '../../pages/utils/roleUtils';
 interface SidebarItem {
   label: string;
   path: string;
-  icon: React.ReactElement;
+  icon: React.ComponentType;
   badge?: number;
   isAdmin?: boolean;
   children?: SidebarItem[];
@@ -68,37 +68,37 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
     {
       label: 'Inicio',
       path: '/restaurantes',
-      icon: <FiHome />,
+      icon: FiHome,
       isAdmin: true,
     },
     {
       label: 'Dashboard',
       path: currentRestaurantId ? `/dashboard/${currentRestaurantId}` : '/dashboard',
-      icon: <FiBarChart2 />,
+      icon: FiBarChart2,
       isAdmin: true,
     },
     {
       label: 'Gestión',
       path: '#',
-      icon: <FiPackage />,
+      icon: FiPackage,
       isAdmin: true,
       children: [
         {
           label: 'Inventario',
           path: currentRestaurantId ? `/inventario/${currentRestaurantId}` : '/inventario',
-          icon: <MdOutlineInventory2 />,
+          icon: MdOutlineInventory2,
           isAdmin: true,
         },
         {
           label: 'Ingredientes',
           path: currentRestaurantId ? `/ingredientes/${currentRestaurantId}` : '/ingredientes',
-          icon: <FiPackage />,
+          icon: FiPackage,
           isAdmin: true,
         },
         {
           label: 'Recetas',
           path: currentRestaurantId ? `/receta/${currentRestaurantId}` : '/receta',
-          icon: <MdRestaurantMenu />,
+          icon: MdRestaurantMenu,
           isAdmin: true,
         },
       ],
@@ -106,26 +106,26 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
     {
       label: 'Operaciones',
       path: '#',
-      icon: <FiShoppingCart />,
+      icon: FiShoppingCart,
       isAdmin: true,
       children: [
         {
           label: 'Menú',
           path: currentRestaurantId ? `/menu/${currentRestaurantId}` : '/menu',
-          icon: <FiMenu />,
+          icon: FiMenu,
           isAdmin: true,
         },
         {
           label: 'Órdenes',
           path: currentRestaurantId ? `/ordenes/${currentRestaurantId}` : '/ordenes',
-          icon: <FiShoppingCart />,
+          icon: FiShoppingCart,
           badge: 5,
           isAdmin: true,
         },
         {
           label: 'Eventos',
           path: currentRestaurantId ? `/eventos/${currentRestaurantId}` : '/eventos',
-          icon: <FiCalendar />,
+          icon: FiCalendar,
           isAdmin: true,
         },
       ],
@@ -133,19 +133,19 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
     {
       label: 'Administración',
       path: '#',
-      icon: <FiUsers />,
+      icon: FiUsers,
       isAdmin: true,
       children: [
         {
           label: 'Usuarios',
           path: currentRestaurantId ? `/usuarios/${currentRestaurantId}` : '/usuarios',
-          icon: <FiUsers />,
+          icon: FiUsers,
           isAdmin: true,
         },
         {
           label: 'Pagos',
           path: currentRestaurantId ? `/pagos/${currentRestaurantId}` : '/pagos',
-          icon: <FiDollarSign />,
+          icon: FiDollarSign,
           isAdmin: true,
         },
       ],
@@ -191,7 +191,7 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
             color={hasActiveChildren ? activeTextColor : textColor}
             fontWeight={hasActiveChildren ? 'semibold' : 'normal'}
             _hover={{ bg: hoverBgColor }}
-            leftIcon={<Icon as={item.icon.type} />}
+            leftIcon={<Icon as={item.icon} />}
             rightIcon={
               <Icon
                 as={isDisclosureOpen ? FiChevronRight : FiChevronLeft}
@@ -226,7 +226,7 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
           fontWeight={isItemActive ? 'semibold' : 'normal'}
           transition="all 0.2s"
         >
-          <Icon as={item.icon.type} fontSize="lg" />
+          <Icon as={item.icon} fontSize="lg" />
           {isOpen && (
             <>
               <Text ml={3} flex={1}>
