@@ -18,7 +18,7 @@ jobs:
       contents: read
     env:
       ECR_REPOSITORY: restaurant-app-dev-backend
-      IMAGE_TAG: ${{ github.ref_name }}
+      IMAGE_TAG_BACKEND: ${{ github.ref_name }}
     outputs:
       image: ${{ steps.build-image.outputs.image }}
     steps:
@@ -40,10 +40,10 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
-          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+          IMAGE_TAG_BACKEND: ${{ env.IMAGE_TAG_BACKEND }}
         run: |
           # Convert tag format from restaurant_manager/v0.0.0 to restaurant_manager_v0.0.0
-          DOCKER_TAG=$(echo $IMAGE_TAG | sed 's/restaurant_manager\//restaurant_manager_/')
+          DOCKER_TAG=$(echo $IMAGE_TAG_BACKEND | sed 's/restaurant_manager\//restaurant_manager_/')
           # Build a docker container for ARM64 and push it to ECR
           docker build --platform linux/arm64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG ./restaurant_manager/Dockerfile
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG
@@ -67,6 +67,23 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+      
+      - name: Get latest frontend image tag
+        id: get-frontend-tag
+        run: |
+          # List all tags sorted by push time and pick the latest backend tag only
+          IMAGE_TAG_FRONTEND=$(aws ecr describe-images \
+            --repository-name restaurant-app-dev-backend \
+            --query "sort_by(imageDetails,&imagePushedAt)[].imageTags[]" \
+            --output text | tr '\t' '\n' | grep '^restaurant_front_' | tail -n 1)
+
+          if [ -z "$IMAGE_TAG_FRONTEND" ]; then
+            echo "ERROR: Could not find a frontend tag (prefix: restaurant_front_) in repository restaurant-app-dev-backend" >&2
+            exit 1
+          fi
+
+          echo "Latest frontend tag: $IMAGE_TAG_FRONTEND"
+          echo "frontend_tag=$IMAGE_TAG_FRONTEND" >> $GITHUB_OUTPUT
 
       - name: Copy deployment files to EC2
         run: |
@@ -93,13 +110,47 @@ jobs:
           
           # Extract registry and tag from image name
           ECR_REGISTRY=$(echo $IMAGE_NAME | cut -d'/' -f1)
-          IMAGE_TAG=$(echo $IMAGE_NAME | cut -d':' -f2)
+          IMAGE_TAG_BACKEND=$(echo $IMAGE_NAME | cut -d':' -f2)
+          IMAGE_TAG_FRONTEND="${{ steps.get-frontend-tag.outputs.frontend_tag }}"
           
           # Create JSON file for deployment command
           cat > deploy.json << EOF
           {
             "commands": [
-              "bash -lc 'set -euo pipefail; echo \"Starting deployment...\"; aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}; echo \"Pulling image: $IMAGE_NAME\"; docker pull \"$IMAGE_NAME\"; mkdir -p /opt/restaurant-manager; cd /opt/restaurant-manager; aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/docker-compose.production.yaml docker-compose.yaml; aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/Caddyfile .; echo \"ECR_REGISTRY=$ECR_REGISTRY\" > .env; echo \"IMAGE_TAG=$IMAGE_TAG\" >> .env; echo \"DATABASE_URL=${{ secrets.DATABASE_URL }}\" >> .env; echo \"AWS_PROFILE=${{ secrets.AWS_PROFILE }}\" >> .env; echo \"AWS_REGION=${{ secrets.AWS_REGION }}\" >> .env; echo \"APP_ENV=prod\" >> .env; docker-compose -f docker-compose.production.yaml down || true; docker-compose -f docker-compose.production.yaml up -d; docker-compose -f docker-compose.production.yaml ps'"
+              "bash -lc '
+                set -euo pipefail
+                echo "Starting deployment..."
+                
+                # Login to ECR
+                aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
+                  docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
+                
+                # Pull the latest image
+                echo "Pulling image: $IMAGE_NAME"
+                docker pull "$IMAGE_NAME"
+                
+                # Setup working directory
+                mkdir -p /opt/restaurant-manager
+                cd /opt/restaurant-manager
+                
+                # Download configuration files
+                aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/docker-compose.production.yaml docker-compose.yaml
+                aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/Caddyfile .
+                
+                # Create environment file
+                echo "ECR_REGISTRY=$ECR_REGISTRY" > .env
+                echo "IMAGE_TAG_BACKEND=$IMAGE_TAG_BACKEND" >> .env
+                echo "IMAGE_TAG_FRONTEND=$IMAGE_TAG_FRONTEND" >> .env
+                echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+                echo "AWS_PROFILE=${{ secrets.AWS_PROFILE }}" >> .env
+                echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
+                echo "APP_ENV=prod" >> .env
+                
+                # Deploy the application
+                docker-compose -f docker-compose.yaml down || true
+                docker-compose -f docker-compose.yaml up -d
+                docker-compose -f docker-compose.yaml ps
+              '
             ]
           }
           EOF
