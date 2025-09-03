@@ -25,14 +25,10 @@ WORKDIR /app
 # Copy built files from builder stage
 COPY --from=builder /app/build /app/build
 
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies
-RUN npm ci --only=production
+RUN npm install -g serve
 
 # Expose port 3000
 EXPOSE 3000
 
 # Start the application
-CMD ["npm", "run", "start"]
+CMD ["serve", "-s", "build", "-l", "3000"]
