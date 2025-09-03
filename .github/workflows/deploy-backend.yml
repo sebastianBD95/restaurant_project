@@ -47,7 +47,7 @@ jobs:
           DOCKER_TAG=$(echo $IMAGE_TAG_BACKEND | sed 's/restaurant_manager\//restaurant_manager_/')
 
           # Build a docker container for ARM64 and push it to ECR
-          docker build --platform linux/arm64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG ./restaurant_manager/Dockerfile
+          docker build --platform linux/arm64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG .
 
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG" >> $GITHUB_OUTPUT
