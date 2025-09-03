@@ -53,6 +53,12 @@ jobs:
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG" >> $GITHUB_OUTPUT
           echo "Built image: $ECR_REGISTRY/$ECR_REPOSITORY:$DOCKER_TAG"
 
+      - name: Copy deployment files to EC2
+        run: |
+          # Upload to S3 for deployment
+          aws s3 cp docker-compose.production.yaml s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/docker-compose.production.yaml
+          aws s3 cp Caddyfile s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/Caddyfile
+
   deploy:
     name: Deploy to EC2
     needs: build
@@ -87,12 +93,6 @@ jobs:
 
           echo "Latest frontend tag: $IMAGE_TAG_FRONTEND"
           echo "frontend_tag=$IMAGE_TAG_FRONTEND" >> $GITHUB_OUTPUT
-
-      - name: Copy deployment files to EC2
-        run: |
-          # Upload to S3 for deployment
-          aws s3 cp docker-compose.production.yaml s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/docker-compose.production.yaml
-          aws s3 cp Caddyfile s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/Caddyfile
 
       - name: Build SSM deployment command JSON
         id: build
