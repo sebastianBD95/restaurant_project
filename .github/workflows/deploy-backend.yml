@@ -123,23 +123,17 @@ jobs:
               "bash -lc '
                 set -euo pipefail
                 echo "Starting deployment..."
-                
                 # Login to ECR
-                aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
-                  docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
-                
+                aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
                 # Pull the latest image
                 echo "Pulling image: $IMAGE_NAME"
                 docker pull "$IMAGE_NAME"
-                
                 # Setup working directory
                 mkdir -p /opt/restaurant-manager
                 cd /opt/restaurant-manager
-                
                 # Download configuration files
                 aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/docker-compose.production.yaml docker-compose.yaml
                 aws s3 cp s3://${{ secrets.MIGRATIONS_BUCKET }}/deployment/Caddyfile .
-                
                 # Create environment file
                 echo "ECR_REGISTRY=$ECR_REGISTRY" > .env
                 echo "IMAGE_TAG_BACKEND=$IMAGE_TAG_BACKEND" >> .env
@@ -148,7 +142,6 @@ jobs:
                 echo "AWS_PROFILE=${{ secrets.AWS_PROFILE }}" >> .env
                 echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
                 echo "APP_ENV=prod" >> .env
-                
                 # Deploy the application
                 docker-compose -f docker-compose.yaml down || true
                 docker-compose -f docker-compose.yaml up -d
