@@ -14,6 +14,7 @@ import PaginaPagos from './pages/pagos';
 import PaymentHistoryDashboard from './pages/admin/PaymentHistoryDashboard';
 import WaiterUserPage from './pages/admin/WaiterUserPage';
 import './App.css';
+import './styles/responsive.css';
 
 import { ChakraProvider, defaultSystem, Box } from '@chakra-ui/react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';

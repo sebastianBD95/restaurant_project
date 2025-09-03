@@ -42,35 +42,49 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="page-wrapper">
       <Box
         bgImage="url('background.jpg')"
         bgRepeat="no-repeat"
         bgSize="cover"
         minH="100vh"
-        w="100vw"
+        w="100%"
         display="flex"
         justifyContent="center"
         alignItems="center"
-        px={4}
+        px={{ base: 2, md: 4, lg: 6 }}
+        py={{ base: 2, md: 4 }}
       >
         <Box
           bg="white"
-          p={8}
-          borderRadius="md"
-          boxShadow="lg"
-          width={{ base: '90%', md: '400px' }}
+          p={{ base: 6, md: 8, lg: 10 }}
+          borderRadius="lg"
+          boxShadow="xl"
+          width={{ base: '95%', sm: '90%', md: '400px', lg: '450px' }}
           textAlign="center"
+          mx={4}
         >
-          <Text fontSize="2xl" fontWeight="bold" mb={4}>
+          <Text 
+            fontSize={{ base: 'xl', md: '2xl', lg: '3xl' }} 
+            fontWeight="bold" 
+            mb={{ base: 3, md: 4, lg: 6 }}
+            color="gray.800"
+          >
             Iniciar Sesión
           </Text>
           {error && <Text color="red.500">{error}</Text>}
           <form onSubmit={handleSubmit}>
-            <VStack>
+            <VStack spacing={{ base: 3, md: 4, lg: 5 }}>
               {/* Usuario */}
               <Box width="100%">
-                <Text fontWeight="bold">Usuario</Text>
+                <Text 
+                  fontWeight="bold" 
+                  fontSize={{ base: 'sm', md: 'md' }}
+                  mb={2}
+                  textAlign="left"
+                >
+                  Usuario
+                </Text>
                 <Input
                   type="text"
                   name="username"
@@ -78,12 +92,22 @@ const LoginForm: React.FC = () => {
                   value={formData.username}
                   onChange={handleChange}
                   required
+                  size={{ base: 'md', md: 'lg' }}
+                  height={{ base: '40px', md: '44px' }}
+                  fontSize={{ base: 'sm', md: 'md' }}
                 />
               </Box>
 
               {/* Contraseña */}
               <Box width="100%">
-                <Text fontWeight="bold">Contraseña</Text>
+                <Text 
+                  fontWeight="bold" 
+                  fontSize={{ base: 'sm', md: 'md' }}
+                  mb={2}
+                  textAlign="left"
+                >
+                  Contraseña
+                </Text>
                 <Input
                   type="password"
                   name="password"
@@ -91,10 +115,21 @@ const LoginForm: React.FC = () => {
                   value={formData.password}
                   onChange={handleChange}
                   required
+                  size={{ base: 'md', md: 'lg' }}
+                  height={{ base: '40px', md: '44px' }}
+                  fontSize={{ base: 'sm', md: 'md' }}
                 />
               </Box>
 
-              <Button type="submit" colorScheme="blue" width="full">
+              <Button 
+                type="submit" 
+                colorScheme="blue" 
+                width="full"
+                size={{ base: 'md', md: 'lg' }}
+                height={{ base: '40px', md: '44px' }}
+                fontSize={{ base: 'md', md: 'lg' }}
+                mt={{ base: 2, md: 3 }}
+              >
                 Iniciar Sesión
               </Button>
 

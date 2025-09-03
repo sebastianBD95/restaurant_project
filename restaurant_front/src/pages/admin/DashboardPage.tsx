@@ -1,69 +1,149 @@
 'use client';
 
-import { Box, Heading, Grid, Flex } from '@chakra-ui/react';
+import { Box, Heading, Grid, Flex, useColorModeValue } from '@chakra-ui/react';
 import DailyRevenue from '../../components/dashboards/DailyRevenue';
 import TrendingMenu from '../../components/dashboards/TrendingMenu';
 import DailyOrders from '../../components/dashboards/DailyOrders';
 import Historial from '../../components/dashboards/Historial';
 import PaginaGanancia from '../../components/dashboards/Reveneu';
 import { useParams } from 'react-router-dom';
-import { Sidebar } from '../../components/ui/navegator';
+import ResponsiveSidebar from '../../components/ui/ResponsiveSidebar';
 import { useSidebar } from '../../hooks/useSidebar';
+import { useResponsive, useResponsiveGrid } from '../../hooks/useResponsive';
 
 const Dashboard: React.FC = () => {
   const { restaurantId } = useParams();
   const { isSidebarOpen, toggleSidebar } = useSidebar();
+  const { isMobile, isTablet } = useResponsive();
+  const gridConfig = useResponsiveGrid();
+  
+  const bgColor = useColorModeValue('gray.50', 'gray.900');
+  const cardBgColor = useColorModeValue('white', 'gray.800');
+  const textColor = useColorModeValue('gray.800', 'white');
 
   return (
     <Flex height="100vh" width="100vw" direction="row">
-      {/* Barra lateral de navegación plegable */}
-      <Sidebar
-        isSidebarOpen={isSidebarOpen}
-        toggleSidebar={toggleSidebar}
+      {/* Responsive Sidebar */}
+      <ResponsiveSidebar
+        isOpen={isSidebarOpen}
+        onToggle={toggleSidebar}
         restaurantId={restaurantId}
       />
 
-      {/* Contenido Principal */}
-      <Box flex={1} p={6} overflowY="auto">
-        <Box p={6} bg="gray.100" minH="100vh">
-          <Heading textAlign="center" mb={6}>
+      {/* Main Content */}
+      <Box 
+        flex={1} 
+        p={{ base: 2, md: 4, lg: 6 }} 
+        overflowY="auto"
+        ml={{ base: 0, md: isSidebarOpen ? '250px' : '60px' }}
+        transition="margin-left 0.3s"
+      >
+        <Box 
+          p={{ base: 3, md: 4, lg: 6 }} 
+          bg={bgColor} 
+          minH="100vh"
+          borderRadius={{ base: 'none', md: 'lg' }}
+        >
+          <Heading 
+            textAlign="center" 
+            mb={{ base: 4, md: 6 }}
+            fontSize={{ base: 'xl', md: '2xl', lg: '3xl' }}
+            color={textColor}
+          >
             📊 Dashboard del Restaurante
           </Heading>
 
-          {/* Primera fila con DailyOrders y DailyRevenue */}
-          <Grid templateColumns={{ base: '2fr', md: '1fr 1fr 1fr' }} gap={6} mb={6}>
-            <Box bg="white" p={4} borderRadius="sm" boxShadow="xs" h="550px">
-              <Heading size="xs" mb={4}>
+          {/* First Row - Daily Orders, Revenue, and Profits */}
+          <Grid 
+            templateColumns={{ 
+              base: '1fr', 
+              md: '1fr 1fr', 
+              lg: '1fr 1fr 1fr' 
+            }} 
+            gap={{ base: 3, md: 4, lg: 6 }} 
+            mb={{ base: 4, md: 6 }}
+          >
+            <Box 
+              bg={cardBgColor} 
+              p={{ base: 3, md: 4 }} 
+              borderRadius="lg" 
+              boxShadow="sm" 
+              h={{ base: '400px', md: '500px', lg: '550px' }}
+              border="1px solid"
+              borderColor={useColorModeValue('gray.200', 'gray.700')}
+            >
+              <Heading size={{ base: 'sm', md: 'md' }} mb={4} color={textColor}>
                 📅 Órdenes por Día
               </Heading>
               <DailyOrders />
             </Box>
 
-            <Box bg="white" p={4} borderRadius="sm" boxShadow="xs" h="550px">
-              <Heading size="xs" mb={4}>
-                💰 Ingresos, Costos{' '}
+            <Box 
+              bg={cardBgColor} 
+              p={{ base: 3, md: 4 }} 
+              borderRadius="lg" 
+              boxShadow="sm" 
+              h={{ base: '400px', md: '500px', lg: '550px' }}
+              border="1px solid"
+              borderColor={useColorModeValue('gray.200', 'gray.700')}
+              display={{ base: 'none', md: 'block' }}
+            >
+              <Heading size={{ base: 'sm', md: 'md' }} mb={4} color={textColor}>
+                💰 Ingresos y Costos
               </Heading>
               <DailyRevenue />
             </Box>
-            <Box bg="white" p={4} borderRadius="sm" boxShadow="xs" h="550px">
-              <Heading size="xs" mb={4}>
+            
+            <Box 
+              bg={cardBgColor} 
+              p={{ base: 3, md: 4 }} 
+              borderRadius="lg" 
+              boxShadow="sm" 
+              h={{ base: '400px', md: '500px', lg: '550px' }}
+              border="1px solid"
+              borderColor={useColorModeValue('gray.200', 'gray.700')}
+              display={{ base: 'none', lg: 'block' }}
+            >
+              <Heading size={{ base: 'sm', md: 'md' }} mb={4} color={textColor}>
                 💰 Ganancias
               </Heading>
               <PaginaGanancia />
             </Box>
           </Grid>
 
-          {/* Segunda fila con Historial y Platos Populares */}
-          <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={6}>
-            <Box bg="white" p={4} borderRadius="sm" boxShadow="xs" h="550px">
-              <Heading size="xs" mb={4}>
+          {/* Second Row - Sales History and Popular Dishes */}
+          <Grid 
+            templateColumns={{ 
+              base: '1fr', 
+              md: '1fr 1fr' 
+            }} 
+            gap={{ base: 3, md: 4, lg: 6 }}
+          >
+            <Box 
+              bg={cardBgColor} 
+              p={{ base: 3, md: 4 }} 
+              borderRadius="lg" 
+              boxShadow="sm" 
+              h={{ base: '400px', md: '500px', lg: '550px' }}
+              border="1px solid"
+              borderColor={useColorModeValue('gray.200', 'gray.700')}
+            >
+              <Heading size={{ base: 'sm', md: 'md' }} mb={4} color={textColor}>
                 📊 Historial de Ventas
               </Heading>
               <Historial />
             </Box>
 
-            <Box bg="white" p={4} borderRadius="sm" boxShadow="xs" h="550px">
-              <Heading size="xs" mb={4}>
+            <Box 
+              bg={cardBgColor} 
+              p={{ base: 3, md: 4 }} 
+              borderRadius="lg" 
+              boxShadow="sm" 
+              h={{ base: '400px', md: '500px', lg: '550px' }}
+              border="1px solid"
+              borderColor={useColorModeValue('gray.200', 'gray.700')}
+            >
+              <Heading size={{ base: 'sm', md: 'md' }} mb={4} color={textColor}>
                 🍽️ Platos Populares
               </Heading>
               <TrendingMenu />
