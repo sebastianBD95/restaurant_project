@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Flex, useColorModeValue } from '@chakra-ui/react';
+import { Box, Flex } from '@chakra-ui/react';
 import { useResponsive } from '../../hooks/useResponsive';
 import ResponsiveNavigation from './ResponsiveNavigation';
 import ResponsiveSidebar from './ResponsiveSidebar';
@@ -34,8 +34,8 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
 }) => {
   const { isMobile, isTablet } = useResponsive();
   
-  const bgColor = useColorModeValue('gray.50', 'gray.900');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const bgColor = 'gray.50';
+  const borderColor = 'gray.200';
 
   return (
     <Box className="page-wrapper" minH="100vh" bg={bgColor}>
@@ -63,7 +63,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
         >
           {/* Content */}
           <Box
-            bg={useColorModeValue('white', 'gray.800')}
+            bg="white"
             borderRadius={{ base: 'none', md: 'lg' }}
             boxShadow={{ base: 'none', md: 'sm' }}
             border={{ base: 'none', md: '1px solid' }}
@@ -149,9 +149,9 @@ export const ResponsiveCard: React.FC<{
   onClick,
   hoverable = false
 }) => {
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
-  const hoverBgColor = useColorModeValue('gray.50', 'gray.700');
+  const bgColor = 'white';
+  const borderColor = 'gray.200';
+  const hoverBgColor = 'gray.50';
 
   return (
     <Box
@@ -193,8 +193,8 @@ export const ResponsiveSection: React.FC<{
   margin = { base: 4, md: 6, lg: 8 },
   background
 }) => {
-  const bgColor = background || useColorModeValue('transparent', 'transparent');
-  const textColor = useColorModeValue('gray.800', 'white');
+  const bgColor = background || 'transparent';
+  const textColor = 'gray.800';
 
   return (
     <Box
@@ -220,7 +220,7 @@ export const ResponsiveSection: React.FC<{
             <Box
               as="p"
               fontSize={{ base: 'md', md: 'lg' }}
-              color={useColorModeValue('gray.600', 'gray.300')}
+              color="gray.600"
               lineHeight="tall"
             >
               {subtitle}

@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Heading, Grid, Flex, useColorModeValue } from '@chakra-ui/react';
+import { Box, Heading, Grid, Flex } from '@chakra-ui/react';
 import DailyRevenue from '../../components/dashboards/DailyRevenue';
 import TrendingMenu from '../../components/dashboards/TrendingMenu';
 import DailyOrders from '../../components/dashboards/DailyOrders';
@@ -17,9 +17,9 @@ const Dashboard: React.FC = () => {
   const { isMobile, isTablet } = useResponsive();
   const gridConfig = useResponsiveGrid();
   
-  const bgColor = useColorModeValue('gray.50', 'gray.900');
-  const cardBgColor = useColorModeValue('white', 'gray.800');
-  const textColor = useColorModeValue('gray.800', 'white');
+  const bgColor = 'gray.50';
+  const cardBgColor = 'white';
+  const textColor = 'gray.800';
 
   return (
     <Flex height="100vh" width="100vw" direction="row">
@@ -70,7 +70,7 @@ const Dashboard: React.FC = () => {
               boxShadow="sm" 
               h={{ base: '400px', md: '500px', lg: '550px' }}
               border="1px solid"
-              borderColor={useColorModeValue('gray.200', 'gray.700')}
+              borderColor={colorMode === 'dark' ? 'gray.700' : 'gray.200'}
             >
               <Heading size={{ base: 'sm', md: 'md' }} mb={4} color={textColor}>
                 📅 Órdenes por Día
@@ -85,7 +85,7 @@ const Dashboard: React.FC = () => {
               boxShadow="sm" 
               h={{ base: '400px', md: '500px', lg: '550px' }}
               border="1px solid"
-              borderColor={useColorModeValue('gray.200', 'gray.700')}
+              borderColor="gray.200"
               display={{ base: 'none', md: 'block' }}
             >
               <Heading size={{ base: 'sm', md: 'md' }} mb={4} color={textColor}>
@@ -101,7 +101,7 @@ const Dashboard: React.FC = () => {
               boxShadow="sm" 
               h={{ base: '400px', md: '500px', lg: '550px' }}
               border="1px solid"
-              borderColor={useColorModeValue('gray.200', 'gray.700')}
+              borderColor="gray.200"
               display={{ base: 'none', lg: 'block' }}
             >
               <Heading size={{ base: 'sm', md: 'md' }} mb={4} color={textColor}>
@@ -126,7 +126,7 @@ const Dashboard: React.FC = () => {
               boxShadow="sm" 
               h={{ base: '400px', md: '500px', lg: '550px' }}
               border="1px solid"
-              borderColor={useColorModeValue('gray.200', 'gray.700')}
+              borderColor="gray.200"
             >
               <Heading size={{ base: 'sm', md: 'md' }} mb={4} color={textColor}>
                 📊 Historial de Ventas
@@ -141,9 +141,9 @@ const Dashboard: React.FC = () => {
               boxShadow="sm" 
               h={{ base: '400px', md: '500px', lg: '550px' }}
               border="1px solid"
-              borderColor={useColorModeValue('gray.200', 'gray.700')}
+              borderColor="gray.200"
             >
-              <Heading size={{ base: 'sm', md: 'md' }} mb={4} color={textColor}>
+              <Heading size={{ base: 'md', md: 'md' }} mb={4} color={textColor}>
                 🍽️ Platos Populares
               </Heading>
               <TrendingMenu />

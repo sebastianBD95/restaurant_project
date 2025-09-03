@@ -170,10 +170,9 @@ export const getResponsiveValue = <T>(
   tablet: T,
   desktop: T,
   largeDesktop?: T,
-  extraLargeDesktop?: T
+  extraLargeDesktop?: T,
+  currentBreakpoint: Breakpoint
 ): T => {
-  const { currentBreakpoint } = useResponsive();
-  
   switch (currentBreakpoint) {
     case 'extraLargeDesktop':
       return extraLargeDesktop ?? largeDesktop ?? desktop;

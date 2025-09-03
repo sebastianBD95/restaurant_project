@@ -4,7 +4,6 @@ import {
   HStack,
   Button,
   Text,
-  useColorModeValue,
   Icon,
 } from '@chakra-ui/react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -29,8 +28,8 @@ interface NavItem {
 const NavigationMenu: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const bgColor = 'white';
+  const borderColor = 'gray.200';
 
   const navItems: NavItem[] = [
     {

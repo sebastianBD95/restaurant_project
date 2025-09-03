@@ -15,7 +15,6 @@ import {
   VStack,
   HStack,
   useDisclosure,
-  useColorModeValue,
   Avatar,
   Menu,
   MenuButton,
@@ -72,9 +71,9 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
   const { isMobile, isTablet } = useResponsive();
   const navConfig = useResponsiveNavigation();
   
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
-  const textColor = useColorModeValue('gray.800', 'white');
+  const bgColor = 'white';
+  const borderColor = 'gray.200';
+  const textColor = 'gray.800';
 
   const navigationItems: NavigationItem[] = [
     {
@@ -163,9 +162,9 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
           py={3}
           borderRadius="md"
           _hover={{
-            bg: useColorModeValue('gray.100', 'gray.700'),
+            bg: 'gray.100',
           }}
-          bg={isActive(item.path) ? useColorModeValue('blue.50', 'blue.900') : 'transparent'}
+          bg={isActive(item.path) ? 'blue.50' : 'transparent'}
           color={isActive(item.path) ? 'blue.600' : textColor}
           fontWeight={isActive(item.path) ? 'semibold' : 'normal'}
         >
@@ -313,12 +312,12 @@ export const ResponsiveNavigation: React.FC<ResponsiveNavigationProps> = ({
             <Input
               placeholder="Buscar..."
               variant="filled"
-              bg={useColorModeValue('gray.100', 'gray.700')}
+              bg="gray.100"
               _hover={{
-                bg: useColorModeValue('gray.200', 'gray.600'),
+                bg: 'gray.200',
               }}
               _focus={{
-                bg: useColorModeValue('white', 'gray.600'),
+                bg: 'white',
                 borderColor: 'blue.500',
               }}
             />

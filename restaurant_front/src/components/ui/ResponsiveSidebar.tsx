@@ -7,8 +7,6 @@ import {
   Icon,
   Flex,
   Button,
-  useColorModeValue,
-  Collapse,
   IconButton,
   Tooltip,
   Divider,
@@ -59,12 +57,12 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
   
   const currentRestaurantId = restaurantId || params.restaurantId;
 
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
-  const textColor = useColorModeValue('gray.800', 'white');
-  const hoverBgColor = useColorModeValue('gray.100', 'gray.700');
-  const activeBgColor = useColorModeValue('blue.50', 'blue.900');
-  const activeTextColor = useColorModeValue('blue.600', 'blue.200');
+  const bgColor = 'white';
+  const borderColor = 'gray.200';
+  const textColor = 'gray.800';
+  const hoverBgColor = 'gray.100';
+  const activeBgColor = 'blue.50';
+  const activeTextColor = 'blue.600';
 
   const sidebarItems: SidebarItem[] = [
     {
@@ -171,7 +169,7 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
     return isActive(item.path);
   };
 
-  const renderSidebarItem = (item: SidebarItem, level: number = 0) => {
+  const renderSidebarItem = (item: SidebarItem, level = 0) => {
     if (item.isAdmin && isWaiter()) return null;
 
     const isItemActive = isActive(item.path);
@@ -205,11 +203,11 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
             {isOpen && <Text ml={2}>{item.label}</Text>}
           </Button>
           
-          <Collapse in={isDisclosureOpen}>
+          {isDisclosureOpen && (
             <VStack spacing={0} align="stretch">
               {item.children.map(child => renderSidebarItem(child, level + 1))}
             </VStack>
-          </Collapse>
+          )}
         </Box>
       );
     }
