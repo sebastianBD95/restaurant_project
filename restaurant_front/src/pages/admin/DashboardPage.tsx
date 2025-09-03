@@ -70,7 +70,7 @@ const Dashboard: React.FC = () => {
               boxShadow="sm" 
               h={{ base: '400px', md: '500px', lg: '550px' }}
               border="1px solid"
-              borderColor={colorMode === 'dark' ? 'gray.700' : 'gray.200'}
+              borderColor="gray.200"
             >
               <Heading size={{ base: 'sm', md: 'md' }} mb={4} color={textColor}>
                 📅 Órdenes por Día
