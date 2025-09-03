@@ -318,16 +318,16 @@ const MenuPage: React.FC = () => {
 
   return (
     <Flex height="100vh" direction={{ base: 'column', md: 'row' }}>
-      {/* Barra lateral de navegación plegable */}
-      <Sidebar
-        isSidebarOpen={isSidebarOpen}
-        toggleSidebar={toggleSidebar}
-        restaurantId={restaurantId}
-      />
 
       {/* Contenido Principal */}
       <Box flex={1} p={{ base: 2, md: 6 }} overflowY="auto">
         <Box p={{ base: 4, md: 8 }} bg="gray.100" minH="100vh">
+          {/* Barra lateral de navegación plegable */}
+          <Sidebar
+            isSidebarOpen={isSidebarOpen}
+            toggleSidebar={toggleSidebar}
+            restaurantId={restaurantId}
+          />
           <Heading textAlign="center" mb={6} fontSize={{ base: 'xl', md: '2xl', lg: '3xl' }}>
             Menú
           </Heading>

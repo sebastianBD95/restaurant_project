@@ -4,7 +4,7 @@ import { Box, Heading, Grid, Flex } from '@chakra-ui/react';
 import DailyRevenue from '../../components/dashboards/DailyRevenue';
 import TrendingMenu from '../../components/dashboards/TrendingMenu';
 import DailyOrders from '../../components/dashboards/DailyOrders';
-import Historial from '../../components/dashboards/PaginaHistorial';
+import Historial from '../../components/dashboards/Historial';
 import PaginaGanancia from '../../components/dashboards/Reveneu';
 import { useParams } from 'react-router-dom';
 import { Sidebar } from '../../components/ui/navegator';

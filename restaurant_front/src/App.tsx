@@ -11,7 +11,7 @@ import Dashboard from './pages/admin/DashboardPage';
 import Inventario from './pages/admin/InventaryPage';
 import PaginaReceta from './pages/admin/RecipePage';
 import PaginaPagos from './pages/pagos';
-import PaymentHistoryDashboard from './components/dashboards/PaymentHistoryDashboard';
+import PaymentHistoryDashboard from './pages/admin/PaymentHistoryDashboard';
 import WaiterUserPage from './pages/admin/WaiterUserPage';
 import './App.css';
 
