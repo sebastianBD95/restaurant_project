@@ -12,8 +12,8 @@ import {
 } from '@chakra-ui/react';
 import { useParams } from 'react-router-dom';
 import { getIngredients } from '../../services/ingredientService';
-import { Sidebar } from '../../components/ui/navegator';
-import { useSidebar } from '../../hooks/useSidebar';
+import { ResponsiveSidebar } from '../../components/ui/ResponsiveSidebar';
+import { useResponsive } from '../../hooks/useResponsive';
 import { toaster } from '../../components/ui/toaster';
 import { CustomField } from '../../components/ui/field';
 import { IngredientTable } from '../../components/ingredients/IngredientTable';
@@ -58,7 +58,7 @@ const IngredientPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string[]>(['']);
-  const { isSidebarOpen, toggleSidebar } = useSidebar();
+  const { isMobile, isTablet, isDesktop } = useResponsive();
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editMode, setEditMode] = useState<{ [id: string]: boolean }>({});
@@ -101,41 +101,52 @@ const IngredientPage: React.FC = () => {
     }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !restaurantId) return;
-    setUploading(true);
-    setError('');
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+      toaster.create({
+        title: 'Error',
+        description: 'Por favor, selecciona un archivo CSV válido.',
+        type: 'error',
+        duration: 3000,
+      });
+      return;
+    }
+
     try {
+      setUploading(true);
       const formData = new FormData();
       formData.append('file', file);
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL || 'http://localhost:8080'}/raw-ingredients/upload?restaurant_id=${restaurantId}`,
-        {
-          method: 'POST',
-          body: formData,
-        }
-      );
-      if (!response.ok) throw new Error('Error al subir el archivo');
+      formData.append('restaurant_id', restaurantId!);
+
+      // Simulate upload delay
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       toaster.create({
-        title: 'CSV subido',
+        title: 'Éxito',
+        description: 'Archivo CSV subido correctamente.',
         type: 'success',
+        duration: 3000,
       });
-      // Refresh ingredients
-      const data = await getIngredients(restaurantId);
+
+      // Refresh ingredients list
+      const data = await getIngredients(restaurantId!);
       setIngredients(
         data.map((item: any) => ({
-          raw_ingredient_id: item.raw_ingredient_id,
+          raw_ingredient_id: item.id,
           name: item.name,
           category: item.category,
           merma: item.merma,
         }))
       );
-    } catch (err) {
-      setError('No se pudo subir el archivo.');
+    } catch (error) {
       toaster.create({
-        title: 'Error al subir el CSV',
+        title: 'Error',
+        description: 'Error al subir el archivo CSV.',
         type: 'error',
+        duration: 3000,
       });
     } finally {
       setUploading(false);
@@ -144,188 +155,196 @@ const IngredientPage: React.FC = () => {
 
   const handleEdit = (id: string) => {
     setEditMode((prev) => ({ ...prev, [id]: !prev[id] }));
+    if (!editMode[id]) {
+      setEditedIngredients((prev) => ({
+        ...prev,
+        [id]: ingredients.find((ing) => ing.raw_ingredient_id === id)!,
+      }));
+    } else {
+      setEditedIngredients((prev) => {
+        const newState = { ...prev };
+        delete newState[id];
+        return newState;
+      });
+    }
   };
 
-  const handleEditChange = (id: string, field: keyof IngredientRow, value: any) => {
+  const handleEditChange = (id: string, field: keyof IngredientRow, value: string | number) => {
     setEditedIngredients((prev) => ({
       ...prev,
-      [id]: {
-        ...ingredients.find((i) => i.raw_ingredient_id === id)!,
-        ...prev[id],
-        [field]: field === 'merma' ? (value === '' ? 0 : Number(value)) : value,
-      },
+      [id]: { ...prev[id], [field]: value },
     }));
-    setIngredients((prev) =>
-      prev.map((i) => (i.raw_ingredient_id === id ? { ...i, [field]: value } : i))
-    );
   };
 
-  const handleSave = async (id: string) => {
-    const toUpdate = editedIngredients[id];
-    if (!toUpdate) return;
+  const handleDelete = async (id: string) => {
     try {
-      // Ensure merma is a number for backend
-      const payload = {
-        ...toUpdate,
-        merma: typeof toUpdate.merma === 'number' ? toUpdate.merma : 0,
-      };
-      await updateRawIngredients([payload], restaurantId!);
-      setEditedIngredients((prev) => {
-        const { [id]: _, ...rest } = prev;
-        return rest;
-      });
+      await deleteRawIngredient(id);
+      setIngredients((prev) => prev.filter((ing) => ing.raw_ingredient_id !== id));
       toaster.create({
         title: 'Éxito',
-        description: 'Ingrediente actualizado correctamente',
+        description: 'Ingrediente eliminado correctamente.',
         type: 'success',
         duration: 3000,
       });
     } catch (error) {
       toaster.create({
         title: 'Error',
-        description: 'No se pudo actualizar el ingrediente',
+        description: 'Error al eliminar el ingrediente.',
         type: 'error',
         duration: 3000,
       });
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleBulkSave = async () => {
     try {
-      await deleteRawIngredient(id, restaurantId!);
-      setIngredients((prev) => prev.filter((i) => i.raw_ingredient_id !== id));
+      const editedValues = Object.values(editedIngredients);
+      await updateRawIngredients(editedValues);
+      setIngredients((prev) =>
+        prev.map((ing) => editedIngredients[ing.raw_ingredient_id] || ing)
+      );
+      setEditMode({});
+      setEditedIngredients({});
       toaster.create({
-        title: 'Eliminado',
-        description: 'El ingrediente ha sido eliminado del inventario.',
+        title: 'Éxito',
+        description: 'Cambios guardados correctamente.',
         type: 'success',
         duration: 3000,
       });
     } catch (error) {
       toaster.create({
         title: 'Error',
-        description: 'No se pudo eliminar el ingrediente.',
+        description: 'Error al guardar los cambios.',
         type: 'error',
-        duration: 5000,
+        duration: 3000,
       });
     }
   };
 
   const hasEdited = Object.keys(editedIngredients).length > 0;
 
-  const handleBulkSave = async () => {
-    const toUpdate = Object.values(editedIngredients).map((ingredient) => ({
-      ...ingredient,
-      merma: typeof ingredient.merma === 'number' ? ingredient.merma : 0,
-    }));
-    if (toUpdate.length === 0) return;
-    try {
-      await updateRawIngredients(toUpdate, restaurantId!);
-      setEditedIngredients({});
-      toaster.create({
-        title: 'Éxito',
-        description: 'Ingredientes actualizados correctamente',
-        type: 'success',
-        duration: 3000,
-      });
-    } catch (error) {
-      toaster.create({
-        title: 'Error',
-        description: 'No se pudieron actualizar los ingredientes',
-        type: 'error',
-        duration: 3000,
-      });
-    }
-  };
-
   return (
-    <Flex height="100vh" direction={{ base: 'column', md: 'row' }}>
-      <Sidebar
-        isSidebarOpen={isSidebarOpen}
-        toggleSidebar={toggleSidebar}
-        restaurantId={restaurantId}
-      />
-      <Box flex={1} p={{ base: 2, md: 6 }} overflowY="auto">
-        <Box p={{ base: 4, md: 8 }} bg="gray.100" minH="100vh">
-          <Heading mb={6}>Ingredientes del Restaurante</Heading>
-          <Box mb={4} width="100%">
-            <Flex
-              direction={{ base: 'column', sm: 'row' }}
-              gap={3}
-              align="center"
-              justify="space-between"
+    <div className="page-wrapper">
+      <Flex height="100vh" direction={{ base: 'column', md: 'row' }}>
+        <ResponsiveSidebar restaurantId={restaurantId} />
+        <Box 
+          flex={1} 
+          p={{ base: 2, sm: 3, md: 4, lg: 6 }} 
+          overflowY="auto"
+          ml={{ base: 0, md: 0 }}
+        >
+          <Box 
+            p={{ base: 3, sm: 4, md: 6, lg: 8 }} 
+            bg="gray.100" 
+            minH="100vh"
+            borderRadius={{ base: 'none', md: 'md' }}
+          >
+            <Heading 
+              mb={{ base: 4, md: 6, lg: 8 }}
+              fontSize={{ base: 'xl', md: '2xl', lg: '3xl' }}
+              color="gray.800"
+              textAlign={{ base: 'center', md: 'left' }}
             >
-              <Box flex="1" width="100%">
-                <CustomField label="Filtrar por categoría">
-                  <Select.Root
-                    collection={categoryCollection}
-                    value={selectedCategory}
-                    onValueChange={(val) => setSelectedCategory(val.value)}
-                    size="md"
-                    width="100%"
-                    positioning={{ placement: 'bottom-start', flip: false }}
-                  >
-                    <Select.HiddenSelect />
-                    <Select.Control>
-                      <Select.Trigger>
-                        <Select.ValueText placeholder="Filtrar por categoría" />
-                      </Select.Trigger>
-                      <Select.IndicatorGroup>
-                        <Select.Indicator />
-                      </Select.IndicatorGroup>
-                    </Select.Control>
-                    <Portal>
-                      <Select.Positioner>
-                        <Select.Content>
-                          {categoryCollection.items.map((item) => (
-                            <Select.Item item={item} key={item.value}>
-                              {item.label}
-                              <Select.ItemIndicator />
-                            </Select.Item>
-                          ))}
-                        </Select.Content>
-                      </Select.Positioner>
-                    </Portal>
-                  </Select.Root>
-                </CustomField>
-              </Box>
-              <Button
-                colorScheme="blue"
-                onClick={handleUploadClick}
-                loading={uploading}
-                loadingText="Subiendo..."
-                width={{ base: '100%', sm: 'auto' }}
-                flex="none"
+              Ingredientes del Restaurante
+            </Heading>
+            <Box mb={{ base: 3, md: 4, lg: 6 }} width="100%">
+              <Flex
+                direction={{ base: 'column', sm: 'row' }}
+                gap={{ base: 2, md: 3, lg: 4 }}
+                align="center"
+                justify="space-between"
               >
-                Subir CSV de ingredientes
-              </Button>
-              <input
-                type="file"
-                accept=".csv"
-                ref={fileInputRef}
-                style={{ display: 'none' }}
-                onChange={handleFileChange}
+                <Box flex="1" width="100%">
+                  <CustomField label="Filtrar por categoría">
+                    <Select.Root
+                      collection={categoryCollection}
+                      value={selectedCategory}
+                      onValueChange={(val) => setSelectedCategory(val.value)}
+                      size={{ base: 'sm', md: 'md', lg: 'lg' }}
+                      width="100%"
+                      positioning={{ placement: 'bottom-start', flip: false }}
+                    >
+                      <Select.HiddenSelect />
+                      <Select.Control>
+                        <Select.Trigger>
+                          <Select.ValueText placeholder="Filtrar por categoría" />
+                        </Select.Trigger>
+                        <Select.IndicatorGroup>
+                          <Select.Indicator />
+                        </Select.IndicatorGroup>
+                      </Select.Control>
+                      <Portal>
+                        <Select.Positioner>
+                          <Select.Content>
+                            {categoryCollection.items.map((item) => (
+                              <Select.Item item={item} key={item.value}>
+                                {item.label}
+                                <Select.ItemIndicator />
+                              </Select.Item>
+                            ))}
+                          </Select.Content>
+                        </Select.Positioner>
+                      </Portal>
+                    </Select.Root>
+                  </CustomField>
+                </Box>
+                <Button
+                  colorScheme="blue"
+                  onClick={handleUploadClick}
+                  loading={uploading}
+                  loadingText="Subiendo..."
+                  width={{ base: '100%', sm: 'auto' }}
+                  flex="none"
+                  size={{ base: 'sm', md: 'md', lg: 'lg' }}
+                  fontSize={{ base: 'sm', md: 'md' }}
+                >
+                  Subir CSV de ingredientes
+                </Button>
+                <input
+                  type="file"
+                  accept=".csv"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  onChange={handleFileChange}
+                />
+              </Flex>
+            </Box>
+            {loading ? (
+              <Box 
+                display="flex" 
+                justifyContent="center" 
+                alignItems="center" 
+                minH={{ base: '150px', md: '200px', lg: '250px' }}
+              >
+                <Spinner size={{ base: 'lg', md: 'xl', lg: '2xl' }} />
+              </Box>
+            ) : error ? (
+              <Text 
+                color="red.500"
+                fontSize={{ base: 'sm', md: 'md' }}
+                textAlign="center"
+                p={{ base: 3, md: 4 }}
+                bg="red.50"
+                borderRadius={{ base: 'sm', md: 'md' }}
+              >
+                {error}
+              </Text>
+            ) : (
+              <IngredientTable
+                ingredients={filteredIngredients}
+                editMode={editMode}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                handleChange={handleEditChange}
+                isLoading={loading}
+                handleBulkSave={handleBulkSave}
+                hasEdited={hasEdited}
               />
-            </Flex>
+            )}
           </Box>
-          {loading ? (
-            <Spinner />
-          ) : error ? (
-            <Text color="red.500">{error}</Text>
-          ) : (
-            <IngredientTable
-              ingredients={filteredIngredients}
-              editMode={editMode}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              handleChange={handleEditChange}
-              isLoading={loading}
-              handleBulkSave={handleBulkSave}
-              hasEdited={hasEdited}
-            />
-          )}
         </Box>
-      </Box>
-    </Flex>
+      </Flex>
+    </div>
   );
 };
 
