@@ -191,7 +191,7 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
             color={hasActiveChildren ? activeTextColor : textColor}
             fontWeight={hasActiveChildren ? 'semibold' : 'normal'}
             _hover={{ bg: hoverBgColor }}
-            leftIcon={<Icon as={item.icon} />}
+            leftIcon={<item.icon />}
             rightIcon={
               <Icon
                 as={isDisclosureOpen ? FiChevronRight : FiChevronLeft}
@@ -226,7 +226,7 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
           fontWeight={isItemActive ? 'semibold' : 'normal'}
           transition="all 0.2s"
         >
-          <Icon as={item.icon} fontSize="lg" />
+          <item.icon fontSize="lg" />
           {isOpen && (
             <>
               <Text ml={3} flex={1}>

@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { Box, Button, Flex, Heading, Icon, Spinner, Text, Stack, Badge } from '@chakra-ui/react';
 import { IoAddCircleOutline } from 'react-icons/io5';
 import { useParams } from 'react-router-dom';
-import { Sidebar } from '../../components/ui/navegator';
-import { useSidebar } from '../../hooks/useSidebar';
+import { ResponsiveSidebar } from '../../components/ui/ResponsiveSidebar';
+import { useResponsive } from '../../hooks/useResponsive';
 import { getCookie } from '../utils/cookieManager';
 import { Toaster, toaster } from '../../components/ui/toaster';
 import { AddIngredientDialog } from '../../components/inventory/AddIngredientDialog';
@@ -64,7 +64,7 @@ const Inventario: React.FC = () => {
     categoria: '',
   });
   const { restaurantId } = useParams();
-  const { isSidebarOpen, toggleSidebar } = useSidebar();
+  const { isMobile, isTablet, isDesktop } = useResponsive();
 
   // Load initial inventory
   useEffect(() => {
@@ -105,253 +105,121 @@ const Inventario: React.FC = () => {
     }
   }, [restaurantId]);
 
-  // Load suggested ingredients
+  // Load suggested ingredients when dialog opens
   useEffect(() => {
-    const fetchSuggestedIngredients = async () => {
-      try {
-        setLoadingIngredients(true);
-        const ingredients = await getIngredients(restaurantId!);
-        console.log(ingredients);
-        setSuggestedIngredients(ingredients);
-      } catch (error) {
-        toaster.create({
-          title: 'Error',
-          description: 'Error al cargar los ingredientes sugeridos',
-          type: 'error',
-          duration: 5000,
-        });
-      } finally {
-        setLoadingIngredients(false);
-      }
-    };
-
-    if (restaurantId) {
-      fetchSuggestedIngredients();
+    if (isDialogOpen) {
+      loadSuggestedIngredients();
     }
-  }, [restaurantId]);
+  }, [isDialogOpen]);
 
-  // Handle category selection
-  useEffect(() => {
-    const fetchIngredientsByCategory = async () => {
-      if (!selectedCategory) return;
+  const loadSuggestedIngredients = async () => {
+    try {
+      setLoadingIngredients(true);
+      setFetchError('');
+      const ingredients = await getIngredients(restaurantId!);
+      setSuggestedIngredients(ingredients);
+    } catch (error) {
+      setFetchError('No se pudieron cargar los ingredientes sugeridos.');
+    } finally {
+      setLoadingIngredients(false);
+    }
+  };
 
-      try {
-        setLoadingIngredients(true);
-        setFetchError('');
-        const token = getCookie(document.cookie, 'token');
-        if (!token) {
-          throw new Error('No authentication token found');
-        }
-        const ingredients = await getRawIngredientsByCategory(selectedCategory, token);
-        setCategoryIngredients(ingredients);
-      } catch (error) {
-        toaster.create({
-          title: 'Error',
-          description: 'Error al cargar los ingredientes por categoría',
-          type: 'error',
-          duration: 5000,
-        });
-        setCategoryIngredients([]);
-      } finally {
-        setLoadingIngredients(false);
-      }
-    };
-
-    fetchIngredientsByCategory();
-  }, [selectedCategory]);
+  const loadCategoryIngredients = async (category: string) => {
+    try {
+      setLoadingIngredients(true);
+      setFetchError('');
+      const ingredients = await getRawIngredientsByCategory(category, restaurantId!);
+      setCategoryIngredients(ingredients);
+    } catch (error) {
+      setFetchError('No se pudieron cargar los ingredientes de la categoría seleccionada.');
+    } finally {
+      setLoadingIngredients(false);
+    }
+  };
 
   const agregarAlimento = () => {
     setIsDialogOpen(true);
   };
 
   const seleccionarIngrediente = (ingredient: Ingredient) => {
-    const existingIngredient = inventario.find(
-      (item) => item.raw_ingredient_id === ingredient.raw_ingredient_id
-    );
-
-    if (existingIngredient) {
-      toaster.create({
-        title: 'Ingrediente ya existe',
-        description: 'Este ingrediente ya está en el inventario.',
-        type: 'warning',
-        duration: 3000,
-      });
-      setIsDialogOpen(false);
-      return;
-    }
-
-    // Get the ingredient details from either suggested or category list
-    const ingredientDetails =
-      suggestedIngredients.find((i) => i.raw_ingredient_id === ingredient.raw_ingredient_id) ||
-      categoryIngredients.find((i) => i.raw_ingredient_id === ingredient.raw_ingredient_id);
-
-    if (!ingredientDetails) {
-      toaster.create({
-        title: 'Error',
-        description: 'No se encontraron los detalles del ingrediente.',
-        type: 'error',
-        duration: 3000,
-      });
-      return;
-    }
-
-    const nuevo: Inventory = {
-      id: crypto.randomUUID(),
-      raw_ingredient_id: ingredientDetails.raw_ingredient_id,
-      nombre: ingredientDetails.name,
-      categoria: ingredientDetails.category,
+    const newItem: Inventory = {
+      id: `temp-${Date.now()}`,
+      raw_ingredient_id: ingredient.id,
+      nombre: ingredient.name,
+      categoria: ingredient.category,
       cantidad: 0,
-      unidad: 'g',
+      unidad: 'g' as UnidadMedida,
       cantidad_minima: 0,
       precio: 0,
-      merma: 0,
-      ultima_reposicion: new Date(),
-      isNew: true,
+      merma: ingredient.merma || 0,
+      ultima_reposicion: undefined,
     };
 
-    setInventario((prev) => [...prev, nuevo]);
+    setInventario((prev) => [...prev, newItem]);
+    setModoEdicion((prev) => ({ ...prev, [newItem.id]: true }));
     setIsDialogOpen(false);
-  };
-
-  const eliminarAlimento = async (id: string) => {
-    try {
-      await deleteInventoryItem(id, restaurantId!);
-      setInventario((prev) => prev.filter((item) => item.id !== id));
-      toaster.create({
-        title: 'Eliminado',
-        description: 'El ingrediente ha sido eliminado del inventario.',
-        type: 'success',
-        duration: 3000,
-      });
-    } catch (error) {
-      toaster.create({
-        title: 'Error',
-        description: 'No se pudo eliminar el ingrediente.',
-        type: 'error',
-        duration: 5000,
-      });
-    }
-  };
-
-  const handleChange = (id: string, field: keyof Inventory, value: string | number) => {
-    setInventario((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, [field]: value, isModified: true } : item))
-    );
   };
 
   const toggleEditar = (id: string) => {
     setModoEdicion((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const renderIngredientList = (ingredients: Ingredient[], isLoading: boolean, error?: string) => {
-    if (isLoading) {
-      return <Spinner size="sm" />;
-    }
-
-    if (error) {
-      return <Text color="red.500">{error}</Text>;
-    }
-
-    if (!ingredients.length) {
-      return <Text color="gray.500">No hay ingredientes disponibles</Text>;
-    }
-
-    return (
-      <Stack gap={2}>
-        {ingredients.map((ingredient) => {
-          const isAlreadyAdded = inventario.some(
-            (item) => item.raw_ingredient_id === ingredient.raw_ingredient_id
-          );
-
-          return (
-            <Box
-              key={ingredient.raw_ingredient_id}
-              p={4}
-              borderWidth="1px"
-              borderRadius="md"
-              cursor={isAlreadyAdded ? 'not-allowed' : 'pointer'}
-              opacity={isAlreadyAdded ? 0.5 : 1}
-              _hover={{ bg: isAlreadyAdded ? undefined : 'gray.50' }}
-              onClick={() => !isAlreadyAdded && seleccionarIngrediente(ingredient)}
-            >
-              <Flex justify="space-between" align="center">
-                <Box>
-                  <Text fontWeight="bold">{ingredient.name}</Text>
-                  <Text color="gray.600">Categoría: {ingredient.category}</Text>
-                </Box>
-                {isAlreadyAdded && <Badge colorScheme="gray">Ya agregado</Badge>}
-              </Flex>
-            </Box>
-          );
-        })}
-      </Stack>
+  const handleChange = (id: string, field: keyof Inventory, value: any) => {
+    setInventario((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item))
     );
+  };
+
+  const eliminarAlimento = (id: string) => {
+    setInventario((prev) => prev.filter((item) => item.id !== id));
+    setModoEdicion((prev) => {
+      const newState = { ...prev };
+      delete newState[id];
+      return newState;
+    });
   };
 
   const handleSaveInventory = async () => {
     try {
       setSaving(true);
-      const token = getCookie(document.cookie, 'token');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
 
-      // Separate new and modified items
-      const newItems = inventario.filter((item) => item.isNew);
-      const modifiedItems = inventario.filter((item) => item.isModified && !item.isNew);
+      // Separate new items from existing ones
+      const newItems: any[] = [];
+      const modifiedItems: any[] = [];
 
-      if (newItems.length === 0 && modifiedItems.length === 0) {
-        toaster.create({
-          title: 'Sin cambios',
-          description: 'No hay cambios para guardar en el inventario.',
-          type: 'info',
-          duration: 3000,
-        });
-        setSaving(false);
-        return;
-      }
+      inventario.forEach((item) => {
+        if (item.id.startsWith('temp-')) {
+          // This is a new item
+          newItems.push({
+            raw_ingredient_id: item.raw_ingredient_id,
+            quantity: item.cantidad,
+            unit: item.unidad,
+            minimum_quantity: item.cantidad_minima,
+            price: item.precio,
+          });
+        } else {
+          // This is an existing item that might have been modified
+          modifiedItems.push({
+            inventory_id: item.id,
+            raw_ingredient_id: item.raw_ingredient_id,
+            quantity: item.cantidad,
+            unit: item.unidad,
+            minimum_quantity: item.cantidad_minima,
+            price: item.precio,
+          });
+        }
+      });
 
-      // Process new items
+      // Create new inventory items
       if (newItems.length > 0) {
-        const newInventoryItems = newItems.map((item) => ({
-          raw_ingredient_id: item.raw_ingredient_id,
-          quantity: item.cantidad,
-          unit: item.unidad,
-          minimum_quantity: item.cantidad_minima,
-          last_restock_date: item.ultima_reposicion
-            ? new Date(item.ultima_reposicion).toISOString()
-            : new Date().toISOString(),
-          price: item.precio,
-        }));
-
-        await createInventoryItems(restaurantId!, newInventoryItems, token);
+        await createInventoryItems(newItems, restaurantId!);
       }
 
-      // Process modified items
+      // Update existing inventory items
       if (modifiedItems.length > 0) {
-        const modifiedInventoryItems = modifiedItems.map((item) => ({
-          inventory_id: item.id,
-          raw_ingredient_id: item.raw_ingredient_id,
-          quantity: item.cantidad,
-          unit: item.unidad,
-          minimum_quantity: item.cantidad_minima,
-          last_restock_date: item.ultima_reposicion
-            ? new Date(item.ultima_reposicion).toISOString()
-            : new Date().toISOString(),
-          price: item.precio,
-        }));
-
-        await updateInventoryItems(restaurantId!, modifiedInventoryItems, token);
+        await updateInventoryItems(modifiedItems, restaurantId!);
       }
-
-      // After successful save, clear the modified flags
-      setInventario((prev) =>
-        prev.map((item) => ({
-          ...item,
-          isModified: false,
-          isNew: false,
-        }))
-      );
 
       toaster.create({
         title: 'Inventario guardado',
@@ -388,68 +256,115 @@ const Inventario: React.FC = () => {
   };
 
   return (
-    <Flex height="100vh" direction={{ base: 'column', md: 'row' }}>
-      <Sidebar
-        isSidebarOpen={isSidebarOpen}
-        toggleSidebar={toggleSidebar}
-        restaurantId={restaurantId}
-      />
-      <Box flex={1} p={{ base: 2, md: 6 }} overflowY="auto">
-        <Box p={{ base: 4, md: 8 }} bg="gray.100" minH="100vh">
-          <Toaster />
-          <Heading mb={4}>🧂 Inventario de Alimentos</Heading>
+    <div className="page-wrapper">
+      <Flex height="100vh" direction={{ base: 'column', md: 'row' }}>
+        <ResponsiveSidebar restaurantId={restaurantId} />
+        <Box 
+          flex={1} 
+          p={{ base: 2, sm: 3, md: 4, lg: 6 }} 
+          overflowY="auto"
+          ml={{ base: 0, md: 0 }}
+        >
+          <Box 
+            p={{ base: 3, sm: 4, md: 6, lg: 8 }} 
+            bg="gray.100" 
+            minH="100vh"
+            borderRadius={{ base: 'none', md: 'md' }}
+          >
+            <Toaster />
+            <Heading 
+              mb={{ base: 3, md: 4, lg: 6 }}
+              fontSize={{ base: 'xl', md: '2xl', lg: '3xl' }}
+              color="gray.800"
+              textAlign={{ base: 'center', md: 'left' }}
+            >
+              🧂 Inventario de Alimentos
+            </Heading>
 
-          <Flex justifyContent="space-between" alignItems="center" mb={4}>
-            <Heading size="lg">Inventario</Heading>
-            <Button onClick={agregarAlimento} colorScheme="blue">
-              <Flex align="center" gap={2}>
-                <Icon as={IoAddCircleOutline} />
-                <Text>Agregar Ingrediente</Text>
-              </Flex>
-            </Button>
-          </Flex>
+            <Flex 
+              justifyContent="space-between" 
+              alignItems="center" 
+              mb={{ base: 3, md: 4, lg: 6 }}
+              flexDir={{ base: 'column', sm: 'row' }}
+              gap={{ base: 3, md: 4 }}
+            >
+              <Heading 
+                size={{ base: 'md', md: 'lg', lg: 'xl' }}
+                textAlign={{ base: 'center', sm: 'left' }}
+              >
+                Inventario
+              </Heading>
+              <Button 
+                onClick={agregarAlimento} 
+                colorScheme="blue"
+                size={{ base: 'sm', md: 'md', lg: 'lg' }}
+                fontSize={{ base: 'sm', md: 'md' }}
+                width={{ base: 'full', sm: 'auto' }}
+              >
+                <Flex align="center" gap={{ base: 1, md: 2 }}>
+                  <Icon as={IoAddCircleOutline} />
+                  <Text>Agregar Ingrediente</Text>
+                </Flex>
+              </Button>
+            </Flex>
 
-          {loading ? (
-            <Text>Cargando ingredientes...</Text>
-          ) : (
-            <>
-              <InventoryTable
-                inventario={inventario}
-                modoEdicion={modoEdicion}
-                onEdit={toggleEditar}
-                onDelete={eliminarAlimento}
-                handleChange={handleChange}
-                isLoading={loading}
-              />
-
-              <Box mt={6} display="flex" justifyContent="flex-end">
-                <Button
-                  colorScheme="blue"
-                  size="lg"
-                  disabled={saving}
-                  onClick={handleSaveInventory}
-                >
-                  {saving ? '💾 Guardando...' : '💾 Guardar Inventario'}
-                </Button>
+            {loading ? (
+              <Box 
+                display="flex" 
+                justifyContent="center" 
+                alignItems="center" 
+                minH={{ base: '150px', md: '200px', lg: '250px' }}
+              >
+                <Text fontSize={{ base: 'md', md: 'lg' }}>
+                  Cargando ingredientes...
+                </Text>
               </Box>
-            </>
-          )}
+            ) : (
+              <>
+                <InventoryTable
+                  inventario={inventario}
+                  modoEdicion={modoEdicion}
+                  onEdit={toggleEditar}
+                  onDelete={eliminarAlimento}
+                  handleChange={handleChange}
+                  isLoading={loading}
+                />
 
-          <AddIngredientDialog
-            isOpen={isDialogOpen}
-            onClose={() => setIsDialogOpen(false)}
-            suggestedIngredients={suggestedIngredients}
-            categoryIngredients={categoryIngredients}
-            selectedCategory={selectedCategory}
-            setSelectedCategory={setSelectedCategory}
-            onSelectIngredient={seleccionarIngrediente}
-            loadingIngredients={loadingIngredients}
-            fetchError={fetchError}
-            categories={CATEGORIAS}
-          />
+                <Box 
+                  mt={{ base: 4, md: 5, lg: 6 }} 
+                  display="flex" 
+                  justifyContent={{ base: 'center', md: 'flex-end' }}
+                >
+                  <Button
+                    colorScheme="blue"
+                    size={{ base: 'md', md: 'lg', lg: 'xl' }}
+                    disabled={saving}
+                    onClick={handleSaveInventory}
+                    fontSize={{ base: 'sm', md: 'md' }}
+                    width={{ base: 'full', md: 'auto' }}
+                  >
+                    {saving ? '💾 Guardando...' : '💾 Guardar Inventario'}
+                  </Button>
+                </Box>
+              </>
+            )}
+
+            <AddIngredientDialog
+              isOpen={isDialogOpen}
+              onClose={() => setIsDialogOpen(false)}
+              suggestedIngredients={suggestedIngredients}
+              categoryIngredients={categoryIngredients}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+              onSelectIngredient={seleccionarIngrediente}
+              loadingIngredients={loadingIngredients}
+              fetchError={fetchError}
+              categories={CATEGORIAS}
+            />
+          </Box>
         </Box>
-      </Box>
-    </Flex>
+      </Flex>
+    </div>
   );
 };
 
