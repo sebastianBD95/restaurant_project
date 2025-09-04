@@ -8,11 +8,10 @@ import {
   Flex,
   Button,
   IconButton,
-  Tooltip,
-  Divider,
   Badge,
   useDisclosure,
 } from '@chakra-ui/react';
+import { Tooltip } from "../../components/ui/tooltip"
 import {
   FiChevronLeft,
   FiChevronRight,
@@ -51,7 +50,7 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
 }) => {
   const location = useLocation();
   const params = useParams();
-  const { isDisclosureOpen, onToggle: onDisclosureToggle } = useDisclosure();
+  const { open: isDisclosureOpen, onToggle: onDisclosureToggle } = useDisclosure();
   const { isMobile, isTablet } = useResponsive();
   const sidebarConfig = useResponsiveSidebar();
   
@@ -191,20 +190,19 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
             color={hasActiveChildren ? activeTextColor : textColor}
             fontWeight={hasActiveChildren ? 'semibold' : 'normal'}
             _hover={{ bg: hoverBgColor }}
-            leftIcon={<item.icon />}
-            rightIcon={
-              <Icon
-                as={isDisclosureOpen ? FiChevronRight : FiChevronLeft}
-                transition="transform 0.2s"
-                transform={isDisclosureOpen ? 'rotate(90deg)' : 'rotate(0deg)'}
-              />
-            }
           >
+            <Icon as={item.icon} />
             {isOpen && <Text ml={2}>{item.label}</Text>}
+            <Icon
+              as={isDisclosureOpen ? FiChevronRight : FiChevronLeft}
+              transition="transform 0.2s"
+              transform={isDisclosureOpen ? 'rotate(90deg)' : 'rotate(0deg)'}
+              ml="auto"
+            />
           </Button>
           
           {isDisclosureOpen && (
-            <VStack spacing={0} align="stretch">
+            <VStack gap={0} align="stretch">
               {item.children.map(child => renderSidebarItem(child, level + 1))}
             </VStack>
           )}
@@ -226,7 +224,7 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
           fontWeight={isItemActive ? 'semibold' : 'normal'}
           transition="all 0.2s"
         >
-          <item.icon fontSize="lg" />
+          <Icon as={item.icon} fontSize="lg" />
           {isOpen && (
             <>
               <Text ml={3} flex={1}>
@@ -258,25 +256,26 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
       transition="width 0.3s"
       overflow="hidden"
     >
-      <VStack spacing={0} align="stretch" h="full">
+      <VStack align="stretch" h="full">
         {/* Toggle Button */}
         <Box p={3} borderBottomWidth="1px" borderColor={borderColor}>
-          <Tooltip label="Expandir sidebar" placement="right">
+          <Tooltip content="Expandir sidebar" positioning={{ placement: "right-end" }}>
             <IconButton
               aria-label="Toggle sidebar"
-              icon={<FiChevronRight />}
               onClick={onToggle}
               variant="ghost"
               size="sm"
               w="full"
-            />
+            >
+              <FiChevronRight />
+            </IconButton>
           </Tooltip>
         </Box>
 
         {/* Sidebar Items */}
-        <VStack spacing={0} align="stretch" flex={1} py={4}>
+        <VStack align="stretch" flex={1} py={4}>
           {sidebarItems.map(item => (
-            <Tooltip key={item.path} label={item.label} placement="right">
+            <Tooltip key={item.path} content={item.label} positioning={{ placement: "right-end" }}>
               <Box>
                 {renderSidebarItem(item)}
               </Box>
@@ -302,27 +301,28 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
       overflowY="auto"
       overflowX="hidden"
     >
-      <VStack spacing={0} align="stretch" h="full">
+      <VStack align="stretch" h="full">
         {/* Header */}
         <Box p={4} borderBottomWidth="1px" borderColor={borderColor}>
           <Flex align="center" justify="space-between">
             <Text fontSize="lg" fontWeight="bold" color={textColor}>
               Restaurante
             </Text>
-            <Tooltip label="Colapsar sidebar" placement="bottom">
+            <Tooltip content="Colapsar sidebar">
               <IconButton
                 aria-label="Collapse sidebar"
-                icon={<FiChevronLeft />}
                 onClick={onToggle}
                 variant="ghost"
                 size="sm"
-              />
+              >
+                <FiChevronLeft />
+              </IconButton>
             </Tooltip>
           </Flex>
         </Box>
 
         {/* Sidebar Items */}
-        <VStack spacing={0} align="stretch" flex={1} py={4}>
+        <VStack align="stretch" flex={1} py={4}>
           {sidebarItems.map(item => renderSidebarItem(item))}
         </VStack>
 
@@ -350,7 +350,7 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
       overflowY="auto"
       overflowX="hidden"
     >
-      <VStack spacing={0} align="stretch" h="full">
+      <VStack align="stretch" h="full">
         {/* Header */}
         <Box p={4} borderBottomWidth="1px" borderColor={borderColor}>
           <Flex align="center" justify="space-between">
@@ -359,16 +359,17 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
             </Text>
             <IconButton
               aria-label="Close sidebar"
-              icon={<FiChevronLeft />}
               onClick={onToggle}
               variant="ghost"
               size="sm"
-            />
+            >
+              <FiChevronLeft />
+            </IconButton>
           </Flex>
         </Box>
 
         {/* Sidebar Items */}
-        <VStack spacing={0} align="stretch" flex={1} py={4}>
+        <VStack align="stretch" flex={1} py={4}>
           {sidebarItems.map(item => renderSidebarItem(item))}
         </VStack>
       </VStack>
