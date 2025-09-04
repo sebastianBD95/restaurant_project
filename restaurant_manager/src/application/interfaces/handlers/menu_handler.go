@@ -57,7 +57,7 @@ func (h *MenuHandler) AddMenuItem(w http.ResponseWriter, r *http.Request) {
 		if ingredientID == "" {
 			break // No more ingredients
 		}
-		quantityStr := r.FormValue(fmt.Sprintf("ingredients[%d][quantity]", i))
+		quantityStr := r.FormValue(fmt.Sprintf("ingredients[%d][amount]", i))
 		unit := r.FormValue(fmt.Sprintf("ingredients[%d][unit]", i))
 		priceStr := r.FormValue(fmt.Sprintf("ingredients[%d][price]", i))
 

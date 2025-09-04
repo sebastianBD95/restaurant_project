@@ -5,9 +5,10 @@ import config from '../config/config';
 const API_BASE_URL = config.API_URL;
 
 export interface Ingredient {
-  raw_ingredient_id: string;
+  id: string;
   name: string;
   category: string;
+  merma: number;
 }
 
 export const getIngredients = async (restaurantId: string): Promise<Ingredient[]> => {

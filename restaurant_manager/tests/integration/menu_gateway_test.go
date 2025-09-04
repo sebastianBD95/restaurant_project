@@ -166,11 +166,11 @@ func TestAddMenuItemWithIngredients(t *testing.T) {
 
 	// Add ingredients
 	writer.WriteField("ingredients[0][raw_ingredient_id]", "107")
-	writer.WriteField("ingredients[0][quantity]", "250")
+	writer.WriteField("ingredients[0][amount]", "250")
 	writer.WriteField("ingredients[0][unit]", "g")
 	writer.WriteField("ingredients[0][price]", "100000")
 	writer.WriteField("ingredients[1][raw_ingredient_id]", "2")
-	writer.WriteField("ingredients[1][quantity]", "100")
+	writer.WriteField("ingredients[1][amount]", "100")
 	writer.WriteField("ingredients[1][unit]", "g")
 	writer.WriteField("ingredients[1][price]", "100000")
 

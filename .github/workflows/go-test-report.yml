@@ -1,8 +1,12 @@
 name: Go Integration Test Report
 
 on:
-
   pull_request:
+    branches: [ master ]
+    paths:
+      - "restaurant_manager/**"
+      - ".github/workflows/go-test-report.yml"
+  push:
     branches: [ master ]
     paths:
       - "restaurant_manager/**"
@@ -25,4 +29,6 @@ jobs:
 
       - name: Run integration tests and generate report
         run: |
-          go test -json ./restaurant_manager/tests/integration/... | ~/go/bin/go-test-report 
+          echo "Running integration tests and generating report"
+          cd restaurant_manager
+          go test -json ./tests/integration/... | ~/go/bin/go-test-report 

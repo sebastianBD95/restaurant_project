@@ -2,7 +2,7 @@ export interface InventoryItem {
   inventory_id?: string; // Optional for new items
   raw_ingredient_id: string;
   quantity: number;
-  unit: 'g' | 'ml' | 'kg' | 'l' | 'un';
+  unit: 'g' | 'ml' | 'kg' | 'l' | 'unidad';
   minimum_quantity: number;
   last_restock_date: string;
   price: number;
@@ -13,7 +13,7 @@ export interface InventoryResponse {
   restaurant_id: string;
   raw_ingredient_id: string;
   quantity: number;
-  unit: 'g' | 'ml' | 'kg' | 'l' | 'un';
+  unit: 'g' | 'ml' | 'kg' | 'l' | 'unidad';
   minimum_quantity: number;
   last_restock_date: string;
   price: number;
@@ -29,7 +29,7 @@ export interface Inventory {
   nombre: string; // derived from raw_ingredient
   categoria: string; // derived from raw_ingredient
   cantidad: number; // maps to quantity
-  unidad: 'g' | 'ml' | 'kg' | 'l' | 'un'; // maps to unit with strict types
+  unidad: 'g' | 'ml' | 'kg' | 'l' | 'unidad'; // maps to unit with strict types
   cantidad_minima: number; // maps to minimum_quantity
   precio: number; // maps to price
   merma: number; // maps to merma

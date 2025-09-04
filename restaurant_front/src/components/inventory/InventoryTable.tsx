@@ -12,7 +12,7 @@ interface InventoryTableProps {
   isLoading: boolean;
 }
 
-const UNIDADES: Array<'g' | 'ml' | 'kg' | 'l' | 'un'> = ['g', 'ml', 'kg', 'l', 'un'];
+const UNIDADES: Array<'g' | 'ml' | 'kg' | 'l' | 'unidad'> = ['g', 'ml', 'kg', 'l', 'unidad'];
 
 export const InventoryTable: React.FC<InventoryTableProps> = ({
   inventario,
@@ -25,7 +25,6 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
   if (isLoading) {
     return <Text>Cargando inventario...</Text>;
   }
-  console.log(inventario);
   return (
     <Box overflowX="auto">
       <Table.Root size="sm">

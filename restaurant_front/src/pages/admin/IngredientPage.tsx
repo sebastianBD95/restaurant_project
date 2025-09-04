@@ -71,7 +71,6 @@ const IngredientPage: React.FC = () => {
         setError('');
         if (restaurantId) {
           const data = await getIngredients(restaurantId);
-          console.log(data);
           setIngredients(
             data.map((item: any) => ({
               raw_ingredient_id: item.id,

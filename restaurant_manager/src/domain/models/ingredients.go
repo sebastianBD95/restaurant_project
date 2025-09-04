@@ -7,7 +7,6 @@ type Ingredient struct {
 	Price           float64 `gorm:"column:price" json:"price"`
 	Amount          float64 `gorm:"column:amount" json:"amount"`
 	Unit            string  `gorm:"column:unit" json:"unit"`
-
 	// Relations
 	RawIngredient *RawIngredient `gorm:"foreignKey:RawIngredientID;references:ID" json:"raw_ingredient"`
 }

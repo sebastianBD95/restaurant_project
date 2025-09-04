@@ -25,7 +25,7 @@ interface CustomIngredient {
   categoria: string;
 }
 
-type UnidadMedida = 'g' | 'ml' | 'kg' | 'l' | 'un';
+type UnidadMedida = 'g' | 'ml' | 'kg' | 'l' | 'unidad';
 
 const CATEGORIAS = [
   'Pollo',
@@ -46,7 +46,7 @@ const CATEGORIAS = [
   'Otro',
 ];
 
-const UNIDADES: UnidadMedida[] = ['g', 'ml', 'kg', 'l', 'un'];
+const UNIDADES: UnidadMedida[] = ['g', 'ml', 'kg', 'l', 'unidad'];
 
 const Inventario: React.FC = () => {
   const [inventario, setInventario] = useState<Inventory[]>([]);
@@ -111,7 +111,6 @@ const Inventario: React.FC = () => {
       try {
         setLoadingIngredients(true);
         const ingredients = await getIngredients(restaurantId!);
-        console.log(ingredients);
         setSuggestedIngredients(ingredients);
       } catch (error) {
         toaster.create({
@@ -164,11 +163,11 @@ const Inventario: React.FC = () => {
     setIsDialogOpen(true);
   };
 
-  const seleccionarIngrediente = (ingredient: Ingredient) => {
+  const selectIngredient = (ingredient: Ingredient) => {
+    console.log(ingredient);
     const existingIngredient = inventario.find(
-      (item) => item.raw_ingredient_id === ingredient.raw_ingredient_id
+      (item) => item.id === ingredient.id
     );
-
     if (existingIngredient) {
       toaster.create({
         title: 'Ingrediente ya existe',
@@ -182,8 +181,8 @@ const Inventario: React.FC = () => {
 
     // Get the ingredient details from either suggested or category list
     const ingredientDetails =
-      suggestedIngredients.find((i) => i.raw_ingredient_id === ingredient.raw_ingredient_id) ||
-      categoryIngredients.find((i) => i.raw_ingredient_id === ingredient.raw_ingredient_id);
+      suggestedIngredients.find((i) => i.id === ingredient.id) ||
+      categoryIngredients.find((i) => i.id === ingredient.id);
 
     if (!ingredientDetails) {
       toaster.create({
@@ -197,7 +196,7 @@ const Inventario: React.FC = () => {
 
     const nuevo: Inventory = {
       id: crypto.randomUUID(),
-      raw_ingredient_id: ingredientDetails.raw_ingredient_id,
+      raw_ingredient_id: ingredientDetails.id,
       nombre: ingredientDetails.name,
       categoria: ingredientDetails.category,
       cantidad: 0,
@@ -213,8 +212,13 @@ const Inventario: React.FC = () => {
     setIsDialogOpen(false);
   };
 
-  const eliminarAlimento = async (id: string) => {
+  const DeleteInventory = async (id: string) => {
     try {
+      const inventory = inventario.find((item) => item.id === id);
+      if (inventory?.isNew) {
+        setInventario((prev) => prev.filter((item) => item.id !== id));
+        return;
+      }
       await deleteInventoryItem(id, restaurantId!);
       setInventario((prev) => prev.filter((item) => item.id !== id));
       toaster.create({
@@ -260,19 +264,19 @@ const Inventario: React.FC = () => {
       <Stack gap={2}>
         {ingredients.map((ingredient) => {
           const isAlreadyAdded = inventario.some(
-            (item) => item.raw_ingredient_id === ingredient.raw_ingredient_id
+            (item) => item.id === ingredient.id
           );
 
           return (
             <Box
-              key={ingredient.raw_ingredient_id}
+              key={ingredient.id}
               p={4}
               borderWidth="1px"
               borderRadius="md"
               cursor={isAlreadyAdded ? 'not-allowed' : 'pointer'}
               opacity={isAlreadyAdded ? 0.5 : 1}
               _hover={{ bg: isAlreadyAdded ? undefined : 'gray.50' }}
-              onClick={() => !isAlreadyAdded && seleccionarIngrediente(ingredient)}
+              onClick={() => !isAlreadyAdded && selectIngredient(ingredient)}
             >
               <Flex justify="space-between" align="center">
                 <Box>
@@ -417,7 +421,7 @@ const Inventario: React.FC = () => {
                 inventario={inventario}
                 modoEdicion={modoEdicion}
                 onEdit={toggleEditar}
-                onDelete={eliminarAlimento}
+                onDelete={DeleteInventory}
                 handleChange={handleChange}
                 isLoading={loading}
               />
@@ -442,7 +446,7 @@ const Inventario: React.FC = () => {
             categoryIngredients={categoryIngredients}
             selectedCategory={selectedCategory}
             setSelectedCategory={setSelectedCategory}
-            onSelectIngredient={seleccionarIngrediente}
+            onSelectIngredient={selectIngredient}
             loadingIngredients={loadingIngredients}
             fetchError={fetchError}
             categories={CATEGORIAS}
