@@ -79,7 +79,7 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
     },
     {
       label: 'Gestión',
-      path: '#',
+      path: '/gestion',
       icon: FiPackage,
       isAdmin: true,
       children: [
@@ -105,7 +105,7 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
     },
     {
       label: 'Operaciones',
-      path: '#',
+      path: '/operaciones',
       icon: FiShoppingCart,
       isAdmin: true,
       children: [
@@ -132,7 +132,7 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
     },
     {
       label: 'Administración',
-      path: '#',
+      path: '/administracion',
       icon: FiUsers,
       isAdmin: true,
       children: [
