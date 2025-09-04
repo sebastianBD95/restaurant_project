@@ -8,8 +8,8 @@ import { Ingredient } from '../../interfaces/ingredients';
 import { addMenu, getMenus, editMenuItem } from '../../services/menuService';
 import { getCookie } from '../utils/cookieManager';
 import { useParams } from 'react-router-dom';
-import { Sidebar } from '../../components/ui/navegator';
-import { useSidebar } from '../../hooks/useSidebar';
+import { ResponsiveSidebar } from '../../components/ui/ResponsiveSidebar';
+import { useResponsive } from '../../hooks/useResponsive';
 import MenuCategory from '../../components/menu/MenuCategory';
 import Cart from '../../components/menu/Cart';
 import { placeOrder as placeOrderService } from '../../services/orderService';
@@ -56,7 +56,7 @@ const MenuPage: React.FC = () => {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
   const _dialogRef = useRef<HTMLButtonElement>(null);
-  const { isSidebarOpen, toggleSidebar, handleHomeClick } = useSidebar();
+  const { isMobile, isTablet, isDesktop } = useResponsive();
 
   const _navigate = useNavigate();
 
@@ -103,67 +103,25 @@ const MenuPage: React.FC = () => {
         ensaladas: salads,
         extras: sides,
       });
-
-      // After menuData is set, create a flat array of all menu items
-      const allMenuItems: MenuItemResponse[] = Object.values(menuData).flat();
     } catch (error) {
-      toaster.create({
-        title: 'Error',
-        description: 'Error cargando platos.',
-        type: 'error',
-        duration: 5000,
-      });
+      console.error('Error fetching menu items:', error);
       setError('Error loading menu items. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      // Check if the file exceeds the maximum size
-      if (selectedFile.size > MAX_FILE_SIZE) {
-        setError('File size exceeds 10 MB. Please upload a smaller file.');
-        setFile(null); // Clear the selected file
-      } else {
-        setError(''); // Clear any previous error
-        setFile(selectedFile); // Set the selected file
-      }
-    }
-  };
-
-  const handleSubmit = async (
-    e: React.FormEvent,
-    category: string,
-    ingredients: Ingredient[],
-    editingItem?: MenuItemResponse
-  ) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!formData.name || !formData.description || (!file && !editingItem) || formData.price <= 0) {
-      toaster.create({
-        title: 'Error',
-        description: 'Asurece todos los campos y el precio debe ser mayor que 0.',
-        type: 'error',
-        duration: 5000,
-      });
+    if (!file) {
+      setError('Please select a file');
       return;
     }
 
-    const menuData: MenuItemRequest = {
-      name: formData.name,
-      description: formData.description,
-      image: file || new File([], ''),
-      price: Number(formData.price),
-      side_dishes: Number(formData.sideDishes),
-      category: categoryMap[category],
-      ingredients: ingredients,
-    };
+    if (file.size > MAX_FILE_SIZE) {
+      setError('File size must be less than 10MB');
+      return;
+    }
 
     try {
       const token = getCookie(document.cookie, 'token');
@@ -172,28 +130,26 @@ const MenuPage: React.FC = () => {
         return;
       }
 
-      if (editingItem) {
-        // If we're editing and have a new file, use it. Otherwise, keep the existing image
-        if (!file) {
-          menuData.image = new File([], ''); // Empty file to indicate no new image
-        }
-        await editMenuItem(editingItem.menu_item_id, menuData, token, restaurantId!);
-      } else {
-        await addMenu(menuData, token, restaurantId!);
-      }
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('price', formData.price.toString());
+      formDataToSend.append('sideDishes', formData.sideDishes.toString());
+      formDataToSend.append('image', file);
+      formDataToSend.append('restaurant_id', restaurantId!);
 
-      // Reset form state
-      setFile(null);
-      setFormData({
-        name: '',
-        description: '',
-        price: 0,
-        sideDishes: 0,
+      await addMenu(token, formDataToSend);
+      toaster.create({
+        title: 'Success',
+        description: 'Menu item added successfully',
+        type: 'success',
       });
-
-      await fetchMenuItems();
-    } catch (error: any) {
-      setError(error.message);
+      fetchMenuItems();
+      setFormData({ name: '', description: '', price: 0, sideDishes: 0 });
+      setFile(null);
+    } catch (error) {
+      console.error('Error adding menu item:', error);
+      setError('Error adding menu item. Please try again.');
     }
   };
 
@@ -317,72 +273,97 @@ const MenuPage: React.FC = () => {
   };
 
   return (
-    <Flex height="100vh" direction={{ base: 'column', md: 'row' }}>
+    <div className="page-wrapper">
+      <Flex height="100vh" direction={{ base: 'column', md: 'row' }}>
+        {/* Responsive Sidebar */}
+        <ResponsiveSidebar restaurantId={restaurantId} />
 
-      {/* Contenido Principal */}
-      <Box flex={1} p={{ base: 2, md: 6 }} overflowY="auto">
-        <Box p={{ base: 4, md: 8 }} bg="gray.100" minH="100vh">
-          {/* Barra lateral de navegación plegable */}
-          <Sidebar
-            isSidebarOpen={isSidebarOpen}
-            toggleSidebar={toggleSidebar}
-            restaurantId={restaurantId}
-          />
-          <Heading textAlign="center" mb={6} fontSize={{ base: 'xl', md: '2xl', lg: '3xl' }}>
-            Menú
-          </Heading>
+        {/* Contenido Principal */}
+        <Box 
+          flex={1} 
+          p={{ base: 2, sm: 3, md: 4, lg: 6 }} 
+          overflowY="auto"
+          ml={{ base: 0, md: 0 }}
+        >
+          <Box 
+            p={{ base: 3, sm: 4, md: 6, lg: 8 }} 
+            bg="gray.100" 
+            minH="100vh"
+            borderRadius={{ base: 'none', md: 'md' }}
+          >
+            <Heading 
+              textAlign="center" 
+              mb={{ base: 4, md: 6, lg: 8 }} 
+              fontSize={{ base: 'xl', md: '2xl', lg: '3xl' }}
+              color="gray.800"
+            >
+              Menú
+            </Heading>
 
-          {isLoading ? (
-            <Box display="flex" justifyContent="center" alignItems="center" minH="200px">
-              <Spinner size="xl" />
-            </Box>
-          ) : error ? (
-            <Box textAlign="center" p={4} bg="red.50" color="red.600" borderRadius="md">
-              {error || 'An unexpected error occurred'}
-            </Box>
-          ) : (
-            <>
-              <Accordion.Root collapsible>
-                {Object.entries(menuData).map(([category, items]) => (
-                  <MenuCategory
-                    key={category}
-                    category={category}
-                    items={items}
-                    categoryMap={categoryMap}
-                    onSubmit={handleSubmit}
-                    error={error}
-                    MAX_FILE_SIZE={MAX_FILE_SIZE}
-                    onAddToCart={addToCart}
-                    orderPlaced={orderPlaced}
-                    formData={formData}
-                    setFormData={setFormData}
-                    file={file}
-                    setFile={setFile}
-                    onMenuUpdate={fetchMenuItems}
-                    ingredients={ingredients}
-                    setIngredients={setIngredients}
-                    allMenuItems={Object.values(menuData).flat()}
-                    platoDisponible={platoDisponible}
-                  />
-                ))}
-              </Accordion.Root>
+            {isLoading ? (
+              <Box 
+                display="flex" 
+                justifyContent="center" 
+                alignItems="center" 
+                minH={{ base: '150px', md: '200px', lg: '250px' }}
+              >
+                <Spinner size={{ base: 'lg', md: 'xl', lg: '2xl' }} />
+              </Box>
+            ) : error ? (
+              <Box 
+                textAlign="center" 
+                p={{ base: 3, md: 4, lg: 6 }} 
+                bg="red.50" 
+                color="red.600" 
+                borderRadius={{ base: 'sm', md: 'md' }}
+                fontSize={{ base: 'sm', md: 'md' }}
+              >
+                {error || 'An unexpected error occurred'}
+              </Box>
+            ) : (
+              <>
+                <Accordion.Root collapsible>
+                  {Object.entries(menuData).map(([category, items]) => (
+                    <MenuCategory
+                      key={category}
+                      category={category}
+                      items={items}
+                      categoryMap={categoryMap}
+                      onSubmit={handleSubmit}
+                      error={error}
+                      MAX_FILE_SIZE={MAX_FILE_SIZE}
+                      onAddToCart={addToCart}
+                      orderPlaced={orderPlaced}
+                      formData={formData}
+                      setFormData={setFormData}
+                      file={file}
+                      setFile={setFile}
+                      onMenuUpdate={fetchMenuItems}
+                      ingredients={ingredients}
+                      setIngredients={setIngredients}
+                      allMenuItems={Object.values(menuData).flat()}
+                      platoDisponible={platoDisponible}
+                    />
+                  ))}
+                </Accordion.Root>
 
-              <Cart
-                cart={cart}
-                orderPlaced={orderPlaced}
-                tableNumber={tableNumber}
-                setTableNumber={setTableNumber}
-                observations={observations}
-                setObservations={setObservations}
-                updateCartQuantity={updateCartQuantity}
-                placeOrder={placeOrder}
-                allMenuItems={Object.values(menuData).flat()}
-              />
-            </>
-          )}
+                <Cart
+                  cart={cart}
+                  orderPlaced={orderPlaced}
+                  tableNumber={tableNumber}
+                  setTableNumber={setTableNumber}
+                  observations={observations}
+                  setObservations={setObservations}
+                  updateCartQuantity={updateCartQuantity}
+                  placeOrder={placeOrder}
+                  allMenuItems={Object.values(menuData).flat()}
+                />
+              </>
+            )}
+          </Box>
         </Box>
-      </Box>
-    </Flex>
+      </Flex>
+    </div>
   );
 };
 

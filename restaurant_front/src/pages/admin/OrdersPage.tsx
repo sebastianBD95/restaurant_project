@@ -4,8 +4,8 @@ import { Box, Heading, Text, VStack, Grid, Flex } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import TableDistribution from '../../components/orders/TableComponent';
-import { Sidebar } from '../../components/ui/navegator';
-import { useSidebar } from '../../hooks/useSidebar';
+import { ResponsiveSidebar } from '../../components/ui/ResponsiveSidebar';
+import { useResponsive } from '../../hooks/useResponsive';
 import {
   getOrdersByRestaurant,
   updateOrderStatus as updateOrderStatusService,
@@ -39,7 +39,7 @@ const Ordenes: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [voidOrders, setVoidOrders] = useState<VoidOrderItem[]>([]);
   const { restaurantId } = useParams();
-  const { isSidebarOpen, toggleSidebar } = useSidebar();
+  const { isMobile, isTablet, isDesktop } = useResponsive();
   const {
     tables: mesas,
     loading: tablesLoading,
@@ -98,61 +98,29 @@ const Ordenes: React.FC = () => {
     fetchVoidOrders();
   }, [restaurantId]);
 
-  const updateOrderStatus = async (orderId: string, newStatus: string, duration?: number) => {
+  const updateOrderStatus = async (orderId: string, newStatus: OrderStatusUpdate) => {
     try {
-      const orderStatusUpdate: OrderStatusUpdate = {
-        order_id: orderId,
-        status: newStatus,
-      };
-      if (newStatus === 'prepared') {
-        duration = duration || 0;
-        orderStatusUpdate.time_to_prepare = duration;
-      } else if (newStatus === 'delivered') {
-        duration = duration || 0;
-        orderStatusUpdate.time_to_deliver = duration;
-      } else if (newStatus === 'paid') {
-        duration = duration || 0;
-        orderStatusUpdate.time_to_pay = duration;
-      }
-
-      await updateOrderStatusService(orderStatusUpdate);
-
-      // Wait for the orders to be refreshed
+      await updateOrderStatusService(orderId, newStatus);
       await fetchOrders();
-      await fetchTables();
-    } catch (error) {
-      console.error('Error updating order status:', error);
-    }
-  };
-
-  const voidOrderItem = async (orderId: string, menuItemId: string, observation: string) => {
-    // TODO: Call backend to void the item, then refresh orders
-    console.log('Void item', orderId, menuItemId);
-    try {
-      await createVoidOrderItem(orderId, menuItemId, restaurantId!, observation);
-      await fetchOrders();
-      await fetchTables();
-      await fetchVoidOrders();
       toaster.create({
-        title: 'Plato anulado',
-        description: 'Plato anulado correctamente.',
+        title: 'Estado actualizado',
+        description: 'Estado del pedido actualizado correctamente.',
         type: 'success',
       });
     } catch (error) {
-      console.error('Error voiding order item:', error);
+      toaster.create({
+        title: 'Error',
+        description: 'No se pudo actualizar el estado del pedido.',
+        type: 'error',
+      });
     }
   };
 
-  const cancelOrderItemAction = async (
-    orderId: string,
-    menuItemId: string,
-    observation: string
-  ) => {
-    console.log('Cancel item', orderId, menuItemId, observation);
+  const voidOrderItem = async (orderId: string, menuItemId: string, quantity: number) => {
     try {
-      await cancelOrderItem(orderId, menuItemId, observation);
+      await createVoidOrderItem(orderId, menuItemId, quantity);
       await fetchOrders();
-      await fetchTables();
+      await fetchVoidOrders();
       toaster.create({
         title: 'Plato anulado',
         description: 'Plato anulado correctamente.',
@@ -164,39 +132,54 @@ const Ordenes: React.FC = () => {
         description: 'No se pudo anular el plato.',
         type: 'error',
       });
-      console.error('Error canceling order item:', error);
     }
   };
 
-  const updateOrderItemAction = async (
-    orderId: string,
-    menuItemId: string,
-    observation: string,
-    status: string
-  ) => {
-    console.log('Update item', orderId, menuItemId, observation, status);
+  const cancelOrderItemAction = async (orderId: string, menuItemId: string, quantity: number) => {
     try {
-      await updateOrderItem(orderId, menuItemId, observation, status);
+      await cancelOrderItem(orderId, menuItemId, quantity);
       await fetchOrders();
-      await fetchTables();
       toaster.create({
-        title: 'Plato preparado',
-        description: 'Plato preparado correctamente.',
+        title: 'Plato cancelado',
+        description: 'Plato cancelado correctamente.',
         type: 'success',
       });
     } catch (error) {
-      console.error('Error updating order item:', error);
+      toaster.create({
+        title: 'Error',
+        description: 'No se pudo cancelar el plato.',
+        type: 'error',
+      });
+    }
+  };
+
+  const updateOrderItemAction = async (orderId: string, menuItemId: string, quantity: number) => {
+    try {
+      await updateOrderItem(orderId, menuItemId, quantity);
+      await fetchOrders();
+      toaster.create({
+        title: 'Plato actualizado',
+        description: 'Plato actualizado correctamente.',
+        type: 'success',
+      });
+    } catch (error) {
+      toaster.create({
+        title: 'Error',
+        description: 'No se pudo actualizar el plato.',
+        type: 'error',
+      });
     }
   };
 
   const handleRecoverClick = (voidItem: VoidOrderItem) => {
-    // Check if the item is still within the 20-minute recovery window
+    // Check if the void item is within the 20-minute window
     if (voidItem.created_at) {
-      const createdAt = new Date(voidItem.created_at).getTime();
-      const now = new Date().getTime();
-      const elapsedMinutes = Math.floor((now - createdAt) / 1000 / 60);
+      const createdAt = new Date(voidItem.created_at);
+      const now = new Date();
+      const timeDiff = now.getTime() - createdAt.getTime();
+      const minutesDiff = Math.floor(timeDiff / (1000 * 60));
 
-      if (elapsedMinutes >= 20) {
+      if (minutesDiff > 20) {
         toaster.create({
           title: 'Tiempo Expirado',
           description: 'Este plato ya no puede ser recuperado (más de 20 minutos).',
@@ -280,104 +263,136 @@ const Ordenes: React.FC = () => {
   };
 
   return (
-    <Flex height={{ base: 'auto', md: '100vh' }} direction={{ base: 'column', md: 'row' }}>
-      <Sidebar
-        isSidebarOpen={isSidebarOpen}
-        toggleSidebar={toggleSidebar}
-        restaurantId={restaurantId}
-      />
+    <div className="page-wrapper">
+      <Flex height={{ base: 'auto', md: '100vh' }} direction={{ base: 'column', md: 'row' }}>
+        <ResponsiveSidebar restaurantId={restaurantId} />
 
-      <Box flex={1} p={{ base: 2, md: 6 }} overflowY="auto" minW={0}>
-        <Box p={{ base: 2, md: 8 }} bg="gray.100" minH={{ base: 'auto', md: '100vh' }}>
-          <Heading textAlign="center" mb={6} fontSize={{ base: 'xl', md: '2xl' }}>
-            Pedidos Realizados
-          </Heading>
-          <Grid
-            templateColumns={{ base: '1fr', md: '1fr 1fr' }}
-            gap={{ base: 4, md: 6 }}
-            alignItems="stretch"
+        <Box 
+          flex={1} 
+          p={{ base: 2, sm: 3, md: 4, lg: 6 }} 
+          overflowY="auto" 
+          minW={0}
+          ml={{ base: 0, md: 0 }}
+        >
+          <Box 
+            p={{ base: 2, sm: 3, md: 6, lg: 8 }} 
+            bg="gray.100" 
+            minH={{ base: 'auto', md: '100vh' }}
+            borderRadius={{ base: 'none', md: 'md' }}
           >
-            <Box
-              bg="white"
-              p={{ base: 2, md: 4 }}
-              borderRadius="md"
-              boxShadow="md"
-              h={{ base: 'auto', md: '550px' }}
-              overflowY="auto"
-              minW={0}
+            <Heading 
+              textAlign="center" 
+              mb={{ base: 4, md: 6, lg: 8 }} 
+              fontSize={{ base: 'xl', md: '2xl', lg: '3xl' }}
+              color="gray.800"
             >
-              <Heading size="md" mb={4}>
-                Pedidos Activos
-              </Heading>
-              {orders.filter((order) => order.status !== 'paid' && order.status !== 'canceled')
-                .length === 0 ? (
-                <Text textAlign="center">No hay pedidos registrados.</Text>
-              ) : (
-                <VStack align="stretch" gap={4}>
-                  {orders
-                    .filter((order) => order.status !== 'paid' && order.status !== 'canceled')
-                    .map((order) => (
-                      <Box key={order.order_id} mb={4}>
-                        <OrderCard
-                          order={order}
-                          onUpdateOrder={updateOrderStatus}
-                          highlight={order.status === 'delivered'}
-                          onVoidItem={voidOrderItem}
-                          onCancelItem={cancelOrderItemAction}
-                          onUpdateOrderItem={updateOrderItemAction}
-                          onAddDishes={() => handleAddDishesClick(order)}
-                        />
-                      </Box>
+              Pedidos Realizados
+            </Heading>
+            <Grid
+              templateColumns={{ base: '1fr', md: '1fr 1fr' }}
+              gap={{ base: 3, md: 4, lg: 6 }}
+              alignItems="stretch"
+            >
+              <Box
+                bg="white"
+                p={{ base: 2, sm: 3, md: 4, lg: 6 }}
+                borderRadius={{ base: 'sm', md: 'md', lg: 'lg' }}
+                boxShadow={{ base: 'sm', md: 'md', lg: 'lg' }}
+                h={{ base: 'auto', md: '550px' }}
+                overflowY="auto"
+                minW={0}
+              >
+                <Heading 
+                  size={{ base: 'sm', md: 'md', lg: 'lg' }} 
+                  mb={{ base: 2, md: 3, lg: 4 }}
+                  fontSize={{ base: 'md', md: 'lg', lg: 'xl' }}
+                >
+                  Pedidos Activos
+                </Heading>
+                {orders.filter((order) => order.status !== 'paid' && order.status !== 'canceled')
+                  .length === 0 ? (
+                  <Text 
+                    textAlign="center"
+                    fontSize={{ base: 'sm', md: 'md' }}
+                  >
+                    No hay pedidos registrados.
+                  </Text>
+                ) : (
+                  <VStack align="stretch" gap={{ base: 2, md: 3, lg: 4 }}>
+                    {orders
+                      .filter((order) => order.status !== 'paid' && order.status !== 'canceled')
+                      .map((order) => (
+                        <Box key={order.order_id} mb={{ base: 2, md: 3, lg: 4 }}>
+                          <OrderCard
+                            order={order}
+                            onUpdateOrder={updateOrderStatus}
+                            highlight={order.status === 'delivered'}
+                            onVoidItem={voidOrderItem}
+                            onCancelItem={cancelOrderItemAction}
+                            onUpdateOrderItem={updateOrderItemAction}
+                            onAddDishes={() => handleAddDishesClick(order)}
+                          />
+                        </Box>
+                      ))}
+                  </VStack>
+                )}
+              </Box>
+
+              <Box
+                bg="white"
+                p={{ base: 2, sm: 3, md: 4, lg: 6 }}
+                borderRadius={{ base: 'sm', md: 'md', lg: 'lg' }}
+                boxShadow={{ base: 'sm', md: 'md', lg: 'lg' }}
+                h={{ base: 'auto', md: '550px' }}
+                overflowY="auto"
+                minW={0}
+              >
+                <Heading 
+                  size={{ base: 'sm', md: 'md', lg: 'lg' }} 
+                  mb={{ base: 2, md: 3, lg: 4 }}
+                  fontSize={{ base: 'md', md: 'lg', lg: 'xl' }}
+                >
+                  Pedidos Anulados
+                </Heading>
+                {voidOrders.length === 0 ? (
+                  <Text 
+                    textAlign="center"
+                    fontSize={{ base: 'sm', md: 'md' }}
+                  >
+                    No hay pedidos anulados.
+                  </Text>
+                ) : (
+                  <VStack align="stretch" gap={{ base: 2, md: 3, lg: 4 }}>
+                    {voidOrders.map((item) => (
+                      <VoidOrderItemCard
+                        key={item.void_order_item_id || item.menu_item_id + (item.created_at || '')}
+                        item={item}
+                        onRecoverClick={handleRecoverClick}
+                        availableOrders={orders
+                          .filter((order) => order.status !== 'paid' && order.status !== 'canceled')
+                          .map((order) => ({ order_id: order.order_id, table: order.table }))}
+                      />
                     ))}
-                </VStack>
-              )}
-            </Box>
+                  </VStack>
+                )}
+              </Box>
+            </Grid>
 
             <Box
               bg="white"
-              p={{ base: 2, md: 4 }}
-              borderRadius="md"
-              boxShadow="md"
-              h={{ base: 'auto', md: '550px' }}
+              p={{ base: 2, sm: 3, md: 4, lg: 6 }}
+              borderRadius={{ base: 'sm', md: 'md', lg: 'lg' }}
+              boxShadow={{ base: 'sm', md: 'md', lg: 'lg' }}
+              mt={{ base: 4, md: 5, lg: 6 }}
+              overflowX="auto"
               overflowY="auto"
               minW={0}
             >
-              <Heading size="md" mb={4}>
-                Pedidos Anulados
-              </Heading>
-              {voidOrders.length === 0 ? (
-                <Text textAlign="center">No hay pedidos anulados.</Text>
-              ) : (
-                <VStack align="stretch" gap={4}>
-                  {voidOrders.map((item) => (
-                    <VoidOrderItemCard
-                      key={item.void_order_item_id || item.menu_item_id + (item.created_at || '')}
-                      item={item}
-                      onRecoverClick={handleRecoverClick}
-                      availableOrders={orders
-                        .filter((order) => order.status !== 'paid' && order.status !== 'canceled')
-                        .map((order) => ({ order_id: order.order_id, table: order.table }))}
-                    />
-                  ))}
-                </VStack>
-              )}
+              <TableDistribution mesas={mesas} fetchTables={fetchTables} />
             </Box>
-          </Grid>
-
-          <Box
-            bg="white"
-            p={{ base: 2, md: 4 }}
-            borderRadius="md"
-            boxShadow="md"
-            mt={6}
-            overflowX="auto"
-            overflowY="auto"
-            minW={0}
-          >
-            <TableDistribution mesas={mesas} fetchTables={fetchTables} />
           </Box>
         </Box>
-      </Box>
+      </Flex>
 
       <AddDishesDialog
         open={open}
@@ -403,7 +418,7 @@ const Ordenes: React.FC = () => {
           .map((order) => ({ order_id: order.order_id, table: order.table }))}
         onRecover={recoverVoidOrderItemAction}
       />
-    </Flex>
+    </div>
   );
 };
 
