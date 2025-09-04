@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import {
   Box,
@@ -38,13 +38,13 @@ interface SidebarItem {
 }
 
 interface ResponsiveSidebarProps {
-  isOpen: boolean;
-  onToggle: () => void;
+  isOpen?: boolean;
+  onToggle?: () => void;
   restaurantId?: string;
 }
 
 export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
-  isOpen,
+  isOpen = true,
   onToggle,
   restaurantId,
 }) => {
@@ -54,7 +54,18 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
   const { isMobile, isTablet } = useResponsive();
   const sidebarConfig = useResponsiveSidebar();
   
+  // Manage sidebar state internally if not provided externally
+  const [internalIsOpen, setInternalIsOpen] = useState(isOpen);
+  const [internalOnToggle] = useState(() => {
+    if (onToggle) {
+      return onToggle;
+    }
+    return () => setInternalIsOpen(prev => !prev);
+  });
+  
   const currentRestaurantId = restaurantId || params.restaurantId;
+  const sidebarIsOpen = onToggle ? isOpen : internalIsOpen;
+  const sidebarOnToggle = onToggle || internalOnToggle;
 
   const bgColor = 'white';
   const borderColor = 'gray.200';
@@ -192,7 +203,7 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
             _hover={{ bg: hoverBgColor }}
           >
             <Icon as={item.icon} />
-            {isOpen && <Text ml={2}>{item.label}</Text>}
+            {sidebarIsOpen && <Text ml={2}>{item.label}</Text>}
             <Icon
               as={isDisclosureOpen ? FiChevronRight : FiChevronLeft}
               transition="transform 0.2s"
@@ -225,7 +236,7 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
           transition="all 0.2s"
         >
           <Icon as={item.icon} fontSize="lg" />
-          {isOpen && (
+          {sidebarIsOpen && (
             <>
               <Text ml={3} flex={1}>
                 {item.label}
@@ -262,7 +273,7 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
           <Tooltip content="Expandir sidebar" positioning={{ placement: "right-end" }}>
             <IconButton
               aria-label="Toggle sidebar"
-              onClick={onToggle}
+              onClick={sidebarOnToggle}
               variant="ghost"
               size="sm"
               w="full"
@@ -311,7 +322,7 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
             <Tooltip content="Colapsar sidebar">
               <IconButton
                 aria-label="Collapse sidebar"
-                onClick={onToggle}
+                onClick={sidebarOnToggle}
                 variant="ghost"
                 size="sm"
               >
@@ -345,7 +356,7 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
       left={0}
       top={0}
       zIndex={999}
-      transform={isOpen ? 'translateX(0)' : 'translateX(-100%)'}
+      transform={sidebarIsOpen ? 'translateX(0)' : 'translateX(-100%)'}
       transition="transform 0.3s"
       overflowY="auto"
       overflowX="hidden"
@@ -359,7 +370,7 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
             </Text>
             <IconButton
               aria-label="Close sidebar"
-              onClick={onToggle}
+              onClick={sidebarOnToggle}
               variant="ghost"
               size="sm"
             >
@@ -377,7 +388,7 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
   );
 
   // Don't render sidebar on mobile if not open
-  if (isMobile && !isOpen) {
+  if (isMobile && !sidebarIsOpen) {
     return null;
   }
 
@@ -387,11 +398,11 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
   }
 
   if (isTablet) {
-    return isOpen ? renderExpandedSidebar() : renderCollapsedSidebar();
+    return sidebarIsOpen ? renderExpandedSidebar() : renderCollapsedSidebar();
   }
 
   // Desktop: always show sidebar, toggle between collapsed and expanded
-  return isOpen ? renderExpandedSidebar() : renderCollapsedSidebar();
+  return sidebarIsOpen ? renderExpandedSidebar() : renderCollapsedSidebar();
 };
 
 export default ResponsiveSidebar;
