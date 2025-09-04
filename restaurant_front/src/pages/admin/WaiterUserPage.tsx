@@ -10,8 +10,8 @@ import {
   deleteWaiterUser,
 } from '../../services/waiterUserService';
 import { WaiterUser } from '../../interfaces/waiter';
-import { Sidebar } from '../../components/ui/navegator';
-import { useSidebar } from '../../hooks/useSidebar';
+import { ResponsiveSidebar } from '../../components/ui/ResponsiveSidebar';
+import { useResponsive } from '../../hooks/useResponsive';
 import { Toaster, toaster } from '../../components/ui/toaster';
 import WaiterUserForm from '../../components/waiters/WaiterUserForm';
 
@@ -49,7 +49,7 @@ const WaiterUserPage: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { restaurantId } = useParams();
-  const { isSidebarOpen, toggleSidebar } = useSidebar();
+  const { isMobile, isTablet, isDesktop } = useResponsive();
 
   const navigate = useNavigate();
 
@@ -100,24 +100,10 @@ const WaiterUserPage: React.FC = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const validateForm = (formData: WaiterFormData, isEditing: boolean) => {
-    return (
-      formData.name && formData.email && formData.phone && (isEditing ? true : formData.password)
-    );
-  };
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-
-    if (!validateForm(formData, isEditing)) {
-      showToast('Error', 'Por favor complete todos los campos', 'error');
-      return;
-    }
-
-    formData.restaurant_id = restaurantId!;
-    setIsLoading(true);
-
     try {
+      setIsLoading(true);
       const token = getToken();
       if (!token) {
         showToast('Error', 'No se encontró el token de autenticación', 'error');
@@ -126,18 +112,13 @@ const WaiterUserPage: React.FC = () => {
 
       if (isEditing && editingId) {
         await updateWaiterUser(editingId, formData, token);
-        showToast(
-          'Usuario actualizado',
-          'El usuario mesero ha sido actualizado correctamente',
-          'success'
-        );
-        setIsEditing(false);
-        setEditingId(null);
+        showToast('Éxito', 'Usuario mesero actualizado correctamente', 'success');
       } else {
-        await createWaiterUser(formData, token);
-        showToast('Usuario creado', 'El usuario mesero ha sido creado correctamente', 'success');
+        await createWaiterUser({ ...formData, restaurant_id: restaurantId! }, token);
+        showToast('Éxito', 'Usuario mesero creado correctamente', 'success');
       }
 
+      // Reset form and refresh data
       setFormData({
         name: '',
         email: '',
@@ -145,9 +126,17 @@ const WaiterUserPage: React.FC = () => {
         password: '',
         restaurant_id: '',
       });
+      setIsEditing(false);
+      setEditingId(null);
       fetchWaiters();
     } catch (error) {
-      showToast('Error', 'Ocurrió un error al procesar la solicitud', 'error');
+      showToast(
+        'Error',
+        isEditing
+          ? 'No se pudo actualizar el usuario mesero'
+          : 'No se pudo crear el usuario mesero',
+        'error'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -158,30 +147,27 @@ const WaiterUserPage: React.FC = () => {
       name: waiter.name,
       email: waiter.email,
       phone: waiter.phone,
-      password: '', // Don't show password for security
-      restaurant_id: restaurantId!,
+      password: '',
+      restaurant_id: waiter.restaurant_id,
     });
     setIsEditing(true);
     setEditingId(waiter.user_id);
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      setIsLoading(true);
-      const token = getToken();
-      if (!token) {
-        showToast('Error', 'No se encontró el token de autenticación', 'error');
-        return;
+  const handleDelete = async (userId: string) => {
+    if (window.confirm('¿Está seguro de que desea eliminar este usuario mesero?')) {
+      try {
+        const token = getToken();
+        if (!token) {
+          showToast('Error', 'No se encontró el token de autenticación', 'error');
+          return;
+        }
+        await deleteWaiterUser(userId, token);
+        showToast('Éxito', 'Usuario mesero eliminado correctamente', 'success');
+        fetchWaiters();
+      } catch (error) {
+        showToast('Error', 'No se pudo eliminar el usuario mesero', 'error');
       }
-
-      await deleteWaiterUser(id, token);
-      showToast('Usuario eliminado', 'El usuario mesero ha sido eliminado correctamente', 'info');
-
-      fetchWaiters();
-    } catch (error) {
-      showToast('Error', 'No se pudo eliminar el usuario mesero', 'error');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -198,96 +184,148 @@ const WaiterUserPage: React.FC = () => {
   };
 
   return (
-    <Flex height="100vh" direction={{ base: 'column', md: 'row' }}>
-      <Sidebar
-        isSidebarOpen={isSidebarOpen}
-        toggleSidebar={toggleSidebar}
-        restaurantId={restaurantId}
-      />
-      <Box flex={1} p={{ base: 2, md: 6 }} maxW="100vw" mx="auto">
-        <Toaster />
-        <Heading mb={{ base: 4, md: 6 }} fontSize={{ base: 'lg', md: '2xl' }}>
-          Gestión de Usuarios Meseros
-        </Heading>
-        <Heading size="md" mb={4}>
-          {isEditing ? 'Editar Usuario Mesero' : 'Agregar Nuevo Usuario Mesero'}
-        </Heading>
-        <WaiterUserForm
-          formData={formData}
-          setFormData={setFormData}
-          isEditing={isEditing}
-          isLoading={isLoading}
-          onCancel={handleCancel}
-          onSubmit={handleSubmit}
-        />
-        <Box
-          bg="white"
-          p={{ base: 2, md: 6 }}
-          borderRadius="md"
-          boxShadow="md"
-          overflowX="auto"
-          w="100%"
+    <div className="page-wrapper">
+      <Flex height="100vh" direction={{ base: 'column', md: 'row' }}>
+        <ResponsiveSidebar restaurantId={restaurantId} />
+        <Box 
+          flex={1} 
+          p={{ base: 2, sm: 3, md: 4, lg: 6 }} 
+          maxW="100vw" 
+          mx="auto"
+          ml={{ base: 0, md: 0 }}
         >
-          <Heading size="md" mb={4}>
-            Lista de Usuarios Meseros
-          </Heading>
-          <Box overflowX="auto" w="100%">
-            <Table.Root minWidth="600px">
-              <Table.Header>
-                <Table.Row>
-                  <Table.ColumnHeader>Nombre</Table.ColumnHeader>
-                  <Table.ColumnHeader>Correo</Table.ColumnHeader>
-                  <Table.ColumnHeader>Teléfono</Table.ColumnHeader>
-                  <Table.ColumnHeader>Acciones</Table.ColumnHeader>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {isLoading ? (
-                  <Table.Row>
-                    <Table.Cell colSpan={4}>
-                      <Text>Cargando usuarios...</Text>
-                    </Table.Cell>
-                  </Table.Row>
-                ) : waiters.length === 0 ? (
-                  <Table.Row>
-                    <Table.Cell colSpan={4}>
-                      <Text>No hay usuarios meseros registrados.</Text>
-                    </Table.Cell>
-                  </Table.Row>
-                ) : (
-                  waiters.map((waiter) => (
-                    <Table.Row key={waiter.role}>
-                      <Table.Cell>{waiter.name}</Table.Cell>
-                      <Table.Cell>{waiter.email}</Table.Cell>
-                      <Table.Cell>{waiter.phone}</Table.Cell>
-                      <Table.Cell>
-                        <HStack>
-                          <IconButton
-                            aria-label="Editar mesero"
-                            size="sm"
-                            onClick={() => handleEdit(waiter)}
-                          >
-                            <FiEdit2 />
-                          </IconButton>
-                          <IconButton
-                            aria-label="Eliminar mesero"
-                            size="sm"
-                            colorScheme="red"
-                            onClick={() => handleDelete(waiter.user_id)}
-                          >
-                            <FiTrash2 />
-                          </IconButton>
-                        </HStack>
-                      </Table.Cell>
+          <Box 
+            p={{ base: 3, sm: 4, md: 6, lg: 8 }} 
+            bg="gray.100" 
+            minH="100vh"
+            borderRadius={{ base: 'none', md: 'md' }}
+          >
+            <Toaster />
+            <Heading 
+              mb={{ base: 3, md: 4, lg: 6 }} 
+              fontSize={{ base: 'lg', md: 'xl', lg: '2xl' }}
+              color="gray.800"
+              textAlign={{ base: 'center', md: 'left' }}
+            >
+              Gestión de Usuarios Meseros
+            </Heading>
+            <Heading 
+              size={{ base: 'sm', md: 'md', lg: 'lg' }}
+              mb={{ base: 3, md: 4, lg: 6 }}
+              color="gray.700"
+              textAlign={{ base: 'center', md: 'left' }}
+            >
+              {isEditing ? 'Editar Usuario Mesero' : 'Agregar Nuevo Usuario Mesero'}
+            </Heading>
+            <WaiterUserForm
+              formData={formData}
+              setFormData={setFormData}
+              isEditing={isEditing}
+              isLoading={isLoading}
+              onCancel={handleCancel}
+              onSubmit={handleSubmit}
+            />
+            <Box
+              bg="white"
+              p={{ base: 3, sm: 4, md: 5, lg: 6 }}
+              borderRadius={{ base: 'md', md: 'lg' }}
+              boxShadow={{ base: 'sm', md: 'md' }}
+              overflowX="auto"
+              w="100%"
+              mt={{ base: 4, md: 5, lg: 6 }}
+            >
+              <Heading 
+                size={{ base: 'sm', md: 'md', lg: 'lg' }}
+                mb={{ base: 3, md: 4, lg: 6 }}
+                color="gray.700"
+                textAlign={{ base: 'center', md: 'left' }}
+              >
+                Lista de Usuarios Meseros
+              </Heading>
+              <Box overflowX="auto" w="100%">
+                <Table.Root minWidth="600px">
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.ColumnHeader>Nombre</Table.ColumnHeader>
+                      <Table.ColumnHeader>Correo</Table.ColumnHeader>
+                      <Table.ColumnHeader>Teléfono</Table.ColumnHeader>
+                      <Table.ColumnHeader>Acciones</Table.ColumnHeader>
                     </Table.Row>
-                  ))
-                )}
-              </Table.Body>
-            </Table.Root>
+                  </Table.Header>
+                  <Table.Body>
+                    {isLoading ? (
+                      <Table.Row>
+                        <Table.Cell colSpan={4}>
+                          <Box 
+                            display="flex" 
+                            justifyContent="center" 
+                            alignItems="center" 
+                            py={{ base: 4, md: 6, lg: 8 }}
+                          >
+                            <Text fontSize={{ base: 'sm', md: 'md' }}>
+                              Cargando usuarios...
+                            </Text>
+                          </Box>
+                        </Table.Cell>
+                      </Table.Row>
+                    ) : waiters.length === 0 ? (
+                      <Table.Row>
+                        <Table.Cell colSpan={4}>
+                          <Box 
+                            display="flex" 
+                            justifyContent="center" 
+                            alignItems="center" 
+                            py={{ base: 4, md: 6, lg: 8 }}
+                          >
+                            <Text 
+                              fontSize={{ base: 'sm', md: 'md' }}
+                              color="gray.500"
+                            >
+                              No hay usuarios meseros registrados.
+                            </Text>
+                          </Box>
+                        </Table.Cell>
+                      </Table.Row>
+                    ) : (
+                      waiters.map((waiter) => (
+                        <Table.Row key={waiter.role}>
+                          <Table.Cell>{waiter.name}</Table.Cell>
+                          <Table.Cell>{waiter.email}</Table.Cell>
+                          <Table.Cell>{waiter.phone}</Table.Cell>
+                          <Table.Cell>
+                            <HStack 
+                              spacing={{ base: 1, md: 2 }}
+                              justify={{ base: 'center', md: 'flex-start' }}
+                            >
+                              <IconButton
+                                aria-label="Editar mesero"
+                                size={{ base: 'xs', sm: 'sm', md: 'md' }}
+                                onClick={() => handleEdit(waiter)}
+                                colorScheme="blue"
+                              >
+                                <FiEdit2 />
+                              </IconButton>
+                              <IconButton
+                                aria-label="Eliminar mesero"
+                                size={{ base: 'xs', sm: 'sm', md: 'md' }}
+                                colorScheme="red"
+                                onClick={() => handleDelete(waiter.user_id)}
+                              >
+                                <FiTrash2 />
+                              </IconButton>
+                            </HStack>
+                          </Table.Cell>
+                        </Table.Row>
+                      ))
+                    )}
+                  </Table.Body>
+                </Table.Root>
+              </Box>
+            </Box>
           </Box>
         </Box>
-      </Box>
-    </Flex>
+      </Flex>
+    </div>
   );
 };
 
