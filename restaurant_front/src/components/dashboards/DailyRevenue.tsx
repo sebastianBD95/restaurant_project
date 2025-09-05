@@ -13,7 +13,7 @@ interface RevenueEntry {
 
 const DailyRevenue = ({ data }: { data: RevenueEntry[] }) => {
   return (
-    <ResponsiveContainer width="99%" height={300}>
+    <ResponsiveContainer width="100%" height={300}>
       <AreaChart data={data} margin={{ top: 20, right: 10, left: 0, bottom: 0 }}>
         <XAxis
           dataKey="date"
@@ -110,13 +110,8 @@ const PaginaIngresos: React.FC = () => {
   }, []);
 
   return (
-    <Box p={6} bg="gray.100" minH="100vh">
-      <Heading textAlign="center" mb={6}>
-        📈 Ingresos vs Costos Diarios
-      </Heading>
-      <Box bg="white" p={4} borderRadius="md" boxShadow="md">
-        <DailyRevenue data={revenueData} />
-      </Box>
+    <Box>
+      <DailyRevenue data={revenueData} />
     </Box>
   );
 };

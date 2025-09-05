@@ -53,7 +53,7 @@ const TrendingMenu: React.FC = () => {
 
   return (
     <Stack spacing={2} sx={{ p: 2 }}>
-      <Typography variant="h5" fontWeight="bold" textAlign="center">
+      <Typography variant="h5" fontWeight="bold" textAlign="center" mb={2}>
         🔥 Platos Más Populares
       </Typography>
       {trending.length === 0 ? (

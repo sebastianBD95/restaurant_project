@@ -70,11 +70,7 @@ const Historial: React.FC = () => {
   };
 
   return (
-    <Box p={6} bg="gray.100">
-      <Heading textAlign="center" mb={6}>
-        Historial de Pedidos Pagados
-      </Heading>
-
+    <Box>
       <Table
         dataSource={Object.entries(historialPorMesa).map(([mesa, ordenes]) => ({
           key: mesa,

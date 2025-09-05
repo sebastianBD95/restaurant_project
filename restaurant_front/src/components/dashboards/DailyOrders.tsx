@@ -10,7 +10,7 @@ import { getOrdersByRestaurant } from '../../services/orderService';
 //Componente DailyOrders para mostrar la gráfica
 const DailyOrders = ({ data }: { data: { date: string; value: number }[] }) => {
   return (
-    <ResponsiveContainer width="99%" height={300}>
+    <ResponsiveContainer width="100%" height={300}>
       <BarChart data={data} barSize={15} margin={{ top: 30, right: 10, left: -25, bottom: 0 }}>
         <XAxis
           dataKey="date"
@@ -48,19 +48,8 @@ const DashboardDO: React.FC = () => {
   }, [restaurantId]);
 
   return (
-    <Box p={6} bg="gray.100" h="470px">
-      <Heading textAlign="center" mb={6}>
-        Dashboard de Órdenes
-      </Heading>
-
-      <VStack align="stretch">
-        <Box bg="white" p={4} borderRadius="md" boxShadow="md" h="350px">
-          <Heading size="md" mb={4}>
-            Órdenes Diarias
-          </Heading>
-          <DailyOrders data={chartData} />
-        </Box>
-      </VStack>
+    <Box>
+      <DailyOrders data={chartData} />
     </Box>
   );
 };

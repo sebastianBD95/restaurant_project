@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Heading, Grid, Flex } from '@chakra-ui/react';
+import { Box, Heading, Grid, Flex, Text, Icon } from '@chakra-ui/react';
 import DailyRevenue from '../../components/dashboards/DailyRevenue';
 import TrendingMenu from '../../components/dashboards/TrendingMenu';
 import DailyOrders from '../../components/dashboards/DailyOrders';
@@ -9,6 +9,7 @@ import PaginaGanancia from '../../components/dashboards/Reveneu';
 import { useParams } from 'react-router-dom';
 import { Sidebar } from '../../components/ui/navegator';
 import { useSidebar } from '../../hooks/useSidebar';
+import { FiTrendingUp, FiDollarSign, FiShoppingCart, FiBarChart2, FiUser } from 'react-icons/fi';
 
 const Dashboard: React.FC = () => {
   const { restaurantId } = useParams();
@@ -24,49 +25,310 @@ const Dashboard: React.FC = () => {
       />
 
       {/* Contenido Principal */}
-      <Box flex={1} p={6} overflowY="auto">
-        <Box p={6} bg="gray.100" minH="100vh">
-          <Heading textAlign="center" mb={6}>
-            📊 Dashboard del Restaurante
+      <Box flex={1} overflowY="auto" bg="gray.50">
+        {/* Header Section */}
+        <Box 
+          bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+          color="white"
+          p={8}
+          position="relative"
+          overflow="hidden"
+        >
+          <Box position="absolute" top={0} right={0} opacity={0.1}>
+            <Icon as={FiTrendingUp} boxSize={200} />
+          </Box>
+          <Heading 
+            size="2xl" 
+            textAlign="center" 
+            mb={2}
+            fontWeight="bold"
+            textShadow="0 2px 4px rgba(0,0,0,0.3)"
+          >
+            Dashboard del Restaurante
           </Heading>
+          <Text 
+            textAlign="center" 
+            fontSize="lg" 
+            opacity={0.9}
+            fontWeight="medium"
+          >
+            Monitoreo en tiempo real de tu negocio
+          </Text>
+        </Box>
 
-          {/* Primera fila con DailyOrders y DailyRevenue */}
-          <Grid templateColumns={{ base: '2fr', md: '1fr 1fr 1fr' }} gap={6} mb={6}>
-            <Box bg="white" p={4} borderRadius="sm" boxShadow="xs" h="550px">
-              <Heading size="xs" mb={4}>
-                📅 Órdenes por Día
-              </Heading>
-              <DailyOrders />
+        {/* Main Content */}
+        <Box p={8} maxW="1400px" mx="auto">
+          {/* Stats Overview Row */}
+          <Grid templateColumns={{ base: '1fr', md: 'repeat(4, 1fr)' }} gap={6} mb={8}>
+            <Box 
+              bg="white" 
+              p={6} 
+              borderRadius="xl" 
+              boxShadow="lg"
+              border="1px solid"
+              borderColor="gray.200"
+              position="relative"
+              overflow="hidden"
+              _hover={{ transform: 'translateY(-2px)', boxShadow: 'xl' }}
+              transition="all 0.3s ease"
+            >
+              <Box position="absolute" top={0} right={0} bg="blue.500" p={2} borderRadius="0 0 0 12px">
+                <Icon as={FiShoppingCart} color="white" boxSize={5} />
+              </Box>
+              <Box>
+                <Text color="gray.600" fontSize="sm" fontWeight="medium">Órdenes Hoy</Text>
+                <Text color="gray.800" fontSize="3xl" fontWeight="bold">24</Text>
+                <Flex align="center" color="green.500" fontSize="sm">
+                  <Icon as={FiTrendingUp} mr={1} />
+                  12.5%
+                </Flex>
+              </Box>
             </Box>
 
-            <Box bg="white" p={4} borderRadius="sm" boxShadow="xs" h="550px">
-              <Heading size="xs" mb={4}>
-                💰 Ingresos, Costos{' '}
-              </Heading>
-              <DailyRevenue />
+            <Box 
+              bg="white" 
+              p={6} 
+              borderRadius="xl" 
+              boxShadow="lg"
+              border="1px solid"
+              borderColor="gray.200"
+              position="relative"
+              overflow="hidden"
+              _hover={{ transform: 'translateY(-2px)', boxShadow: 'xl' }}
+              transition="all 0.3s ease"
+            >
+              <Box position="absolute" top={0} right={0} bg="green.500" p={2} borderRadius="0 0 0 12px">
+                <Icon as={FiDollarSign} color="white" boxSize={5} />
+              </Box>
+              <Box>
+                <Text color="gray.600" fontSize="sm" fontWeight="medium">Ingresos Hoy</Text>
+                <Text color="gray.800" fontSize="3xl" fontWeight="bold">$2.4M</Text>
+                <Flex align="center" color="green.500" fontSize="sm">
+                  <Icon as={FiTrendingUp} mr={1} />
+                  8.2%
+                </Flex>
+              </Box>
             </Box>
-            <Box bg="white" p={4} borderRadius="sm" boxShadow="xs" h="550px">
-              <Heading size="xs" mb={4}>
-                💰 Ganancias
-              </Heading>
-              <PaginaGanancia />
+
+            <Box 
+              bg="white" 
+              p={6} 
+              borderRadius="xl" 
+              boxShadow="lg"
+              border="1px solid"
+              borderColor="gray.200"
+              position="relative"
+              overflow="hidden"
+              _hover={{ transform: 'translateY(-2px)', boxShadow: 'xl' }}
+              transition="all 0.3s ease"
+            >
+              <Box position="absolute" top={0} right={0} bg="purple.500" p={2} borderRadius="0 0 0 12px">
+                <Icon as={FiTrendingUp} color="white" boxSize={5} />
+              </Box>
+              <Box>
+                <Text color="gray.600" fontSize="sm" fontWeight="medium">Ganancia Hoy</Text>
+                <Text color="gray.800" fontSize="3xl" fontWeight="bold">$890K</Text>
+                <Flex align="center" color="green.500" fontSize="sm">
+                  <Icon as={FiTrendingUp} mr={1} />
+                  15.3%
+                </Flex>
+              </Box>
+            </Box>
+
+            <Box 
+              bg="white" 
+              p={6} 
+              borderRadius="xl" 
+              boxShadow="lg"
+              border="1px solid"
+              borderColor="gray.200"
+              position="relative"
+              overflow="hidden"
+              _hover={{ transform: 'translateY(-2px)', boxShadow: 'xl' }}
+              transition="all 0.3s ease"
+            >
+              <Box position="absolute" top={0} right={0} bg="orange.500" p={2} borderRadius="0 0 0 12px">
+                <Icon as={FiUser} color="white" boxSize={5} />
+              </Box>
+              <Box>
+                <Text color="gray.600" fontSize="sm" fontWeight="medium">Platos Vendidos</Text>
+                <Text color="gray.800" fontSize="3xl" fontWeight="bold">156</Text>
+                <Flex align="center" color="green.500" fontSize="sm">
+                  <Icon as={FiTrendingUp} mr={1} />
+                  6.8%
+                </Flex>
+              </Box>
             </Box>
           </Grid>
 
-          {/* Segunda fila con Historial y Platos Populares */}
-          <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={6}>
-            <Box bg="white" p={4} borderRadius="sm" boxShadow="xs" h="550px">
-              <Heading size="xs" mb={4}>
-                📊 Historial de Ventas
-              </Heading>
-              <Historial />
+          {/* Charts Row */}
+          <Grid templateColumns={{ base: '1fr', lg: '1fr 1fr 1fr' }} gap={6} mb={8}>
+            <Box 
+              bg="white" 
+              p={6} 
+              borderRadius="xl" 
+              boxShadow="lg"
+              border="1px solid"
+              borderColor="gray.200"
+              _hover={{ transform: 'translateY(-2px)', boxShadow: 'xl' }}
+              transition="all 0.3s ease"
+            >
+              <Flex align="center" mb={4}>
+                <Box 
+                  bg="blue.100" 
+                  p={2} 
+                  borderRadius="lg" 
+                  mr={3}
+                >
+                  <Icon as={FiBarChart2} color="blue.600" boxSize={5} />
+                </Box>
+                <Box>
+                  <Text fontSize="lg" fontWeight="bold" color="gray.800">
+                    Órdenes por Día
+                  </Text>
+                  <Text fontSize="sm" color="gray.600">
+                    Tendencias de pedidos diarios
+                  </Text>
+                </Box>
+              </Flex>
+              <Box h="400px">
+                <DailyOrders />
+              </Box>
             </Box>
 
-            <Box bg="white" p={4} borderRadius="sm" boxShadow="xs" h="550px">
-              <Heading size="xs" mb={4}>
-                🍽️ Platos Populares
-              </Heading>
-              <TrendingMenu />
+            <Box 
+              bg="white" 
+              p={6} 
+              borderRadius="xl" 
+              boxShadow="lg"
+              border="1px solid"
+              borderColor="gray.200"
+              _hover={{ transform: 'translateY(-2px)', boxShadow: 'xl' }}
+              transition="all 0.3s ease"
+            >
+              <Flex align="center" mb={4}>
+                <Box 
+                  bg="green.100" 
+                  p={2} 
+                  borderRadius="lg" 
+                  mr={3}
+                >
+                  <Icon as={FiDollarSign} color="green.600" boxSize={5} />
+                </Box>
+                <Box>
+                  <Text fontSize="lg" fontWeight="bold" color="gray.800">
+                    Ingresos vs Costos
+                  </Text>
+                  <Text fontSize="sm" color="gray.600">
+                    Análisis financiero diario
+                  </Text>
+                </Box>
+              </Flex>
+              <Box h="400px">
+                <DailyRevenue />
+              </Box>
+            </Box>
+
+            <Box 
+              bg="white" 
+              p={6} 
+              borderRadius="xl" 
+              boxShadow="lg"
+              border="1px solid"
+              borderColor="gray.200"
+              _hover={{ transform: 'translateY(-2px)', boxShadow: 'xl' }}
+              transition="all 0.3s ease"
+            >
+              <Flex align="center" mb={4}>
+                <Box 
+                  bg="purple.100" 
+                  p={2} 
+                  borderRadius="lg" 
+                  mr={3}
+                >
+                  <Icon as={FiTrendingUp} color="purple.600" boxSize={5} />
+                </Box>
+                <Box>
+                  <Text fontSize="lg" fontWeight="bold" color="gray.800">
+                    Ganancias
+                  </Text>
+                  <Text fontSize="sm" color="gray.600">
+                    Margen de utilidad diario
+                  </Text>
+                </Box>
+              </Flex>
+              <Box h="400px">
+                <PaginaGanancia />
+              </Box>
+            </Box>
+          </Grid>
+
+          {/* Bottom Row */}
+          <Grid templateColumns={{ base: '1fr', lg: '2fr 1fr' }} gap={6}>
+            <Box 
+              bg="white" 
+              p={6} 
+              borderRadius="xl" 
+              boxShadow="lg"
+              border="1px solid"
+              borderColor="gray.200"
+              _hover={{ transform: 'translateY(-2px)', boxShadow: 'xl' }}
+              transition="all 0.3s ease"
+            >
+              <Flex align="center" mb={4}>
+                <Box 
+                  bg="orange.100" 
+                  p={2} 
+                  borderRadius="lg" 
+                  mr={3}
+                >
+                  <Icon as={FiBarChart2} color="orange.600" boxSize={5} />
+                </Box>
+                <Box>
+                  <Text fontSize="lg" fontWeight="bold" color="gray.800">
+                    Historial de Ventas
+                  </Text>
+                  <Text fontSize="sm" color="gray.600">
+                    Registro de pedidos pagados
+                  </Text>
+                </Box>
+              </Flex>
+              <Box>
+                <Historial />
+              </Box>
+            </Box>
+
+            <Box 
+              bg="white" 
+              p={6} 
+              borderRadius="xl" 
+              boxShadow="lg"
+              border="1px solid"
+              borderColor="gray.200"
+              _hover={{ transform: 'translateY(-2px)', boxShadow: 'xl' }}
+              transition="all 0.3s ease"
+            >
+              <Flex align="center" mb={4}>
+                <Box 
+                  bg="red.100" 
+                  p={2} 
+                  borderRadius="lg" 
+                  mr={3}
+                >
+                  <Icon as={FiUser} color="red.600" boxSize={5} />
+                </Box>
+                <Box>
+                  <Text fontSize="lg" fontWeight="bold" color="gray.800">
+                    Platos Populares
+                  </Text>
+                  <Text fontSize="sm" color="gray.600">
+                    Los favoritos de tus clientes
+                  </Text>
+                </Box>
+              </Flex>
+              <Box>
+                <TrendingMenu />
+              </Box>
             </Box>
           </Grid>
         </Box>
