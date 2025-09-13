@@ -20,6 +20,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import IngredientPage from './pages/admin/IngredientPage';
 import EventsPage from './pages/admin/EventsPage';
 import CashClosingPage from './pages/admin/CashClosingPage';
+import TablePage from './pages/admin/TablePage';
 
 function App() {
   return (
@@ -52,6 +53,8 @@ function App() {
             <Route path="/eventos/:restaurantId" element={<EventsPage />} />
             <Route path="/cierre-caja" element={<CashClosingPage />} />
             <Route path="/cierre-caja/:restaurantId" element={<CashClosingPage />} />
+            <Route path="/mesas" element={<TablePage />} />
+            <Route path="/mesas/:restaurantId/:tableId" element={<TablePage />} />
           </Routes>
         </Box>
       </Router>

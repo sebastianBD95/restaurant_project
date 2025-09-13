@@ -24,14 +24,14 @@ export const placeOrder = async (orderData: OrderRequest) => {
   return response.json();
 };
 
-export const getOrdersByRestaurant = async (restaurantId: string, status: string) => {
+export const getOrdersByRestaurant = async (restaurantId: string, status: string, tableId?: string) => {
   const token = getCookie(document.cookie, 'token');
   if (!token) {
     throw new Error('No authentication token found');
   }
 
   const response = await fetch(
-    `${config.API_URL}/orders?restaurant_id=${restaurantId}&status=${status}`,
+    `${config.API_URL}/orders?restaurant_id=${restaurantId}&status=${status}${tableId ? `&table_id=${tableId}` : ''}`,
     {
       method: 'GET',
       headers: {
