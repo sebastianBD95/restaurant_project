@@ -137,6 +137,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar, 
             Restaurante
           </Text>
           <VStack align="stretch">
+          <Link
+              to={currentRestaurantId ? `/dashboard/${currentRestaurantId}` : '/dashboard'}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}
+            >
+              <Icon as={FiBarChart2} />
+              Gráficas
+            </Link>
             <Link
               to={currentRestaurantId ? `/menu/${currentRestaurantId}` : '/menu'}
               style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}
@@ -151,13 +158,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar, 
               <Icon as={FiShoppingCart} />
               Pedidos
             </Link>
-            <Link
+            {/* <Link
               to={currentRestaurantId ? `/pagos/${currentRestaurantId}` : '/pagos'}
               style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}
             >
               <Icon as={MdPayment} />
               Pagos
-            </Link>
+            </Link> */}
             <Link
               to="/"
               style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'gray' }}
