@@ -289,10 +289,15 @@ const Ordenes: React.FC = () => {
       />
 
       <Box flex={1} p={{ base: 2, md: 6 }} overflowY="auto" minW={0}>
-        <Box p={{ base: 2, md: 8 }} bg="gray.100" minH={{ base: 'auto', md: '100vh' }}>
-          <Heading textAlign="center" mb={6} fontSize={{ base: 'xl', md: '2xl' }}>
-            Pedidos Realizados
-          </Heading>
+        <Box p={{ base: 4, md: 8 }} bg="gray.50" minH={{ base: 'auto', md: '100vh' }}>
+          <Box textAlign="center" mb={8}>
+            <Heading fontSize={{ base: '2xl', md: '3xl' }} color="gray.800" mb={2}>
+              🍽️ Gestión de Pedidos
+            </Heading>
+            <Text color="gray.600" fontSize={{ base: 'sm', md: 'md' }}>
+              Administra pedidos, mesas y códigos QR
+            </Text>
+          </Box>
           <Grid
             templateColumns={{ base: '1fr', md: '1fr 1fr' }}
             gap={{ base: 4, md: 6 }}
@@ -300,19 +305,30 @@ const Ordenes: React.FC = () => {
           >
             <Box
               bg="white"
-              p={{ base: 2, md: 4 }}
-              borderRadius="md"
-              boxShadow="md"
-              h={{ base: 'auto', md: '550px' }}
+              p={{ base: 4, md: 6 }}
+              borderRadius="xl"
+              boxShadow="lg"
+              border="1px solid"
+              borderColor="gray.200"
+              h={{ base: 'auto', md: '600px' }}
               overflowY="auto"
               minW={0}
             >
-              <Heading size="md" mb={4}>
-                Pedidos Activos
-              </Heading>
+              <Box mb={6}>
+                <Heading size="lg" color="green.600" mb={2} display="flex" alignItems="center" gap={2}>
+                  📋 Pedidos Activos
+                </Heading>
+                <Text color="gray.500" fontSize="sm">
+                  Gestiona los pedidos en curso
+                </Text>
+              </Box>
               {orders.filter((order) => order.status !== 'paid' && order.status !== 'canceled')
                 .length === 0 ? (
-                <Text textAlign="center">No hay pedidos registrados.</Text>
+                <Box textAlign="center" py={8}>
+                  <Text fontSize="4xl" mb={4}>📝</Text>
+                  <Text color="gray.500" fontSize="lg" mb={2}>No hay pedidos activos</Text>
+                  <Text color="gray.400" fontSize="sm">Los nuevos pedidos aparecerán aquí</Text>
+                </Box>
               ) : (
                 <VStack align="stretch" gap={4}>
                   {orders
@@ -336,18 +352,29 @@ const Ordenes: React.FC = () => {
 
             <Box
               bg="white"
-              p={{ base: 2, md: 4 }}
-              borderRadius="md"
-              boxShadow="md"
-              h={{ base: 'auto', md: '550px' }}
+              p={{ base: 4, md: 6 }}
+              borderRadius="xl"
+              boxShadow="lg"
+              border="1px solid"
+              borderColor="gray.200"
+              h={{ base: 'auto', md: '600px' }}
               overflowY="auto"
               minW={0}
             >
-              <Heading size="md" mb={4}>
-                Pedidos Anulados
-              </Heading>
+              <Box mb={6}>
+                <Heading size="lg" color="red.600" mb={2} display="flex" alignItems="center" gap={2}>
+                  🚫 Pedidos Anulados
+                </Heading>
+                <Text color="gray.500" fontSize="sm">
+                  Recupera platos anulados (máximo 20 min)
+                </Text>
+              </Box>
               {voidOrders.length === 0 ? (
-                <Text textAlign="center">No hay pedidos anulados.</Text>
+                <Box textAlign="center" py={8}>
+                  <Text fontSize="4xl" mb={4}>✅</Text>
+                  <Text color="gray.500" fontSize="lg" mb={2}>No hay pedidos anulados</Text>
+                  <Text color="gray.400" fontSize="sm">Todos los pedidos están en buen estado</Text>
+                </Box>
               ) : (
                 <VStack align="stretch" gap={4}>
                   {voidOrders.map((item) => (
@@ -366,8 +393,47 @@ const Ordenes: React.FC = () => {
           </Grid>
 
           
-          <TableDistribution mesas={mesas} fetchTables={fetchTables} />
-          <TableQRTable tables={mesas} />
+          {/* Table Management Section */}
+          <Box mt={8} mb={6}>
+            <Heading size="lg" color="blue.600" mb={4} display="flex" alignItems="center" gap={2}>
+              🏢 Gestión de Mesas
+            </Heading>
+            <Text color="gray.600" mb={6}>
+              Organiza la distribución de mesas y genera códigos QR
+            </Text>
+          </Box>
+
+          <Grid templateColumns={{ base: '1fr', lg: '2fr 1fr' }} gap={6} mb={8}>
+            <Box
+              bg="white"
+              p={{ base: 4, md: 6 }}
+              borderRadius="xl"
+              boxShadow="lg"
+              border="1px solid"
+              borderColor="gray.200"
+            >
+              <TableDistribution mesas={mesas} fetchTables={fetchTables} />
+            </Box>
+            
+            <Box
+              bg="white"
+              p={{ base: 4, md: 6 }}
+              borderRadius="xl"
+              boxShadow="lg"
+              border="1px solid"
+              borderColor="gray.200"
+            >
+              <Box mb={4}>
+                <Heading size="md" color="purple.600" mb={2} display="flex" alignItems="center" gap={2}>
+                  📱 Códigos QR
+                </Heading>
+                <Text color="gray.500" fontSize="sm">
+                  Escanea para acceder al menú
+                </Text>
+              </Box>
+              <TableQRTable tables={mesas} />
+            </Box>
+          </Grid>
           
         </Box>
       </Box>

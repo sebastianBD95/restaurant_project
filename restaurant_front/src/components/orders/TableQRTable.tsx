@@ -35,46 +35,103 @@ const TableQRTable: React.FC<TableQRTableProps> = ({ tables  }) => {
     });
   }, [tables, qrCodes]);
 
+  if (tables.length === 0) {
+    return (
+      <Box textAlign="center" py={8}>
+        <Text fontSize="4xl" mb={4}>🏢</Text>
+        <Text color="gray.500" fontSize="lg" mb={2}>No hay mesas configuradas</Text>
+        <Text color="gray.400" fontSize="sm">Agrega mesas para generar códigos QR</Text>
+      </Box>
+    );
+  }
+
   return (
     <Box overflowX="auto" width="100%">
       <Table.Root variant="outline" size="sm">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeader>Número de Mesa</Table.ColumnHeader>
-            <Table.ColumnHeader>QR Code</Table.ColumnHeader>
+            <Table.ColumnHeader 
+              textAlign="center" 
+              fontWeight="bold" 
+              color="gray.700"
+              bg="gray.50"
+            >
+              Mesa
+            </Table.ColumnHeader>
+            <Table.ColumnHeader 
+              textAlign="center" 
+              fontWeight="bold" 
+              color="gray.700"
+              bg="gray.50"
+            >
+              Código QR
+            </Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
         <Table.Body>
           {tables
             .sort((a, b) => a.table_id.localeCompare(b.table_id))
             .map((table) => (
-            <Table.Row key={table.table_id}>
-              <Table.Cell>
-                <Text fontWeight="medium">{table.table_number}</Text>
+            <Table.Row 
+              key={table.table_id}
+              _hover={{ bg: "gray.50" }}
+              transition="background-color 0.2s"
+            >
+              <Table.Cell textAlign="center">
+                <Box
+                  display="inline-flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  w="40px"
+                  h="40px"
+                  borderRadius="full"
+                  bg="blue.100"
+                  color="blue.700"
+                  fontWeight="bold"
+                  fontSize="lg"
+                >
+                  {table.table_number}
+                </Box>
               </Table.Cell>
-              <Table.Cell>
+              <Table.Cell textAlign="center">
                 {qrCodes[table.table_id] ? (
-                  <Image
-                    src={qrCodes[table.table_id]}
-                    alt={`QR Code for Table ${table.table_number}`}
-                    boxSize="80px"
-                    objectFit="contain"
-                    border="1px solid"
+                  <Box
+                    display="inline-block"
+                    p={2}
+                    bg="white"
+                    borderRadius="lg"
+                    boxShadow="sm"
+                    border="2px solid"
                     borderColor="gray.200"
-                    borderRadius="md"
-                  />
+                    _hover={{
+                      borderColor: "blue.300",
+                      boxShadow: "md",
+                      transform: "scale(1.05)"
+                    }}
+                    transition="all 0.2s"
+                    cursor="pointer"
+                    title="Código QR para Mesa"
+                  >
+                    <Image
+                      src={qrCodes[table.table_id]}
+                      alt={`QR Code for Table ${table.table_number}`}
+                      boxSize="100px"
+                      objectFit="contain"
+                    />
+                  </Box>
                 ) : (
                   <Box
-                    boxSize="80px"
+                    boxSize="100px"
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
-                    border="1px solid"
+                    border="2px solid"
                     borderColor="gray.200"
-                    borderRadius="md"
+                    borderRadius="lg"
                     bg="gray.50"
+                    mx="auto"
                   >
-                    <Spinner size="sm" color="blue.500" />
+                    <Spinner size="md" color="blue.500" />
                   </Box>
                 )}
               </Table.Cell>
