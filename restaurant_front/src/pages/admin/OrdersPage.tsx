@@ -27,6 +27,7 @@ import { Order, VoidOrderItem, OrderStatusUpdate, OrderItem } from '../../interf
 import { useTables } from '../../hooks/useTables';
 import VoidOrderItemCard from '../../components/orders/VoidOrderItemCard';
 import RecoverVoidItemDialog from '../../components/orders/RecoverVoidItemDialog';
+import TableQRTable from '../../components/orders/TableQRTable';
 
 const statusMap: Record<string, string> = {
   ordered: 'Pedido',
@@ -364,18 +365,10 @@ const Ordenes: React.FC = () => {
             </Box>
           </Grid>
 
-          <Box
-            bg="white"
-            p={{ base: 2, md: 4 }}
-            borderRadius="md"
-            boxShadow="md"
-            mt={6}
-            overflowX="auto"
-            overflowY="auto"
-            minW={0}
-          >
-            <TableDistribution mesas={mesas} fetchTables={fetchTables} />
-          </Box>
+          
+          <TableDistribution mesas={mesas} fetchTables={fetchTables} />
+          <TableQRTable tables={mesas} />
+          
         </Box>
       </Box>
 

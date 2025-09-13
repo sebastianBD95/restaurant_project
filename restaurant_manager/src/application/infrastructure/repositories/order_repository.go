@@ -46,16 +46,35 @@ func (repo *OrderRepositoryImpl) GetOrder(orderID string) (*models.Order, error)
 	return &orders, nil
 }
 
-func (repo *OrderRepositoryImpl) GetOrderByRestaurantID(restaurantID string, status string) ([]models.Order, error) {
-	var orders []models.Order
-	err := repo.db.Model(&models.Order{}).
-		Preload("OrderItems").Preload("OrderItems.MenuItem").
-		Preload("Table").Where("restaurant_id = ? AND status = ?", restaurantID, status).
-		Find(&orders).Error
+func (repo *OrderRepositoryImpl) GetOrderByRestaurantID(restaurantID string, status string, tableID string) ([]models.Order, error) {
+	// Input validation
+	if restaurantID == "" {
+		return nil, gorm.ErrInvalidData
+	}
+	if status == "" {
+		return nil, gorm.ErrInvalidData
+	}
 
+	var orders []models.Order
+
+	// Build query with conditional table filter
+	query := repo.db.Model(&models.Order{}).
+		Preload("OrderItems").
+		Preload("OrderItems.MenuItem").
+		Preload("Table").
+		Where("restaurant_id = ? AND status = ?", restaurantID, status)
+
+	// Add table filter only if tableID is provided
+	if tableID != "" {
+		query = query.Where("table_id = ?", tableID)
+	}
+
+	// Execute query with ordering for consistent results
+	err := query.Order("created_at DESC").Find(&orders).Error
 	if err != nil {
 		return nil, err
 	}
+
 	return orders, nil
 }
 

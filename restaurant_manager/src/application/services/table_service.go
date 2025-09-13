@@ -1,9 +1,12 @@
 package services
 
 import (
+	"fmt"
 	"restaurant_manager/src/domain/models"
 	"restaurant_manager/src/domain/repositories"
 )
+
+const QRCodePrefix = "https://api.servu.com.co/orders?restaurant_id=%s&status=%s&table_id=%s"
 
 type TableService struct {
 	repo repositories.TableRepository
@@ -14,6 +17,7 @@ func NewTableService(repo repositories.TableRepository) *TableService {
 }
 
 func (s *TableService) CreateTable(table *models.Table) (string, error) {
+	table.QRCode = fmt.Sprintf(QRCodePrefix, table.RestaurantID, models.OrderStatus("ordered"), table.TableID)
 	return s.repo.CreateTable(table)
 }
 

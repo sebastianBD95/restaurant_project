@@ -12,9 +12,10 @@ import (
 
 type Properties struct {
 	RestaurantManager struct {
-		Database string    `yaml:"database"`
-		JWT      jwtConfig `yaml:"jwt"`
-		Aws      awsCreds  `yaml:"aws"`
+		Database   string    `yaml:"database"`
+		JWT        jwtConfig `yaml:"jwt"`
+		Aws        awsCreds  `yaml:"aws"`
+		QRTemplate string    `yaml:"qr_template"`
 	} `yaml:"restaurant_manager"`
 }
 

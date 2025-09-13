@@ -6,3 +6,4 @@ restaurant_manager:
   aws:
     profile: "devprofile"
     region: "us-east-1"
+  qr_template: "https://localhost:3000/orders?restaurant_id=%s&status=%s&table_id=%s"

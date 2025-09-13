@@ -6,3 +6,4 @@ restaurant_manager:
   aws:
     profile: "${AWS_PROFILE}"
     region: "${AWS_REGION}"
+  qr_template: "https://api.servu.com.co/orders?restaurant_id=%s&status=%s&table_id=%s"
