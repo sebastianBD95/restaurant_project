@@ -21,7 +21,8 @@ import (
 )
 
 type MockImpl struct {
-	Db *gorm.DB
+	Db  *gorm.DB
+	Cfg *config.Properties
 }
 
 func NewMock(t *testing.T) *MockImpl {
@@ -52,7 +53,7 @@ func (m MockImpl) SetRoutes(localstackContainer testcontainers.Container) *mux.R
 	userService := services.NewUserService(userRepo)
 	ingredientService := services.NewIngredientsService(ingredientRepo)
 	menuService := services.NewMenuService(menuRepo, &s3Manager, ingredientService)
-	tableService := services.NewTableService(tableRepo)
+	tableService := services.NewTableService(tableRepo, m.Cfg.RestaurantManager.QRTemplate)
 	inventoryService := services.NewInventoryService(inventoryRepo, menuService)
 	restaurantService := services.NewRestaurantService(restaurantRepo, &s3Manager)
 	orderService := services.NewOrderService(orderRepo, tableService, menuService, inventoryService)

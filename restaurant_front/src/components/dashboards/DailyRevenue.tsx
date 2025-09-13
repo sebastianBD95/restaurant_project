@@ -2,13 +2,27 @@
 
 import { Box, Heading } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
 import { Tooltip, ResponsiveContainer, XAxis, YAxis, AreaChart, Area } from 'recharts';
+import { getPaymentHistory } from '../../services/paymentHistoryService';
+import { toaster } from '../ui/toaster';
 
 interface RevenueEntry {
   date: string;
   revenue: number;
   cost: number;
+}
+
+interface OrderItem {
+  menu_item_id: string;
+  name: string;
+  quantity: number;
+  price: number;
+  status: string;
+  observation: string;
+  image?: string;
+  created_at?: string;
 }
 
 const DailyRevenue = ({ data }: { data: RevenueEntry[] }) => {
@@ -61,56 +75,84 @@ const DailyRevenue = ({ data }: { data: RevenueEntry[] }) => {
 
 const PaginaIngresos: React.FC = () => {
   const [revenueData, setRevenueData] = useState<RevenueEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { restaurantId } = useParams();
 
   useEffect(() => {
-    const storedOrders = JSON.parse(localStorage.getItem('history') || '[]');
-    const recetas = JSON.parse(localStorage.getItem('recetasPlatos') || '[]');
-    const inventario = JSON.parse(localStorage.getItem('alimentosGuardados') || '[]');
+    async function fetchRevenueData() {
+      if (!restaurantId) return;
+      
+      try {
+        setLoading(true);
+        // Fetch paid orders from the last 30 days
+        const paymentData = await getPaymentHistory(restaurantId, {
+          timeFilter: 'month',
+          paymentMethod: 'all'
+        });
 
-    const recetaMap: Record<string, { alimentoId: string; cantidad: number }[]> = {};
-    recetas.forEach((r: any) => {
-      recetaMap[r.nombre] = r.ingredientes;
-    });
+        const daily: Record<string, { revenue: number; cost: number }> = {};
 
-    const alimentoCostoMap: Record<string, number> = {};
-    inventario.forEach((a: any) => {
-      alimentoCostoMap[a.id] = a.costoUnitario || 0;
-    });
+        paymentData.forEach((payment: any) => {
+          // Use created_at instead of timestamp and convert to local timezone
+          const date = new Date(payment.created_at);
+          const localDateString = date.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+          
+          const totalRevenue = payment.total_price || 0;
+          let totalCost = 0;
 
-    const daily: Record<string, { revenue: number; cost: number }> = {};
+          // Calculate cost based on items (simplified - you might want to get actual cost data from menu items)
+          if (payment.items && Array.isArray(payment.items)) {
+            payment.items.forEach((item: OrderItem) => {
+              // For now, estimate cost as 30% of revenue (you can improve this with actual cost data)
+              const estimatedCost = (item.price * item.quantity) * 0.3;
+              totalCost += estimatedCost;
+            });
+          }
 
-    storedOrders.forEach((order: any) => {
-      const date = dayjs(order.timestamp).format('YYYY-MM-DD');
-      let totalRevenue = 0;
-      let totalCost = 0;
+          if (!daily[localDateString]) daily[localDateString] = { revenue: 0, cost: 0 };
+          daily[localDateString].revenue += totalRevenue;
+          daily[localDateString].cost += totalCost;
+        });
 
-      order.items.forEach((item: any) => {
-        const receta = recetaMap[item.name] || [];
-        const costoPlato = receta.reduce((sum, ing) => {
-          const costoUnit = alimentoCostoMap[ing.alimentoId] || 0;
-          return sum + ing.cantidad * costoUnit;
-        }, 0);
+        const formatted: RevenueEntry[] = Object.entries(daily)
+          .map(([date, { revenue, cost }]) => ({
+            date,
+            revenue,
+            cost,
+          }))
+          .sort((a, b) => a.date.localeCompare(b.date)); // Sort by date
 
-        totalRevenue += item.price * item.quantity;
-        totalCost += costoPlato * item.quantity;
-      });
+        setRevenueData(formatted);
+      } catch (error) {
+        toaster.create({
+          title: 'Error',
+          description: 'Error al cargar datos de ingresos.',
+          type: 'error',
+          duration: 5000,
+        });
+        console.error('Error fetching revenue data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-      if (!daily[date]) daily[date] = { revenue: 0, cost: 0 };
-      daily[date].revenue += totalRevenue;
-      daily[date].cost += totalCost;
-    });
+    fetchRevenueData();
+  }, [restaurantId]);
 
-    const formatted: RevenueEntry[] = Object.entries(daily).map(([date, { revenue, cost }]) => ({
-      date,
-      revenue,
-      cost,
-    }));
-
-    setRevenueData(formatted);
-  }, []);
+  if (loading) {
+    return (
+      <Box>
+        <Heading size="lg" mb={4}>Ingresos Diarios</Heading>
+        <Box textAlign="center" py={8}>
+          Cargando datos...
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <Box>
+      <Heading size="lg" mb={4}>Ingresos Diarios</Heading>
       <DailyRevenue data={revenueData} />
     </Box>
   );

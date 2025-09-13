@@ -6,18 +6,17 @@ import (
 	"restaurant_manager/src/domain/repositories"
 )
 
-const QRCodePrefix = "https://api.servu.com.co/orders?restaurant_id=%s&status=%s&table_id=%s"
-
 type TableService struct {
-	repo repositories.TableRepository
+	repo       repositories.TableRepository
+	QRtemplate string
 }
 
-func NewTableService(repo repositories.TableRepository) *TableService {
-	return &TableService{repo: repo}
+func NewTableService(repo repositories.TableRepository, QRTemplate string) *TableService {
+	return &TableService{repo: repo, QRtemplate: QRTemplate}
 }
 
 func (s *TableService) CreateTable(table *models.Table) (string, error) {
-	table.QRCode = fmt.Sprintf(QRCodePrefix, table.RestaurantID, models.OrderStatus("ordered"), table.TableID)
+	table.QRCode = fmt.Sprintf(s.QRtemplate, table.RestaurantID, models.OrderStatus("ordered"), table.TableID)
 	return s.repo.CreateTable(table)
 }
 

@@ -17,7 +17,7 @@ interface Producto {
 
 interface Pedido {
   table: string;
-  timestamp: string;
+  created_at: string;
   items: Producto[];
   total: number;
   observations: string;
@@ -85,7 +85,7 @@ const Historial: React.FC = () => {
           expandedRowRender: (record) => (
             <Table
               dataSource={record.ordenes}
-              rowKey="timestamp"
+              rowKey="created_at"
               pagination={false}
               bordered
               size="small"
@@ -93,11 +93,25 @@ const Historial: React.FC = () => {
               {/* 📌 Fecha y Hora */}
               <Table.Column<Pedido>
                 title="Fecha y Hora"
-                dataIndex="timestamp"
-                key="timestamp"
-                render={(timestamp) => (
-                  <Typography.Text>{dayjs(timestamp).format('DD/MM/YYYY HH:mm')}</Typography.Text>
-                )}
+                dataIndex="created_at"
+                key="created_at"
+                render={(created_at) => {
+                  // Convert UTC time to local timezone
+                  const date = new Date(created_at);
+                  const localDate = date.toLocaleDateString('es-CO', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                  });
+                  const localTime = date.toLocaleTimeString('es-CO', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                  });
+                  return (
+                    <Typography.Text>{localDate} {localTime}</Typography.Text>
+                  );
+                }}
               />
 
               {/* 📌 Precio Total */}
