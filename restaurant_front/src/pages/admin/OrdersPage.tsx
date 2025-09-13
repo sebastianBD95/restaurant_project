@@ -288,53 +288,54 @@ const Ordenes: React.FC = () => {
         restaurantId={restaurantId}
       />
 
-      <Box flex={1} p={{ base: 2, md: 6 }} overflowY="auto" minW={0}>
-        <Box p={{ base: 4, md: 8 }} bg="gray.50" minH={{ base: 'auto', md: '100vh' }}>
-          <Box textAlign="center" mb={8}>
-            <Heading fontSize={{ base: '2xl', md: '3xl' }} color="gray.800" mb={2}>
+      <Box flex={1} p={{ base: 1, sm: 2, md: 3, lg: 4, xl: 6 }} overflowY="auto" minW={0}>
+        <Box p={{ base: 2, sm: 4, md: 5, lg: 6, xl: 8 }} bg="gray.50" minH={{ base: 'auto', md: '100vh' }}>
+          <Box textAlign="center" mb={{ base: 4, md: 5, lg: 6, xl: 8 }}>
+            <Heading fontSize={{ base: 'xl', sm: '2xl', md: '2xl', lg: '3xl', xl: '4xl' }} color="gray.800" mb={2}>
               🍽️ Gestión de Pedidos
             </Heading>
-            <Text color="gray.600" fontSize={{ base: 'sm', md: 'md' }}>
+            <Text color="gray.600" fontSize={{ base: 'xs', sm: 'sm', md: 'md', lg: 'lg' }}>
               Administra pedidos, mesas y códigos QR
             </Text>
           </Box>
           <Grid
-            templateColumns={{ base: '1fr', md: '1fr 1fr' }}
-            gap={{ base: 4, md: 6 }}
+            templateColumns={{ base: '1fr', md: '1fr', lg: '1fr 1fr' }}
+            gap={{ base: 3, sm: 4, md: 4, lg: 5, xl: 6 }}
             alignItems="stretch"
           >
             <Box
               bg="white"
-              p={{ base: 4, md: 6 }}
-              borderRadius="xl"
-              boxShadow="lg"
+              p={{ base: 3, sm: 4, md: 4, lg: 5, xl: 6 }}
+              borderRadius={{ base: 'lg', md: 'lg', lg: 'xl' }}
+              boxShadow={{ base: 'md', md: 'md', lg: 'lg' }}
               border="1px solid"
               borderColor="gray.200"
-              h={{ base: 'auto', md: '600px' }}
+              h={{ base: 'auto', md: '500px', lg: '600px' }}
+              maxH={{ base: '400px', md: '500px', lg: 'none' }}
               overflowY="auto"
               minW={0}
             >
-              <Box mb={6}>
-                <Heading size="lg" color="green.600" mb={2} display="flex" alignItems="center" gap={2}>
+              <Box mb={{ base: 4, md: 5, lg: 6 }}>
+                <Heading size={{ base: 'md', md: 'md', lg: 'lg' }} color="green.600" mb={2} display="flex" alignItems="center" gap={2}>
                   📋 Pedidos Activos
                 </Heading>
-                <Text color="gray.500" fontSize="sm">
+                <Text color="gray.500" fontSize={{ base: 'xs', sm: 'sm', md: 'sm' }}>
                   Gestiona los pedidos en curso
                 </Text>
               </Box>
               {orders.filter((order) => order.status !== 'paid' && order.status !== 'canceled')
                 .length === 0 ? (
-                <Box textAlign="center" py={8}>
-                  <Text fontSize="4xl" mb={4}>📝</Text>
-                  <Text color="gray.500" fontSize="lg" mb={2}>No hay pedidos activos</Text>
-                  <Text color="gray.400" fontSize="sm">Los nuevos pedidos aparecerán aquí</Text>
+                <Box textAlign="center" py={{ base: 4, md: 6, lg: 8 }}>
+                  <Text fontSize={{ base: '2xl', md: '3xl', lg: '4xl' }} mb={4}>📝</Text>
+                  <Text color="gray.500" fontSize={{ base: 'md', md: 'md', lg: 'lg' }} mb={2}>No hay pedidos activos</Text>
+                  <Text color="gray.400" fontSize={{ base: 'xs', sm: 'sm', md: 'sm' }}>Los nuevos pedidos aparecerán aquí</Text>
                 </Box>
               ) : (
-                <VStack align="stretch" gap={4}>
+                <VStack align="stretch" gap={{ base: 2, md: 3, lg: 4 }}>
                   {orders
                     .filter((order) => order.status !== 'paid' && order.status !== 'canceled')
                     .map((order) => (
-                      <Box key={order.order_id} mb={4}>
+                      <Box key={order.order_id} mb={{ base: 2, md: 3, lg: 4 }}>
                         <OrderCard
                           order={order}
                           onUpdateOrder={updateOrderStatus}
@@ -352,31 +353,32 @@ const Ordenes: React.FC = () => {
 
             <Box
               bg="white"
-              p={{ base: 4, md: 6 }}
-              borderRadius="xl"
-              boxShadow="lg"
+              p={{ base: 3, sm: 4, md: 4, lg: 5, xl: 6 }}
+              borderRadius={{ base: 'lg', md: 'lg', lg: 'xl' }}
+              boxShadow={{ base: 'md', md: 'md', lg: 'lg' }}
               border="1px solid"
               borderColor="gray.200"
-              h={{ base: 'auto', md: '600px' }}
+              h={{ base: 'auto', md: '500px', lg: '600px' }}
+              maxH={{ base: '400px', md: '500px', lg: 'none' }}
               overflowY="auto"
               minW={0}
             >
-              <Box mb={6}>
-                <Heading size="lg" color="red.600" mb={2} display="flex" alignItems="center" gap={2}>
+              <Box mb={{ base: 4, md: 5, lg: 6 }}>
+                <Heading size={{ base: 'md', md: 'md', lg: 'lg' }} color="red.600" mb={2} display="flex" alignItems="center" gap={2}>
                   🚫 Pedidos Anulados
                 </Heading>
-                <Text color="gray.500" fontSize="sm">
+                <Text color="gray.500" fontSize={{ base: 'xs', sm: 'sm', md: 'sm' }}>
                   Recupera platos anulados (máximo 20 min)
                 </Text>
               </Box>
               {voidOrders.length === 0 ? (
-                <Box textAlign="center" py={8}>
-                  <Text fontSize="4xl" mb={4}>✅</Text>
-                  <Text color="gray.500" fontSize="lg" mb={2}>No hay pedidos anulados</Text>
-                  <Text color="gray.400" fontSize="sm">Todos los pedidos están en buen estado</Text>
+                <Box textAlign="center" py={{ base: 4, md: 6, lg: 8 }}>
+                  <Text fontSize={{ base: '2xl', md: '3xl', lg: '4xl' }} mb={4}>✅</Text>
+                  <Text color="gray.500" fontSize={{ base: 'md', md: 'md', lg: 'lg' }} mb={2}>No hay pedidos anulados</Text>
+                  <Text color="gray.400" fontSize={{ base: 'xs', sm: 'sm', md: 'sm' }}>Todos los pedidos están en buen estado</Text>
                 </Box>
               ) : (
-                <VStack align="stretch" gap={4}>
+                <VStack align="stretch" gap={{ base: 2, md: 3, lg: 4 }}>
                   {voidOrders.map((item) => (
                     <VoidOrderItemCard
                       key={item.void_order_item_id || item.menu_item_id + (item.created_at || '')}
@@ -394,21 +396,21 @@ const Ordenes: React.FC = () => {
 
           
           {/* Table Management Section */}
-          <Box mt={8} mb={6}>
-            <Heading size="lg" color="blue.600" mb={4} display="flex" alignItems="center" gap={2}>
+          <Box mt={{ base: 6, md: 7, lg: 8 }} mb={{ base: 4, md: 5, lg: 6 }}>
+            <Heading size={{ base: 'md', md: 'md', lg: 'lg' }} color="blue.600" mb={{ base: 2, md: 3, lg: 4 }} display="flex" alignItems="center" gap={2}>
               🏢 Gestión de Mesas
             </Heading>
-            <Text color="gray.600" mb={6}>
+            <Text color="gray.600" mb={{ base: 4, md: 5, lg: 6 }} fontSize={{ base: 'sm', md: 'sm', lg: 'md' }}>
               Organiza la distribución de mesas y genera códigos QR
             </Text>
           </Box>
 
-          <Grid templateColumns={{ base: '1fr', lg: '2fr 1fr' }} gap={6} mb={8}>
+          <Grid templateColumns={{ base: '1fr', md: '1fr', lg: '2fr 1fr' }} gap={{ base: 3, md: 4, lg: 5, xl: 6 }} mb={{ base: 6, md: 7, lg: 8 }}>
             <Box
               bg="white"
-              p={{ base: 4, md: 6 }}
-              borderRadius="xl"
-              boxShadow="lg"
+              p={{ base: 3, sm: 4, md: 4, lg: 5, xl: 6 }}
+              borderRadius={{ base: 'lg', md: 'lg', lg: 'xl' }}
+              boxShadow={{ base: 'md', md: 'md', lg: 'lg' }}
               border="1px solid"
               borderColor="gray.200"
             >
@@ -417,17 +419,17 @@ const Ordenes: React.FC = () => {
             
             <Box
               bg="white"
-              p={{ base: 4, md: 6 }}
-              borderRadius="xl"
-              boxShadow="lg"
+              p={{ base: 3, sm: 4, md: 4, lg: 5, xl: 6 }}
+              borderRadius={{ base: 'lg', md: 'lg', lg: 'xl' }}
+              boxShadow={{ base: 'md', md: 'md', lg: 'lg' }}
               border="1px solid"
               borderColor="gray.200"
             >
-              <Box mb={4}>
-                <Heading size="md" color="purple.600" mb={2} display="flex" alignItems="center" gap={2}>
+              <Box mb={{ base: 3, md: 4, lg: 4 }}>
+                <Heading size={{ base: 'sm', md: 'sm', lg: 'md' }} color="purple.600" mb={2} display="flex" alignItems="center" gap={2}>
                   📱 Códigos QR
                 </Heading>
-                <Text color="gray.500" fontSize="sm">
+                <Text color="gray.500" fontSize={{ base: 'xs', sm: 'sm', md: 'sm' }}>
                   Escanea para acceder al menú
                 </Text>
               </Box>
