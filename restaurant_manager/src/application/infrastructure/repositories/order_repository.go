@@ -46,7 +46,7 @@ func (repo *OrderRepositoryImpl) GetOrder(orderID string) (*models.Order, error)
 	return &orders, nil
 }
 
-func (repo *OrderRepositoryImpl) GetOrderByRestaurantID(restaurantID string, status string, tableID string) ([]models.Order, error) {
+func (repo *OrderRepositoryImpl) GetOrderByRestaurantID(restaurantID string, status string, tableID string, startDate string, endDate string) ([]models.Order, error) {
 	// Input validation
 	if restaurantID == "" {
 		return nil, gorm.ErrInvalidData
@@ -67,6 +67,11 @@ func (repo *OrderRepositoryImpl) GetOrderByRestaurantID(restaurantID string, sta
 	// Add table filter only if tableID is provided
 	if tableID != "" {
 		query = query.Where("table_id = ?", tableID)
+	}
+
+	// Add date filter only if startDate and endDate are provided
+	if startDate != "" && endDate != "" {
+		query = query.Where("created_at BETWEEN ? AND ?", startDate, endDate)
 	}
 
 	// Execute query with ordering for consistent results

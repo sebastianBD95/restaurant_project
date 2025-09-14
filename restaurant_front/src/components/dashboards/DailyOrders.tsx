@@ -7,11 +7,28 @@ import { BarChart, Bar, Tooltip, ResponsiveContainer, XAxis, YAxis } from 'recha
 import { useParams } from 'react-router-dom';
 import { getOrdersByRestaurant } from '../../services/orderService';
 
-//Componente DailyOrders para mostrar la gráfica
-const DailyOrders = ({ data }: { data: { date: string; value: number }[] }) => {
+interface WeeklyData {
+  date: string;
+  orders: number;
+  revenue: number;
+  profit: number;
+  itemsSold: number;
+}
+
+interface DailyOrdersProps {
+  weeklyData?: WeeklyData[];
+}
+
+const DailyOrders = ({ weeklyData }: DailyOrdersProps) => {
+  // Transform weekly data for the chart
+  const chartData = weeklyData?.map(item => ({
+    date: item.date,
+    value: item.orders,
+  })) || [];
+
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={data} barSize={15} margin={{ top: 30, right: 10, left: -25, bottom: 0 }}>
+      <BarChart data={chartData} barSize={15} margin={{ top: 30, right: 10, left: -25, bottom: 0 }}>
         <XAxis
           dataKey="date"
           fontSize={12}
@@ -25,33 +42,4 @@ const DailyOrders = ({ data }: { data: { date: string; value: number }[] }) => {
   );
 };
 
-const DashboardDO: React.FC = () => {
-  const [chartData, setChartData] = useState<{ date: string; value: number }[]>([]);
-  const { restaurantId } = useParams();
-
-  useEffect(() => {
-    async function fetchOrders() {
-      if (!restaurantId) return;
-      const orders = await getOrdersByRestaurant(restaurantId, 'ordered');
-      const ordersPerDay: { [key: string]: number } = {};
-      orders.forEach((order: any) => {
-        const date = dayjs(order.created_at).format('YYYY-MM-DD');
-        ordersPerDay[date] = (ordersPerDay[date] || 0) + 1;
-      });
-      const formattedData = Object.entries(ordersPerDay).map(([date, value]) => ({
-        date,
-        value,
-      }));
-      setChartData(formattedData);
-    }
-    fetchOrders();
-  }, [restaurantId]);
-
-  return (
-    <Box>
-      <DailyOrders data={chartData} />
-    </Box>
-  );
-};
-
-export default DashboardDO;
+export default DailyOrders;

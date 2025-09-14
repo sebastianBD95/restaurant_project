@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Heading, Grid, Flex, Text, Icon } from '@chakra-ui/react';
+import { Box, Heading, Grid, Flex, Text, Icon, Spinner, VStack } from '@chakra-ui/react';
 import DailyRevenue from '../../components/dashboards/DailyRevenue';
 import TrendingMenu from '../../components/dashboards/TrendingMenu';
 import DailyOrders from '../../components/dashboards/DailyOrders';
@@ -10,10 +10,140 @@ import { useParams } from 'react-router-dom';
 import { Sidebar } from '../../components/ui/navegator';
 import { useSidebar } from '../../hooks/useSidebar';
 import { FiTrendingUp, FiDollarSign, FiShoppingCart, FiBarChart2, FiUser } from 'react-icons/fi';
+import { useState, useEffect } from 'react';
+import { getOrdersByRestaurant } from '../../services/orderService';
+
+interface DashboardMetrics {
+  todayOrders: number;
+  todayRevenue: number;
+  todayProfit: number;
+  todayItemsSold: number;
+}
+
+interface WeeklyData {
+  date: string;
+  orders: number;
+  revenue: number;
+  profit: number;
+  itemsSold: number;
+}
 
 const Dashboard: React.FC = () => {
   const { restaurantId } = useParams();
   const { isSidebarOpen, toggleSidebar } = useSidebar();
+  const [metrics, setMetrics] = useState<DashboardMetrics>({
+    todayOrders: 0,
+    todayRevenue: 0,
+    todayProfit: 0,
+    todayItemsSold: 0,
+  });
+  const [weeklyData, setWeeklyData] = useState<WeeklyData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchDashboardData = async () => {
+    if (!restaurantId) return;
+    
+    setLoading(true);
+    try {
+      // Get today's date range for today's metrics
+      const today = new Date();
+      const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+      
+      const todayStartDate = startOfDay.toISOString().split('T')[0];
+      const todayEndDate = endOfDay.toISOString().split('T')[0];
+
+      // Get weekly date range (past 7 days)
+      const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const weekStartDate = weekAgo.toISOString().split('T')[0];
+      const weekEndDate = todayEndDate;
+
+      // Fetch all orders for today (for summary metrics)
+      const [todayPaidOrders, todayDeliveredOrders] = await Promise.all([
+        getOrdersByRestaurant(restaurantId, 'paid', '', todayStartDate, todayEndDate),
+        getOrdersByRestaurant(restaurantId, 'delivered', '', todayStartDate, todayEndDate)
+      ]);
+
+      // Fetch all orders for the week (for charts)
+      const [weekPaidOrders, weekDeliveredOrders] = await Promise.all([
+        getOrdersByRestaurant(restaurantId, 'paid', '', weekStartDate, weekEndDate),
+        getOrdersByRestaurant(restaurantId, 'delivered', '', weekStartDate, weekEndDate)
+      ]);
+
+      // Combine today's orders for metrics
+      const todayAllOrders = [...todayPaidOrders, ...todayDeliveredOrders];
+      
+      // Calculate today's metrics
+      const todayOrders = todayAllOrders.length;
+      console.log('Today orders', todayOrders);
+      const todayRevenue = todayAllOrders.reduce((sum, order) => sum + order.total_price, 0);
+      const todayProfit = todayRevenue * 0.3; // Assuming 30% profit margin
+      const todayItemsSold = todayAllOrders.reduce((sum, order) => 
+        sum + order.items.reduce((itemSum: number, item: any) => itemSum + item.quantity, 0), 0
+      );
+
+      // Combine week's orders for charts
+      const weekAllOrders = [...weekPaidOrders, ...weekDeliveredOrders];
+
+      // Group orders by date for weekly data
+      const ordersByDate: { [key: string]: any[] } = {};
+      weekAllOrders.forEach(order => {
+        const orderDate = new Date(order.created_at).toISOString().split('T')[0];
+        if (!ordersByDate[orderDate]) {
+          ordersByDate[orderDate] = [];
+        }
+        ordersByDate[orderDate].push(order);
+      });
+
+      // Generate weekly data array
+      const weeklyDataArray: WeeklyData[] = [];
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
+        const dateString = date.toISOString().split('T')[0];
+        const dayOrders = ordersByDate[dateString] || [];
+        
+        const dayRevenue = dayOrders.reduce((sum, order) => sum + order.total_price, 0);
+        const dayProfit = dayRevenue * 0.3;
+        const dayItemsSold = dayOrders.reduce((sum, order) => 
+          sum + order.items.reduce((itemSum: number, item: any) => itemSum + item.quantity, 0), 0
+        );
+
+        weeklyDataArray.push({
+          date: dateString,
+          orders: dayOrders.length,
+          revenue: dayRevenue,
+          profit: dayProfit,
+          itemsSold: dayItemsSold,
+        });
+      }
+
+      setMetrics({
+        todayOrders,
+        todayRevenue,
+        todayProfit,
+        todayItemsSold,
+      });
+
+      setWeeklyData(weeklyDataArray);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [restaurantId]);
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
 
   return (
     <Flex height="100vh" width="100vw" direction="row">
@@ -77,10 +207,14 @@ const Dashboard: React.FC = () => {
               </Box>
               <Box>
                 <Text color="gray.600" fontSize="sm" fontWeight="medium">Órdenes Hoy</Text>
-                <Text color="gray.800" fontSize="3xl" fontWeight="bold">24</Text>
+                {loading ? (
+                  <Spinner size="lg" color="blue.500" />
+                ) : (
+                  <Text color="gray.800" fontSize="3xl" fontWeight="bold">{metrics.todayOrders}</Text>
+                )}
                 <Flex align="center" color="green.500" fontSize="sm">
                   <Icon as={FiTrendingUp} mr={1} />
-                  12.5%
+                  Hoy
                 </Flex>
               </Box>
             </Box>
@@ -102,10 +236,14 @@ const Dashboard: React.FC = () => {
               </Box>
               <Box>
                 <Text color="gray.600" fontSize="sm" fontWeight="medium">Ingresos Hoy</Text>
-                <Text color="gray.800" fontSize="3xl" fontWeight="bold">$2.4M</Text>
+                {loading ? (
+                  <Spinner size="lg" color="green.500" />
+                ) : (
+                  <Text color="gray.800" fontSize="3xl" fontWeight="bold">{formatCurrency(metrics.todayRevenue)}</Text>
+                )}
                 <Flex align="center" color="green.500" fontSize="sm">
                   <Icon as={FiTrendingUp} mr={1} />
-                  8.2%
+                  Hoy
                 </Flex>
               </Box>
             </Box>
@@ -127,10 +265,14 @@ const Dashboard: React.FC = () => {
               </Box>
               <Box>
                 <Text color="gray.600" fontSize="sm" fontWeight="medium">Ganancia Hoy</Text>
-                <Text color="gray.800" fontSize="3xl" fontWeight="bold">$890K</Text>
+                {loading ? (
+                  <Spinner size="lg" color="purple.500" />
+                ) : (
+                  <Text color="gray.800" fontSize="3xl" fontWeight="bold">{formatCurrency(metrics.todayProfit)}</Text>
+                )}
                 <Flex align="center" color="green.500" fontSize="sm">
                   <Icon as={FiTrendingUp} mr={1} />
-                  15.3%
+                  Hoy
                 </Flex>
               </Box>
             </Box>
@@ -152,10 +294,14 @@ const Dashboard: React.FC = () => {
               </Box>
               <Box>
                 <Text color="gray.600" fontSize="sm" fontWeight="medium">Platos Vendidos</Text>
-                <Text color="gray.800" fontSize="3xl" fontWeight="bold">156</Text>
+                {loading ? (
+                  <Spinner size="lg" color="orange.500" />
+                ) : (
+                  <Text color="gray.800" fontSize="3xl" fontWeight="bold">{metrics.todayItemsSold}</Text>
+                )}
                 <Flex align="center" color="green.500" fontSize="sm">
                   <Icon as={FiTrendingUp} mr={1} />
-                  6.8%
+                  Hoy
                 </Flex>
               </Box>
             </Box>
@@ -192,7 +338,7 @@ const Dashboard: React.FC = () => {
                 </Box>
               </Flex>
               <Box h="400px">
-                <DailyOrders />
+                <DailyOrders weeklyData={weeklyData} />
               </Box>
             </Box>
 
@@ -225,7 +371,7 @@ const Dashboard: React.FC = () => {
                 </Box>
               </Flex>
               <Box h="400px">
-                <DailyRevenue />
+                <DailyRevenue weeklyData={weeklyData} />
               </Box>
             </Box>
 
@@ -258,7 +404,7 @@ const Dashboard: React.FC = () => {
                 </Box>
               </Flex>
               <Box h="400px">
-                <PaginaGanancia />
+                <PaginaGanancia weeklyData={weeklyData} />
               </Box>
             </Box>
           </Grid>

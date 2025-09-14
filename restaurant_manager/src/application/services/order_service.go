@@ -74,8 +74,8 @@ func (service *OrderService) GetOrder(orderID string) (*models.Order, error) {
 	return service.repo.GetOrder(orderID)
 }
 
-func (service *OrderService) GetOrderByRestaurantID(restaurantID string, status string, tableID string) ([]models.Order, error) {
-	return service.repo.GetOrderByRestaurantID(restaurantID, status, tableID)
+func (service *OrderService) GetOrderByRestaurantID(restaurantID string, status string, tableID string, startDate string, endDate string) ([]models.Order, error) {
+	return service.repo.GetOrderByRestaurantID(restaurantID, status, tableID, startDate, endDate)
 }
 
 func (s *OrderService) AddOrderItem(orderItem *models.OrderItem) (string, error) {

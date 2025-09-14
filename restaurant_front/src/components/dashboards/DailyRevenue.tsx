@@ -14,6 +14,18 @@ interface RevenueEntry {
   cost: number;
 }
 
+interface WeeklyData {
+  date: string;
+  orders: number;
+  revenue: number;
+  profit: number;
+  itemsSold: number;
+}
+
+interface DailyRevenueProps {
+  weeklyData?: WeeklyData[];
+}
+
 interface OrderItem {
   menu_item_id: string;
   name: string;
@@ -25,7 +37,13 @@ interface OrderItem {
   created_at?: string;
 }
 
-const DailyRevenue = ({ data }: { data: RevenueEntry[] }) => {
+const DailyRevenue = ({ weeklyData }: DailyRevenueProps) => {
+  // Transform weekly data for the chart
+  const data = weeklyData?.map(item => ({
+    date: item.date,
+    revenue: item.revenue,
+    cost: item.revenue * 0.7, // Assuming 70% cost, 30% profit
+  })) || [];
   return (
     <ResponsiveContainer width="100%" height={300}>
       <AreaChart data={data} margin={{ top: 20, right: 10, left: 0, bottom: 0 }}>
@@ -73,87 +91,18 @@ const DailyRevenue = ({ data }: { data: RevenueEntry[] }) => {
   );
 };
 
-const PaginaIngresos: React.FC = () => {
-  const [revenueData, setRevenueData] = useState<RevenueEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { restaurantId } = useParams();
-
-  useEffect(() => {
-    async function fetchRevenueData() {
-      if (!restaurantId) return;
-      
-      try {
-        setLoading(true);
-        // Fetch paid orders from the last 30 days
-        const paymentData = await getPaymentHistory(restaurantId, {
-          timeFilter: 'month',
-          paymentMethod: 'all'
-        });
-
-        const daily: Record<string, { revenue: number; cost: number }> = {};
-
-        paymentData.forEach((payment: any) => {
-          // Use created_at instead of timestamp and convert to local timezone
-          const date = new Date(payment.created_at);
-          const localDateString = date.toLocaleDateString('en-CA'); // YYYY-MM-DD format
-          
-          const totalRevenue = payment.total_price || 0;
-          let totalCost = 0;
-
-          // Calculate cost based on items (simplified - you might want to get actual cost data from menu items)
-          if (payment.items && Array.isArray(payment.items)) {
-            payment.items.forEach((item: OrderItem) => {
-              // For now, estimate cost as 30% of revenue (you can improve this with actual cost data)
-              const estimatedCost = (item.price * item.quantity) * 0.3;
-              totalCost += estimatedCost;
-            });
-          }
-
-          if (!daily[localDateString]) daily[localDateString] = { revenue: 0, cost: 0 };
-          daily[localDateString].revenue += totalRevenue;
-          daily[localDateString].cost += totalCost;
-        });
-
-        const formatted: RevenueEntry[] = Object.entries(daily)
-          .map(([date, { revenue, cost }]) => ({
-            date,
-            revenue,
-            cost,
-          }))
-          .sort((a, b) => a.date.localeCompare(b.date)); // Sort by date
-
-        setRevenueData(formatted);
-      } catch (error) {
-        toaster.create({
-          title: 'Error',
-          description: 'Error al cargar datos de ingresos.',
-          type: 'error',
-          duration: 5000,
-        });
-        console.error('Error fetching revenue data:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchRevenueData();
-  }, [restaurantId]);
-
-  if (loading) {
-    return (
-      <Box>
-        <Heading size="lg" mb={4}>Ingresos Diarios</Heading>
-        <Box textAlign="center" py={8}>
-          Cargando datos...
-        </Box>
-      </Box>
-    );
-  }
+const PaginaIngresos: React.FC<DailyRevenueProps> = ({ weeklyData }) => {
+  // Use the weekly data passed from parent component
+  const data = weeklyData?.map(item => ({
+    date: item.date,
+    revenue: item.revenue,
+    cost: item.revenue * 0.7, // Assuming 70% cost, 30% profit
+  })) || [];
 
   return (
     <Box>
       <Heading size="lg" mb={4}>Ingresos Diarios</Heading>
-      <DailyRevenue data={revenueData} />
+      <DailyRevenue weeklyData={weeklyData} />
     </Box>
   );
 };

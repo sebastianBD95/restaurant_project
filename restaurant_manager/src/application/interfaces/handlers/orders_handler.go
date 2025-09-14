@@ -107,7 +107,9 @@ func (h *OrderHandler) GetOrderByRestaurantID(w http.ResponseWriter, r *http.Req
 	restaurantID := queryParams.Get("restaurant_id")
 	status := queryParams.Get("status")
 	tableID := queryParams.Get("table_id")
-	orders, err := h.service.GetOrderByRestaurantID(restaurantID, status, tableID)
+	startDate := queryParams.Get("start_date")
+	endDate := queryParams.Get("end_date")
+	orders, err := h.service.GetOrderByRestaurantID(restaurantID, status, tableID, startDate, endDate)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return

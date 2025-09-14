@@ -64,7 +64,8 @@ func (s *CashClosingService) GetCashClosingStats(restaurantID string, startDate,
 // CalculateCashClosingData calculates the financial data for a specific date
 func (s *CashClosingService) CalculateCashClosingData(restaurantID string, date time.Time) (*models.CashClosing, error) {
 	// Get paid orders for the date
-	orders, err := s.orderRepo.GetOrderByRestaurantID(restaurantID, "paid", "")
+	tomorrow := date.AddDate(0, 0, 1)
+	orders, err := s.orderRepo.GetOrderByRestaurantID(restaurantID, "paid", "", date.Format("2006-01-02"), tomorrow.Format("2006-01-02"))
 	if err != nil {
 		return nil, err
 	}

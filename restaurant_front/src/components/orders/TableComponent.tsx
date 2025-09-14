@@ -116,29 +116,33 @@ const TableDistribution: React.FC<TableDistributionProps> = ({ mesas, fetchTable
         direction={{ base: 'column', sm: 'row' }}
         justify="space-between"
         align={{ base: 'stretch', sm: 'center' }}
-        mb={6}
-        gap={2}
+        mb={8}
+        gap={4}
       >
-        <Heading className="heading" fontSize={{ base: 'lg', md: 'xl' }}>
+        <Heading className="heading" fontSize={{ base: 'xl', md: '2xl', lg: '3xl' }} color="blue.600">
           📍 Distribución de Mesas
         </Heading>
-        <Stack direction={{ base: 'column', sm: 'row' }} gap={2}>
+        <Stack direction={{ base: 'column', sm: 'row' }} gap={3}>
           <Button
             onClick={toggleLock}
             colorScheme={isLocked ? 'red' : 'blue'}
-            className="button"
-            fontSize={{ base: 'sm', md: 'md' }}
+            size={{ base: 'md', md: 'lg' }}
+            fontSize={{ base: 'md', md: 'lg' }}
+            px={6}
+            py={3}
           >
-            <Icon as={isLocked ? FaUnlock : FaLock} className="button-icon" />
+            <Icon as={isLocked ? FaUnlock : FaLock} mr={2} />
             {isLocked ? 'Desbloquear' : 'Bloquear'}
           </Button>
           <Button
             onClick={handleCreateTable}
             colorScheme="green"
-            className="button"
-            fontSize={{ base: 'sm', md: 'md' }}
+            size={{ base: 'md', md: 'lg' }}
+            fontSize={{ base: 'md', md: 'lg' }}
+            px={6}
+            py={3}
           >
-            <Icon as={FaPlus} className="button-icon" />
+            <Icon as={FaPlus} mr={2} />
             Agregar Mesa
           </Button>
         </Stack>
@@ -152,6 +156,8 @@ const TableDistribution: React.FC<TableDistributionProps> = ({ mesas, fetchTable
               x={20}
               y={20}
               fontSize={14}
+              width={stageWidth ? stageWidth - 40 : 800}
+              wrap="word"
             />
             {layout.map((mesa) => (
               <Group
