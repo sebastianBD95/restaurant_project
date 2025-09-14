@@ -478,3 +478,358 @@ func TestRecoverVoidOrderItemNoMatchingItem(t *testing.T) {
 	json.Unmarshal(getVoidResponse.Body.Bytes(), &voidItems)
 	assert.Len(t, voidItems, 1) // Should still have 1 void item
 }
+
+// TestGetOrderByRestaurantID tests the GetOrderByRestaurantID handler with various query parameters
+func TestGetOrderByRestaurantID(t *testing.T) {
+	fixture := NewTestFixture(t)
+	defer fixture.TearDown()
+
+	// Setup test data
+	var userID, restaurantID, tableID1, tableID2, menuItemID1, menuItemID2 string
+
+	// Create user
+	result := fixture.Mock.Db.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+		VALUES ('Test User', 'test@example.com', '$2a$10$OadQYtj4KxIpkjOQ/zw62euZ00cLJDUmUGMJ5bdGU2TE1.6GwKsoa', 'admin', '1234567890')
+		RETURNING user_id`).Scan(&userID)
+	assert.NoError(t, result.Error)
+
+	// Create restaurant
+	result = fixture.Mock.Db.Raw(`INSERT INTO servu.restaurants (name, owner_id, description, image_url)
+		VALUES ('Test Restaurant', ?, 'Test Description', 'https://test.com') 
+		RETURNING restaurant_id`, userID).Scan(&restaurantID)
+	assert.NoError(t, result.Error)
+
+	// Create tables
+	result = fixture.Mock.Db.Raw(`INSERT INTO servu.tables (restaurant_id, table_number, qr_code, status)
+		VALUES (?, 1, 'QR_CODE_1', 'available') 
+		RETURNING table_id`, restaurantID).Scan(&tableID1)
+	assert.NoError(t, result.Error)
+
+	result = fixture.Mock.Db.Raw(`INSERT INTO servu.tables (restaurant_id, table_number, qr_code, status)
+		VALUES (?, 2, 'QR_CODE_2', 'available') 
+		RETURNING table_id`, restaurantID).Scan(&tableID2)
+	assert.NoError(t, result.Error)
+
+	// Create menu items
+	result = fixture.Mock.Db.Raw(`INSERT INTO servu.menu_items (restaurant_id, name, description, price, available, category, image_url)
+		VALUES (?, 'Burger', 'Juicy beef burger', 10.99, true, 'Main', 'https://example.com/burger.jpg') 
+		RETURNING menu_item_id`, restaurantID).Scan(&menuItemID1)
+	assert.NoError(t, result.Error)
+
+	result = fixture.Mock.Db.Raw(`INSERT INTO servu.menu_items (restaurant_id, name, description, price, available, category, image_url)
+		VALUES (?, 'Pizza', 'Margherita pizza', 15.99, true, 'Main', 'https://example.com/pizza.jpg') 
+		RETURNING menu_item_id`, restaurantID).Scan(&menuItemID2)
+	assert.NoError(t, result.Error)
+
+	// Create orders with different statuses and dates
+	orderData1 := dto.OrderDTO{
+		TableID:      tableID1,
+		Status:       "ordered",
+		RestaurantID: restaurantID,
+		Items: []dto.OrderItemDTO{
+			{
+				MenuItemID:  menuItemID1,
+				Name:        "Burger",
+				Quantity:    2,
+				Price:       10.99,
+				Status:      "pending",
+				Observation: "",
+				Image:       "https://example.com/burger.jpg",
+			},
+		},
+		TotalPrice: 21.98,
+	}
+	orderJSON1, _ := json.Marshal(orderData1)
+	req1, _ := http.NewRequest("POST", "/orders", bytes.NewBuffer(orderJSON1))
+	response1 := fixture.Mock.ExecuteRequest(req1, fixture.Router)
+	assert.Equal(t, http.StatusOK, response1.Code)
+
+	orderData2 := dto.OrderDTO{
+		TableID:      tableID2,
+		Status:       "prepared",
+		RestaurantID: restaurantID,
+		Items: []dto.OrderItemDTO{
+			{
+				MenuItemID:  menuItemID2,
+				Name:        "Pizza",
+				Quantity:    1,
+				Price:       15.99,
+				Status:      "completed",
+				Observation: "",
+				Image:       "https://example.com/pizza.jpg",
+			},
+		},
+		TotalPrice: 15.99,
+	}
+	orderJSON2, _ := json.Marshal(orderData2)
+	req2, _ := http.NewRequest("POST", "/orders", bytes.NewBuffer(orderJSON2))
+	response2 := fixture.Mock.ExecuteRequest(req2, fixture.Router)
+	assert.Equal(t, http.StatusOK, response2.Code)
+
+	// Test 1: Get all orders by restaurant ID
+	t.Run("GetAllOrdersByRestaurantID", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/orders?restaurant_id="+restaurantID, nil)
+		response := fixture.Mock.ExecuteRequest(req, fixture.Router)
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		var orders []dto.OrderDTO
+		err := json.Unmarshal(response.Body.Bytes(), &orders)
+		assert.NoError(t, err)
+		assert.Len(t, orders, 2)
+	})
+
+	// Test 2: Filter by status
+	t.Run("FilterByStatus", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/orders?restaurant_id="+restaurantID+"&status=ordered", nil)
+		response := fixture.Mock.ExecuteRequest(req, fixture.Router)
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		var orders []dto.OrderDTO
+		err := json.Unmarshal(response.Body.Bytes(), &orders)
+		assert.NoError(t, err)
+		assert.Len(t, orders, 1)
+		assert.Equal(t, "ordered", orders[0].Status)
+	})
+
+	// Test 3: Filter by table ID
+	t.Run("FilterByTableID", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/orders?restaurant_id="+restaurantID+"&table_id="+tableID1, nil)
+		response := fixture.Mock.ExecuteRequest(req, fixture.Router)
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		var orders []dto.OrderDTO
+		err := json.Unmarshal(response.Body.Bytes(), &orders)
+		assert.NoError(t, err)
+		assert.Len(t, orders, 1)
+		assert.Equal(t, tableID1, orders[0].TableID)
+	})
+
+	// Test 4: Filter by date range (today)
+	t.Run("FilterByDateRange", func(t *testing.T) {
+		today := "2024-01-01"
+		req, _ := http.NewRequest("GET", "/orders?restaurant_id="+restaurantID+"&start_date="+today+"&end_date="+today, nil)
+		response := fixture.Mock.ExecuteRequest(req, fixture.Router)
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		var orders []dto.OrderDTO
+		err := json.Unmarshal(response.Body.Bytes(), &orders)
+		assert.NoError(t, err)
+		// Should return all orders created today (both orders)
+		assert.Len(t, orders, 2)
+	})
+
+	// Test 5: Combined filters
+	t.Run("CombinedFilters", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/orders?restaurant_id="+restaurantID+"&status=ordered&table_id="+tableID1, nil)
+		response := fixture.Mock.ExecuteRequest(req, fixture.Router)
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		var orders []dto.OrderDTO
+		err := json.Unmarshal(response.Body.Bytes(), &orders)
+		assert.NoError(t, err)
+		assert.Len(t, orders, 1)
+		assert.Equal(t, "ordered", orders[0].Status)
+		assert.Equal(t, tableID1, orders[0].TableID)
+	})
+
+	// Test 6: Empty result
+	t.Run("EmptyResult", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/orders?restaurant_id="+restaurantID+"&status=paid", nil)
+		response := fixture.Mock.ExecuteRequest(req, fixture.Router)
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		var orders []dto.OrderDTO
+		err := json.Unmarshal(response.Body.Bytes(), &orders)
+		assert.NoError(t, err)
+		assert.Len(t, orders, 0)
+	})
+
+	// Test 7: Invalid restaurant ID
+	t.Run("InvalidRestaurantID", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/orders?restaurant_id=invalid-id", nil)
+		response := fixture.Mock.ExecuteRequest(req, fixture.Router)
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		var orders []dto.OrderDTO
+		err := json.Unmarshal(response.Body.Bytes(), &orders)
+		assert.NoError(t, err)
+		assert.Len(t, orders, 0)
+	})
+
+	// Test 8: Missing restaurant ID
+	t.Run("MissingRestaurantID", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/orders", nil)
+		response := fixture.Mock.ExecuteRequest(req, fixture.Router)
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		var orders []dto.OrderDTO
+		err := json.Unmarshal(response.Body.Bytes(), &orders)
+		assert.NoError(t, err)
+		// Should return empty array when no restaurant_id is provided
+		assert.Len(t, orders, 0)
+	})
+}
+
+// TestGetOrderByRestaurantIDWithMultipleStatuses tests filtering with multiple order statuses
+func TestGetOrderByRestaurantIDWithMultipleStatuses(t *testing.T) {
+	fixture := NewTestFixture(t)
+	defer fixture.TearDown()
+
+	// Setup test data
+	var userID, restaurantID, tableID, menuItemID string
+
+	result := fixture.Mock.Db.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+		VALUES ('Test User', 'test@example.com', '$2a$10$OadQYtj4KxIpkjOQ/zw62euZ00cLJDUmUGMJ5bdGU2TE1.6GwKsoa', 'admin', '1234567890')
+		RETURNING user_id`).Scan(&userID)
+	assert.NoError(t, result.Error)
+
+	result = fixture.Mock.Db.Raw(`INSERT INTO servu.restaurants (name, owner_id, description, image_url)
+		VALUES ('Test Restaurant', ?, 'Test Description', 'https://test.com') 
+		RETURNING restaurant_id`, userID).Scan(&restaurantID)
+	assert.NoError(t, result.Error)
+
+	result = fixture.Mock.Db.Raw(`INSERT INTO servu.tables (restaurant_id, table_number, qr_code, status)
+		VALUES (?, 1, 'QR_CODE', 'available') 
+		RETURNING table_id`, restaurantID).Scan(&tableID)
+	assert.NoError(t, result.Error)
+
+	result = fixture.Mock.Db.Raw(`INSERT INTO servu.menu_items (restaurant_id, name, description, price, available, category, image_url)
+		VALUES (?, 'Burger', 'Juicy beef burger', 10.99, true, 'Main', 'https://example.com/burger.jpg') 
+		RETURNING menu_item_id`, restaurantID).Scan(&menuItemID)
+	assert.NoError(t, result.Error)
+
+	// Create orders with different statuses
+	statuses := []string{"ordered", "prepared", "delivered", "paid", "cancelled"}
+	var orderIDs []string
+
+	for _, status := range statuses {
+		orderData := dto.OrderDTO{
+			TableID:      tableID,
+			Status:       status,
+			RestaurantID: restaurantID,
+			Items: []dto.OrderItemDTO{
+				{
+					MenuItemID:  menuItemID,
+					Name:        "Burger",
+					Quantity:    1,
+					Price:       10.99,
+					Status:      "pending",
+					Observation: "",
+					Image:       "https://example.com/burger.jpg",
+				},
+			},
+			TotalPrice: 10.99,
+		}
+		orderJSON, _ := json.Marshal(orderData)
+		req, _ := http.NewRequest("POST", "/orders", bytes.NewBuffer(orderJSON))
+		response := fixture.Mock.ExecuteRequest(req, fixture.Router)
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		var responseBody map[string]string
+		json.Unmarshal(response.Body.Bytes(), &responseBody)
+		orderIDs = append(orderIDs, responseBody["order_id"])
+	}
+
+	// Test each status filter
+	for _, status := range statuses {
+		t.Run("FilterByStatus_"+status, func(t *testing.T) {
+			req, _ := http.NewRequest("GET", "/orders?restaurant_id="+restaurantID+"&status="+status, nil)
+			response := fixture.Mock.ExecuteRequest(req, fixture.Router)
+			assert.Equal(t, http.StatusOK, response.Code)
+
+			var orders []dto.OrderDTO
+			err := json.Unmarshal(response.Body.Bytes(), &orders)
+			assert.NoError(t, err)
+			assert.Len(t, orders, 1)
+			assert.Equal(t, status, orders[0].Status)
+		})
+	}
+}
+
+// TestGetOrderByRestaurantIDWithDateFiltering tests date range filtering functionality
+func TestGetOrderByRestaurantIDWithDateFiltering(t *testing.T) {
+	fixture := NewTestFixture(t)
+	defer fixture.TearDown()
+
+	// Setup test data
+	var userID, restaurantID, tableID, menuItemID string
+
+	result := fixture.Mock.Db.Raw(`INSERT INTO servu.users (name, email, password_hash, role, phone)
+		VALUES ('Test User', 'test@example.com', '$2a$10$OadQYtj4KxIpkjOQ/zw62euZ00cLJDUmUGMJ5bdGU2TE1.6GwKsoa', 'admin', '1234567890')
+		RETURNING user_id`).Scan(&userID)
+	assert.NoError(t, result.Error)
+
+	result = fixture.Mock.Db.Raw(`INSERT INTO servu.restaurants (name, owner_id, description, image_url)
+		VALUES ('Test Restaurant', ?, 'Test Description', 'https://test.com') 
+		RETURNING restaurant_id`, userID).Scan(&restaurantID)
+	assert.NoError(t, result.Error)
+
+	result = fixture.Mock.Db.Raw(`INSERT INTO servu.tables (restaurant_id, table_number, qr_code, status)
+		VALUES (?, 1, 'QR_CODE', 'available') 
+		RETURNING table_id`, restaurantID).Scan(&tableID)
+	assert.NoError(t, result.Error)
+
+	result = fixture.Mock.Db.Raw(`INSERT INTO servu.menu_items (restaurant_id, name, description, price, available, category, image_url)
+		VALUES (?, 'Burger', 'Juicy beef burger', 10.99, true, 'Main', 'https://example.com/burger.jpg') 
+		RETURNING menu_item_id`, restaurantID).Scan(&menuItemID)
+	assert.NoError(t, result.Error)
+
+	// Create multiple orders
+	for i := 0; i < 3; i++ {
+		orderData := dto.OrderDTO{
+			TableID:      tableID,
+			Status:       "ordered",
+			RestaurantID: restaurantID,
+			Items: []dto.OrderItemDTO{
+				{
+					MenuItemID:  menuItemID,
+					Name:        "Burger",
+					Quantity:    1,
+					Price:       10.99,
+					Status:      "pending",
+					Observation: "",
+					Image:       "https://example.com/burger.jpg",
+				},
+			},
+			TotalPrice: 10.99,
+		}
+		orderJSON, _ := json.Marshal(orderData)
+		req, _ := http.NewRequest("POST", "/orders", bytes.NewBuffer(orderJSON))
+		response := fixture.Mock.ExecuteRequest(req, fixture.Router)
+		assert.Equal(t, http.StatusOK, response.Code)
+	}
+
+	// Test date range filtering
+	t.Run("DateRangeFiltering", func(t *testing.T) {
+		today := "2024-01-01"
+		tomorrow := "2024-01-02"
+
+		// Test with start_date only
+		req, _ := http.NewRequest("GET", "/orders?restaurant_id="+restaurantID+"&start_date="+today, nil)
+		response := fixture.Mock.ExecuteRequest(req, fixture.Router)
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		var orders []dto.OrderDTO
+		err := json.Unmarshal(response.Body.Bytes(), &orders)
+		assert.NoError(t, err)
+		assert.Len(t, orders, 3) // Should return all orders from today onwards
+
+		// Test with end_date only
+		req, _ = http.NewRequest("GET", "/orders?restaurant_id="+restaurantID+"&end_date="+tomorrow, nil)
+		response = fixture.Mock.ExecuteRequest(req, fixture.Router)
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		err = json.Unmarshal(response.Body.Bytes(), &orders)
+		assert.NoError(t, err)
+		assert.Len(t, orders, 3) // Should return all orders up to tomorrow
+
+		// Test with both dates
+		req, _ = http.NewRequest("GET", "/orders?restaurant_id="+restaurantID+"&start_date="+today+"&end_date="+today, nil)
+		response = fixture.Mock.ExecuteRequest(req, fixture.Router)
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		err = json.Unmarshal(response.Body.Bytes(), &orders)
+		assert.NoError(t, err)
+		assert.Len(t, orders, 3) // Should return orders from today only
+	})
+}
