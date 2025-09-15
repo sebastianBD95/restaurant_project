@@ -40,6 +40,11 @@ export const getOrdersByRestaurant = async (restaurantId: string, status: string
     }
   );
 
+  if (response.status === 402) {
+    window.location.href = `/suscripcion/${restaurantId}`;
+    return [];
+  }
+
   if (!response.ok) {
     throw new Error('Failed to fetch orders');
   }
