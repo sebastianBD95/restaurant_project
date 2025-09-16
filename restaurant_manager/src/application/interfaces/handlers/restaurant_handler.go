@@ -12,10 +12,11 @@ import (
 
 type RestaurantHandler struct {
 	service *services.RestaurantService
+	limiter *services.FeatureLimiter
 }
 
-func NewRestaurantHandler(service *services.RestaurantService) *RestaurantHandler {
-	return &RestaurantHandler{service: service}
+func NewRestaurantHandler(service *services.RestaurantService, limiter *services.FeatureLimiter) *RestaurantHandler {
+	return &RestaurantHandler{service: service, limiter: limiter}
 }
 
 // Create a new restaurant
@@ -24,6 +25,10 @@ func (h *RestaurantHandler) CreateRestaurant(w http.ResponseWriter, r *http.Requ
 	owner := utils.TokenVerification(r, w)
 	if owner == "" {
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		return
+	}
+	if h.limiter != nil && !h.limiter.CanCreateRestaurant(owner) {
+		http.Error(w, "Free tier limit: only 1 restaurant allowed", http.StatusPaymentRequired)
 		return
 	}
 	err := r.ParseMultipartForm(10 << 20)

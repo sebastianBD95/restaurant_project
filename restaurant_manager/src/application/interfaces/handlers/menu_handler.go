@@ -15,16 +15,21 @@ import (
 
 type MenuHandler struct {
 	service *services.MenuService
+	limiter *services.FeatureLimiter
 }
 
-func NewMenuHandler(service *services.MenuService) *MenuHandler {
-	return &MenuHandler{service: service}
+func NewMenuHandler(service *services.MenuService, limiter *services.FeatureLimiter) *MenuHandler {
+	return &MenuHandler{service: service, limiter: limiter}
 }
 
 // Add a menu item
 func (h *MenuHandler) AddMenuItem(w http.ResponseWriter, r *http.Request) {
 	owner := utils.TokenVerification(r, w)
 	restaurantID := mux.Vars(r)["restaurant_id"]
+	if h.limiter != nil && !h.limiter.CanAddMenuItem(owner, restaurantID) {
+		http.Error(w, "Free tier limit: only 5 menu items allowed", http.StatusPaymentRequired)
+		return
+	}
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		http.Error(w, "Unable to parse form", http.StatusBadRequest)

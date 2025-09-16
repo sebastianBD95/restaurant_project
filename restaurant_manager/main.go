@@ -41,15 +41,17 @@ func main() {
 	cashClosingService := services.NewCashClosingService(cashClosingRepo, orderRepo, menuRepo)
 	subscriptionService := services.NewSubscriptionService(subscriptionRepo)
 
-	userHandler := handlers.NewUserHandler(userService)
-	restaurantHandler := handlers.NewRestaurantHandler(restaurantService)
-	menuHandler := handlers.NewMenuHandler(menuService)
-	orderHandler := handlers.NewOrderHandler(orderService)
+	featureLimiter := services.NewFeatureLimiter(config.DB, subscriptionService)
+
+	userHandler := handlers.NewUserHandler(userService, featureLimiter)
+	restaurantHandler := handlers.NewRestaurantHandler(restaurantService, featureLimiter)
+	menuHandler := handlers.NewMenuHandler(menuService, featureLimiter)
+	orderHandler := handlers.NewOrderHandler(orderService, featureLimiter)
 	tableHandler := handlers.NewTableHandler(tableService)
 	inventoryHandler := handlers.NewInventoryHandler(inventoryService)
 	ingredientHandler := handlers.NewIngredientHandler(ingredientService)
-	rawIngredientsHandler := handlers.NewRawIngredientsHandler(rawIngredientService)
-	cashClosingHandler := handlers.NewCashClosingHandler(cashClosingService)
+	rawIngredientsHandler := handlers.NewRawIngredientsHandler(rawIngredientService, featureLimiter)
+	cashClosingHandler := handlers.NewCashClosingHandler(cashClosingService, featureLimiter)
 	subscriptionHandler := handlers.NewSubscriptionHandler(subscriptionService)
 
 	r := routes.SetupRoutes(

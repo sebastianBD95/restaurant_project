@@ -13,10 +13,11 @@ import (
 
 type UserHandler struct {
 	service *services.UserService
+	limiter *services.FeatureLimiter
 }
 
-func NewUserHandler(service *services.UserService) *UserHandler {
-	return &UserHandler{service: service}
+func NewUserHandler(service *services.UserService, limiter *services.FeatureLimiter) *UserHandler {
+	return &UserHandler{service: service, limiter: limiter}
 }
 
 // writeJSONResponse writes a JSON response with the given status code
@@ -41,6 +42,18 @@ func (h *UserHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		log.Error().Err(err).Msg("Failed to decode request body")
 		h.writeErrorResponse(w, http.StatusBadRequest, "Invalid request body")
 		return
+	}
+
+	// Free tier waiter user limit
+	if user.Role == "waiter" && user.RestaurantId != nil {
+		owner := utils.TokenVerification(r, w)
+		if owner == "" {
+			return
+		}
+		if h.limiter != nil && !h.limiter.CanCreateWaiterUser(owner, *user.RestaurantId) {
+			h.writeErrorResponse(w, http.StatusPaymentRequired, "Free tier limit: only 3 waiter users allowed")
+			return
+		}
 	}
 
 	userID, err := h.service.RegisterUser(&user)
