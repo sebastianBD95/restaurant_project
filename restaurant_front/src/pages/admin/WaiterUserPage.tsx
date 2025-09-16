@@ -146,8 +146,8 @@ const WaiterUserPage: React.FC = () => {
         restaurant_id: '',
       });
       fetchWaiters();
-    } catch (error) {
-      showToast('Error', 'Ocurrió un error al procesar la solicitud', 'error');
+    } catch (error: any) {
+      showToast('Límite del plan gratuito', error?.message || 'Has alcanzado el límite de 3 meseros del plan gratuito.', 'error');
     } finally {
       setIsLoading(false);
     }

@@ -17,6 +17,12 @@ export const placeOrder = async (orderData: OrderRequest) => {
     body: JSON.stringify(orderData),
   });
 
+  if (response.status === 402) {
+    const data = await response.json().catch(() => ({} as any));
+    const msg = (data && (data.error || data.message)) || 'Has alcanzado el límite de 25 pedidos del plan gratuito.';
+    throw new Error(msg);
+  }
+
   if (!response.ok) {
     throw new Error('Failed to place order');
   }

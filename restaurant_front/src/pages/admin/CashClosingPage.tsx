@@ -139,12 +139,12 @@ const CashClosingPage: React.FC = () => {
 
       // Refresh data after successful closing
       await fetchCashClosingData();
-    } catch (error) {
+    } catch (error: any) {
       toaster.create({
-        title: 'Error',
-        description: 'Error al realizar el cierre de caja.',
+        title: 'No se pudo realizar el cierre de caja',
+        description: error?.message || 'Error al realizar el cierre de caja.',
         type: 'error',
-        duration: 5000,
+        duration: 6000,
       });
     } finally {
       setIsClosing(false);

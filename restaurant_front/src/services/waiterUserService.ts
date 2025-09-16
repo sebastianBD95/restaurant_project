@@ -20,11 +20,13 @@ export const createWaiterUser = async (
       }
     );
     return response.data;
-  } catch (error) {
-    if (error instanceof Error) {
-      throw new Error('Failed to create waiter user: ' + error.message);
+  } catch (error: any) {
+    const status = error?.response?.status;
+    const message = error?.response?.data?.error || 'No se pudo crear el usuario mesero';
+    if (status === 402) {
+      throw new Error(message);
     }
-    throw new Error('Failed to create waiter user: An unknown error occurred');
+    throw new Error(message);
   }
 };
 

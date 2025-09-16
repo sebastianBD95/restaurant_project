@@ -194,6 +194,12 @@ const MenuPage: React.FC = () => {
       await fetchMenuItems();
     } catch (error: any) {
       setError(error.message);
+      toaster.create({
+        title: 'Límite del plan gratuito',
+        description: error?.message || 'Has alcanzado el límite de platos del plan gratuito (5).',
+        type: 'error',
+        duration: 6000,
+      });
     }
   };
 
