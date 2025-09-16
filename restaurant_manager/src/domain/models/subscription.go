@@ -13,7 +13,6 @@ const (
 
 type Subscription struct {
     SubscriptionID     string              `gorm:"primaryKey;column:subscription_id" json:"subscription_id"`
-    RestaurantID       string              `gorm:"column:restaurant_id" json:"restaurant_id"`
     UserID             string              `gorm:"column:user_id" json:"user_id"`
     Status             SubscriptionStatus  `gorm:"column:status" json:"status"`
     PlanAmountCOP      int                 `gorm:"column:plan_amount_cop" json:"plan_amount_cop"`
