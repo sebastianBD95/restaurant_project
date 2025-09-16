@@ -7,6 +7,7 @@ import (
 	"restaurant_manager/src/application/interfaces/handlers"
 	"time"
 	"strings"
+	"restaurant_manager/src/application/utils"
 
 	"github.com/gorilla/mux"
 )
@@ -43,8 +44,8 @@ func accessControlMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// SubscriptionGuardMiddleware checks for active subscription for routes that include a restaurant_id
-func SubscriptionGuardMiddleware(isActive func(restaurantID string) bool) mux.MiddlewareFunc {
+// SubscriptionGuardMiddleware checks for active subscription for protected routes using JWT user id
+func SubscriptionGuardMiddleware(isActive func(userID string) bool) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			path := r.URL.Path
@@ -60,20 +61,12 @@ func SubscriptionGuardMiddleware(isActive func(restaurantID string) bool) mux.Mi
 				return
 			}
 
-			restaurantID := r.URL.Query().Get("restaurant_id")
-			if restaurantID == "" {
-				vars := mux.Vars(r)
-				if val, ok := vars["restaurant_id"]; ok {
-					restaurantID = val
-				}
-			}
-
-			if restaurantID == "" {
-				next.ServeHTTP(w, r)
+			userID := utils.TokenVerification(r, w)
+			if userID == "" {
 				return
 			}
 
-			if !isActive(restaurantID) {
+			if !isActive(userID) {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusPaymentRequired)
 				_ = json.NewEncoder(w).Encode(map[string]string{"error": "Subscription inactive or expired"})

@@ -16,17 +16,17 @@ func NewSubscriptionRepository(db *gorm.DB) repositories.SubscriptionRepository 
     return &SubscriptionRepositoryImpl{db: db}
 }
 
-func (r *SubscriptionRepositoryImpl) GetByRestaurantID(restaurantID string) (*models.Subscription, error) {
+func (r *SubscriptionRepositoryImpl) GetByUserID(userID string) (*models.Subscription, error) {
     var sub models.Subscription
-    if err := r.db.Where("restaurant_id = ?", restaurantID).First(&sub).Error; err != nil {
+    if err := r.db.Where("user_id = ?", userID).First(&sub).Error; err != nil {
         return nil, err
     }
     return &sub, nil
 }
 
-func (r *SubscriptionRepositoryImpl) Upsert(sub *models.Subscription) error {
+func (r *SubscriptionRepositoryImpl) UpsertByUser(sub *models.Subscription) error {
     return r.db.Clauses(clause.OnConflict{
-        Columns:   []clause.Column{{Name: "restaurant_id"}},
+        Columns:   []clause.Column{{Name: "user_id"}},
         DoUpdates: clause.Assignments(map[string]interface{}{
             "status":                sub.Status,
             "plan_amount_cop":      sub.PlanAmountCOP,

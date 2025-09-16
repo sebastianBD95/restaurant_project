@@ -64,9 +64,9 @@ func main() {
 		cashClosingHandler,
 		subscriptionHandler)
 
-	// Apply subscription guard middleware after route creation
-	r.Use(routes.SubscriptionGuardMiddleware(func(restaurantID string) bool {
-		ok, _, err := subscriptionService.IsActive(restaurantID)
+	// Apply user-based subscription guard middleware
+	r.Use(routes.SubscriptionGuardMiddleware(func(userID string) bool {
+		ok, _, err := subscriptionService.IsActive(userID)
 		if err != nil {
 			return false
 		}

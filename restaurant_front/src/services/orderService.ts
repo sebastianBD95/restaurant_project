@@ -41,7 +41,7 @@ export const getOrdersByRestaurant = async (restaurantId: string, status: string
   );
 
   if (response.status === 402) {
-    window.location.href = `/suscripcion/${restaurantId}`;
+    window.location.href = `/suscripcion`;
     return [];
   }
 

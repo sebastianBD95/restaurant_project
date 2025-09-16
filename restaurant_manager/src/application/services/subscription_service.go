@@ -15,33 +15,33 @@ func NewSubscriptionService(repo repositories.SubscriptionRepository) *Subscript
     return &SubscriptionService{repo: repo}
 }
 
-func (s *SubscriptionService) GetStatus(restaurantID string) (*models.Subscription, error) {
-    if restaurantID == "" {
-        return nil, errors.New("restaurant ID is required")
+func (s *SubscriptionService) GetStatus(userID string) (*models.Subscription, error) {
+    if userID == "" {
+        return nil, errors.New("user ID is required")
     }
-    return s.repo.GetByRestaurantID(restaurantID)
+    return s.repo.GetByUserID(userID)
 }
 
-func (s *SubscriptionService) ActivateMonthlyPlan(restaurantID string, amountCOP int) (*models.Subscription, error) {
-    if restaurantID == "" {
-        return nil, errors.New("restaurant ID is required")
+func (s *SubscriptionService) ActivateMonthlyPlan(userID string, amountCOP int) (*models.Subscription, error) {
+    if userID == "" {
+        return nil, errors.New("user ID is required")
     }
     now := time.Now().UTC()
     sub := &models.Subscription{
-        RestaurantID:       restaurantID,
+        UserID:             userID,
         Status:             models.SubscriptionActive,
         PlanAmountCOP:      amountCOP,
         CurrentPeriodStart: now,
         CurrentPeriodEnd:   now.AddDate(0, 1, 0),
     }
-    if err := s.repo.Upsert(sub); err != nil {
+    if err := s.repo.UpsertByUser(sub); err != nil {
         return nil, err
     }
-    return s.repo.GetByRestaurantID(restaurantID)
+    return s.repo.GetByUserID(userID)
 }
 
-func (s *SubscriptionService) IsActive(restaurantID string) (bool, *models.Subscription, error) {
-    sub, err := s.repo.GetByRestaurantID(restaurantID)
+func (s *SubscriptionService) IsActive(userID string) (bool, *models.Subscription, error) {
+    sub, err := s.repo.GetByUserID(userID)
     if err != nil {
         return false, nil, err
     }

@@ -1,20 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Heading, Text, Button, VStack } from '@chakra-ui/react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { activateSubscription, getSubscriptionStatus, Subscription } from '../../services/subscriptionService';
 
 const SubscriptionPage: React.FC = () => {
-  const { restaurantId } = useParams();
   const navigate = useNavigate();
   const [sub, setSub] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchStatus = async () => {
-    if (!restaurantId) return;
     setError(null);
     try {
-      const s = await getSubscriptionStatus(restaurantId);
+      const s = await getSubscriptionStatus();
       setSub(s);
     } catch (e: any) {
       setError(e?.response?.data?.error || 'No subscription found');
@@ -23,16 +21,15 @@ const SubscriptionPage: React.FC = () => {
 
   useEffect(() => {
     fetchStatus();
-  }, [restaurantId]);
+  }, []);
 
   const handleActivate = async () => {
-    if (!restaurantId) return;
     setLoading(true);
     setError(null);
     try {
-      const s = await activateSubscription(restaurantId);
+      const s = await activateSubscription();
       setSub(s);
-      navigate(`/dashboard/${restaurantId}`);
+      navigate(`/restaurantes`);
     } catch (e: any) {
       setError(e?.response?.data?.error || 'Activation failed');
     } finally {

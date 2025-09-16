@@ -4,6 +4,7 @@ import (
     "encoding/json"
     "net/http"
     "restaurant_manager/src/application/services"
+    "restaurant_manager/src/application/utils"
 )
 
 type SubscriptionHandler struct {
@@ -15,8 +16,11 @@ func NewSubscriptionHandler(service *services.SubscriptionService) *Subscription
 }
 
 func (h *SubscriptionHandler) GetStatus(w http.ResponseWriter, r *http.Request) {
-    restaurantID := r.URL.Query().Get("restaurant_id")
-    sub, err := h.service.GetStatus(restaurantID)
+    userID := utils.TokenVerification(r, w)
+    if userID == "" {
+        return
+    }
+    sub, err := h.service.GetStatus(userID)
     if err != nil {
         http.Error(w, err.Error(), http.StatusNotFound)
         return
@@ -25,9 +29,12 @@ func (h *SubscriptionHandler) GetStatus(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *SubscriptionHandler) Activate(w http.ResponseWriter, r *http.Request) {
-    restaurantID := r.URL.Query().Get("restaurant_id")
     amountCOP := 60
-    sub, err := h.service.ActivateMonthlyPlan(restaurantID, amountCOP)
+    userID := utils.TokenVerification(r, w)
+    if userID == "" {
+        return
+    }
+    sub, err := h.service.ActivateMonthlyPlan(userID, amountCOP)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return

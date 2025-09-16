@@ -39,7 +39,7 @@ function App() {
             <Route path="/daily_revenue" element={<DashboardDR />} />
             <Route path="/trending_menu" element={<TrendingMenu />} />
             <Route path="/dashboard/:restaurantId" element={<Dashboard />} />
-            <Route path="/suscripcion/:restaurantId" element={<SubscriptionPage />} />
+            <Route path="/suscripcion" element={<SubscriptionPage />} />
             <Route path="/inventario" element={<Inventario />} />
             <Route path="/inventario/:restaurantId" element={<Inventario />} />
             <Route path="/recetas" element={<PaginaReceta />} />
