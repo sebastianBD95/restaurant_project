@@ -28,6 +28,7 @@ func main() {
 	ingredientRepo := repositories.NewIngredientRepository(config.DB)
 	rawIngredientRepo := repositories.NewRawIngredientsRepository(config.DB)
 	cashClosingRepo := repositories.NewCashClosingRepository(config.DB)
+	subscriptionRepo := repositories.NewSubscriptionRepository(config.DB)
 
 	ingredientService := services.NewIngredientsService(ingredientRepo)
 	userService := services.NewUserService(userRepo)
@@ -38,16 +39,20 @@ func main() {
 	orderService := services.NewOrderService(orderRepo, tableService, menuService, inventoryService)
 	rawIngredientService := services.NewRawIngredientsService(rawIngredientRepo)
 	cashClosingService := services.NewCashClosingService(cashClosingRepo, orderRepo, menuRepo)
+	subscriptionService := services.NewSubscriptionService(subscriptionRepo)
 
-	userHandler := handlers.NewUserHandler(userService)
-	restaurantHandler := handlers.NewRestaurantHandler(restaurantService)
-	menuHandler := handlers.NewMenuHandler(menuService)
-	orderHandler := handlers.NewOrderHandler(orderService)
+	featureLimiter := services.NewFeatureLimiter(config.DB, subscriptionService)
+
+	userHandler := handlers.NewUserHandler(userService, featureLimiter)
+	restaurantHandler := handlers.NewRestaurantHandler(restaurantService, featureLimiter)
+	menuHandler := handlers.NewMenuHandler(menuService, featureLimiter)
+	orderHandler := handlers.NewOrderHandler(orderService, featureLimiter)
 	tableHandler := handlers.NewTableHandler(tableService)
 	inventoryHandler := handlers.NewInventoryHandler(inventoryService)
 	ingredientHandler := handlers.NewIngredientHandler(ingredientService)
-	rawIngredientsHandler := handlers.NewRawIngredientsHandler(rawIngredientService)
-	cashClosingHandler := handlers.NewCashClosingHandler(cashClosingService)
+	rawIngredientsHandler := handlers.NewRawIngredientsHandler(rawIngredientService, featureLimiter)
+	cashClosingHandler := handlers.NewCashClosingHandler(cashClosingService, featureLimiter)
+	subscriptionHandler := handlers.NewSubscriptionHandler(subscriptionService)
 
 	r := routes.SetupRoutes(
 		userHandler,
@@ -58,7 +63,17 @@ func main() {
 		inventoryHandler,
 		ingredientHandler,
 		rawIngredientsHandler,
-		cashClosingHandler)
+		cashClosingHandler,
+		subscriptionHandler)
+
+	// Apply user-based subscription guard middleware
+	r.Use(routes.SubscriptionGuardMiddleware(func(userID string) bool {
+		ok, _, err := subscriptionService.IsActive(userID)
+		if err != nil {
+			return false
+		}
+		return ok
+	}))
 
 	fmt.Println("🚀 Server running on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", r))

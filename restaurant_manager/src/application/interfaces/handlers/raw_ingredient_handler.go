@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"restaurant_manager/src/application/services"
+	"restaurant_manager/src/application/utils"
 	"restaurant_manager/src/domain/models"
 	"strconv"
 
@@ -14,10 +15,11 @@ import (
 
 type RawIngredientsHandler struct {
 	service *services.RawIngredientsService
+	limiter *services.FeatureLimiter
 }
 
-func NewRawIngredientsHandler(service *services.RawIngredientsService) *RawIngredientsHandler {
-	return &RawIngredientsHandler{service: service}
+func NewRawIngredientsHandler(service *services.RawIngredientsService, limiter *services.FeatureLimiter) *RawIngredientsHandler {
+	return &RawIngredientsHandler{service: service, limiter: limiter}
 }
 
 func (h *RawIngredientsHandler) GetByCategory(w http.ResponseWriter, r *http.Request) {
@@ -40,6 +42,10 @@ func (h *RawIngredientsHandler) UploadRawIngredientsCSV(w http.ResponseWriter, r
 		http.Error(w, "Restaurant ID is required", http.StatusBadRequest)
 		return
 	}
+	owner := utils.TokenVerification(r, w)
+	if owner == "" {
+		return
+	}
 
 	file, _, err := r.FormFile("file")
 	if err != nil {
@@ -54,6 +60,7 @@ func (h *RawIngredientsHandler) UploadRawIngredientsCSV(w http.ResponseWriter, r
 	// Optionally skip header
 	_, _ = reader.Read()
 
+	additional := 0
 	for {
 		record, err := reader.Read()
 		if err == io.EOF {
@@ -71,6 +78,12 @@ func (h *RawIngredientsHandler) UploadRawIngredientsCSV(w http.ResponseWriter, r
 			Merma:        merma,
 			RestaurantID: restaurantID,
 		})
+		additional++
+	}
+
+	if h.limiter != nil && !h.limiter.CanAddRawIngredients(owner, restaurantID, additional) {
+		http.Error(w, "Free tier limit: only 25 ingredients allowed", http.StatusPaymentRequired)
+		return
 	}
 
 	err = h.service.BulkInsertRawIngredients(rawIngredients)

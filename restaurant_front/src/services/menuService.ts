@@ -9,13 +9,22 @@ export const addMenu = async (
   token: string,
   restaurantId: string
 ): Promise<string> => {
-  const response = await axios.post<string>(`${API_URL}/menus/${restaurantId}/items`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return response.data;
+  try {
+    const response = await axios.post<string>(`${API_URL}/menus/${restaurantId}/items`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    const status = error?.response?.status;
+    const message = error?.response?.data?.error || 'No se pudo crear el plato';
+    if (status === 402) {
+      throw new Error(message);
+    }
+    throw new Error(message);
+  }
 };
 
 export const getMenus = async (
@@ -37,13 +46,18 @@ export const editMenuItem = async (
   token: string,
   restaurantId: string
 ) => {
-  const response = await axios.put(`${API_URL}/menus/${restaurantId}/items/${menuItemId}`, data, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return response.data;
+  try {
+    const response = await axios.put(`${API_URL}/menus/${restaurantId}/items/${menuItemId}`, data, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    const message = error?.response?.data?.error || 'No se pudo actualizar el plato';
+    throw new Error(message);
+  }
 };
 
 export const hideMenuItem = async (menuItemId: string, token: string, restaurantId: string) => {

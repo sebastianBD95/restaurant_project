@@ -21,6 +21,7 @@ import IngredientPage from './pages/admin/IngredientPage';
 import EventsPage from './pages/admin/EventsPage';
 import CashClosingPage from './pages/admin/CashClosingPage';
 import TablePage from './pages/admin/TablePage';
+import SubscriptionPage from './pages/admin/SubscriptionPage';
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
             <Route path="/daily_revenue" element={<DashboardDR />} />
             <Route path="/trending_menu" element={<TrendingMenu />} />
             <Route path="/dashboard/:restaurantId" element={<Dashboard />} />
+            <Route path="/suscripcion" element={<SubscriptionPage />} />
             <Route path="/inventario" element={<Inventario />} />
             <Route path="/inventario/:restaurantId" element={<Inventario />} />
             <Route path="/recetas" element={<PaginaReceta />} />

@@ -115,6 +115,14 @@ const IngredientPage: React.FC = () => {
           body: formData,
         }
       );
+      if (response.status === 402) {
+        const data = await response.json().catch(() => ({} as any));
+        const msg = (data && (data.error || data.message)) || 'Has alcanzado el límite de 25 ingredientes del plan gratuito.';
+        setError(msg);
+        toaster.create({ title: 'Límite del plan gratuito', description: msg, type: 'error', duration: 6000 });
+        setUploading(false);
+        return;
+      }
       if (!response.ok) throw new Error('Error al subir el archivo');
       toaster.create({
         title: 'CSV subido',
@@ -130,10 +138,12 @@ const IngredientPage: React.FC = () => {
           merma: item.merma,
         }))
       );
-    } catch (err) {
-      setError('No se pudo subir el archivo.');
+    } catch (err: any) {
+      const msg = err?.message || 'No se pudo subir el archivo.';
+      setError(msg);
       toaster.create({
         title: 'Error al subir el CSV',
+        description: msg,
         type: 'error',
       });
     } finally {

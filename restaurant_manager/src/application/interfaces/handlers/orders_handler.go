@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"restaurant_manager/src/application/interfaces/handlers/dto"
 	"restaurant_manager/src/application/services"
+	"restaurant_manager/src/application/utils"
 	"restaurant_manager/src/domain/models"
 
 	"github.com/gorilla/mux"
@@ -12,15 +13,24 @@ import (
 
 type OrderHandler struct {
 	service *services.OrderService
+	limiter *services.FeatureLimiter
 }
 
-func NewOrderHandler(service *services.OrderService) *OrderHandler {
-	return &OrderHandler{service}
+func NewOrderHandler(service *services.OrderService, limiter *services.FeatureLimiter) *OrderHandler {
+	return &OrderHandler{service: service, limiter: limiter}
 }
 
 func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	var orderDto *dto.OrderDTO
 	json.NewDecoder(r.Body).Decode(&orderDto)
+	owner := utils.TokenVerification(r, w)
+	if owner == "" {
+		return
+	}
+	if h.limiter != nil && !h.limiter.CanCreateOrder(owner, orderDto.RestaurantID) {
+		http.Error(w, "Free tier limit: only 25 orders allowed", http.StatusPaymentRequired)
+		return
+	}
 	order := models.Order{
 		TableID:      orderDto.TableID,
 		RestaurantID: orderDto.RestaurantID,
@@ -129,7 +139,7 @@ func (h *OrderHandler) AddOrderItem(w http.ResponseWriter, r *http.Request) {
 			MenuItemID: item.MenuItemID,
 			Quantity:   item.Quantity,
 		}
-		orderItemID, err := h.service.AddOrderItem(&orderItemModel)
+		orderItemID, err := h.service.AddOrderItem(orderItemModel)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

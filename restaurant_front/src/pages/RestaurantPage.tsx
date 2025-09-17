@@ -72,7 +72,7 @@ const RestaurantPage: React.FC = () => {
   };
 
   // Handle form submission to add a restaurant
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.name || !formData.description || file === undefined) {
@@ -101,19 +101,19 @@ const RestaurantPage: React.FC = () => {
         });
         return;
       }
-      addRestarurant(restaurantData, token);
+      await addRestarurant(restaurantData, token);
 
       // Clear form fields after adding
       setFormData({ name: '', description: '' });
       setFile(null);
       setImagePreview(null);
-      getRestaurants(token);
-    } catch (error: unknown) {
+      fetchRestaurants();
+    } catch (error: any) {
       toaster.create({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'An error occurred',
+        title: 'Límite alcanzado',
+        description: error?.message || 'Has alcanzado el límite del plan gratuito.',
         type: 'error',
-        duration: 5000,
+        duration: 6000,
       });
     }
   };

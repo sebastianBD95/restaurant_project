@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"restaurant_manager/src/application/interfaces/handlers"
 	"time"
+	"strings"
+	"restaurant_manager/src/application/utils"
 
 	"github.com/gorilla/mux"
 )
@@ -42,6 +44,40 @@ func accessControlMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// SubscriptionGuardMiddleware checks for active subscription for protected routes using JWT user id
+func SubscriptionGuardMiddleware(isActive func(userID string) bool) mux.MiddlewareFunc {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			path := r.URL.Path
+			shouldGuard := strings.Contains(path, "/menus/") ||
+				strings.Contains(path, "/orders") ||
+				strings.Contains(path, "/tables") ||
+				strings.Contains(path, "/inventory") ||
+				strings.Contains(path, "/cash-closings") ||
+				strings.Contains(path, "/raw-ingredients")
+
+			if !shouldGuard {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			userID := utils.TokenVerification(r, w)
+			if userID == "" {
+				return
+			}
+
+			if !isActive(userID) {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusPaymentRequired)
+				_ = json.NewEncoder(w).Encode(map[string]string{"error": "Subscription inactive or expired"})
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
 func SetupRoutes(userHandler *handlers.UserHandler,
 	restaurantHandler *handlers.RestaurantHandler,
 	menuHandler *handlers.MenuHandler,
@@ -50,7 +86,8 @@ func SetupRoutes(userHandler *handlers.UserHandler,
 	inventoryHandler *handlers.InventoryHandler,
 	ingredientHandler *handlers.IngredientHandler,
 	rawIngredientsHandler *handlers.RawIngredientsHandler,
-	cashClosingHandler *handlers.CashClosingHandler) *mux.Router {
+	cashClosingHandler *handlers.CashClosingHandler,
+	subscriptionHandler *handlers.SubscriptionHandler) *mux.Router {
 
 	r := mux.NewRouter()
 
@@ -63,6 +100,10 @@ func SetupRoutes(userHandler *handlers.UserHandler,
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(map[string]string{"status": "healthy"})
 	}).Methods("GET")
+
+	// Subscription routes
+	r.HandleFunc("/subscriptions/status", subscriptionHandler.GetStatus).Methods("GET", "OPTIONS")
+	r.HandleFunc("/subscriptions/activate", subscriptionHandler.Activate).Methods("POST", "OPTIONS")
 
 	r.HandleFunc("/register", userHandler.RegisterUser).Methods("POST", "OPTIONS")
 	r.HandleFunc("/login", userHandler.LoginUser).Methods("POST", "OPTIONS")

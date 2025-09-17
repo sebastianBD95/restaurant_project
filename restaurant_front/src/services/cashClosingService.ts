@@ -163,14 +163,21 @@ export const performCashClosing = async (
       }),
     });
 
+    if (response.status === 402) {
+      const data = await response.json().catch(() => ({} as any));
+      const msg = (data && (data.error || data.message)) || 'Has alcanzado el límite de cierres de caja del plan gratuito (2 por mes).';
+      throw new Error(msg);
+    }
+
     if (!response.ok) {
       throw new Error('Failed to perform cash closing');
     }
 
     return response.json();
-  } catch (error) {
+  } catch (error: any) {
+    const msg = error?.message || 'Error al realizar el cierre de caja';
     console.error('Error performing cash closing:', error);
-    throw new Error('Error al realizar el cierre de caja');
+    throw new Error(msg);
   }
 };
 

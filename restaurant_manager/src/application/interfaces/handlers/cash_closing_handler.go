@@ -15,10 +15,11 @@ import (
 
 type CashClosingHandler struct {
 	service *services.CashClosingService
+	limiter *services.FeatureLimiter
 }
 
-func NewCashClosingHandler(service *services.CashClosingService) *CashClosingHandler {
-	return &CashClosingHandler{service: service}
+func NewCashClosingHandler(service *services.CashClosingService, limiter *services.FeatureLimiter) *CashClosingHandler {
+	return &CashClosingHandler{service: service, limiter: limiter}
 }
 
 // CreateCashClosing handles POST /cash-closings
@@ -46,6 +47,12 @@ func (h *CashClosingHandler) CreateCashClosing(w http.ResponseWriter, r *http.Re
 	restaurantID := r.URL.Query().Get("restaurant_id")
 	if restaurantID == "" {
 		http.Error(w, "restaurant_id is required", http.StatusBadRequest)
+		return
+	}
+
+	// Guard free-tier
+	if h.limiter != nil && !h.limiter.CanCreateCashClosing(owner, restaurantID, closingDate) {
+		http.Error(w, "Free tier limit: only 2 cash closings per month", http.StatusPaymentRequired)
 		return
 	}
 
@@ -84,8 +91,6 @@ func (h *CashClosingHandler) CreateCashClosing(w http.ResponseWriter, r *http.Re
 		TotalProfit:       cashClosing.TotalProfit,
 		OrderCount:        cashClosing.OrderCount,
 		AverageOrderValue: cashClosing.AverageOrderValue,
-		CreatedAt:         cashClosing.CreatedAt,
-		UpdatedAt:         cashClosing.UpdatedAt,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -341,8 +346,6 @@ func (h *CashClosingHandler) GetCashClosingStats(w http.ResponseWriter, r *http.
 		TotalProfit:       stats.TotalProfit,
 		OrderCount:        stats.OrderCount,
 		AverageOrderValue: stats.AverageOrderValue,
-		CreatedAt:         stats.CreatedAt,
-		UpdatedAt:         stats.UpdatedAt,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
